@@ -10,7 +10,7 @@ TODO:
 - [ ] **certificate** - Certificate generation tool
 - [x] **debug** - Debug tools for developers
 - [x] **genesis** - Block tooling and helper
-- [ ] **key** - Key Generation
+- [x] **key** - Key Generation
 - [ ] **rest** - Send request to node REST API
 - [ ] **transaction** - Build and view offline transaction
 - [x] **utils** - Utilities that perform specialized tasks
