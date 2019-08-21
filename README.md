@@ -7,7 +7,7 @@ The idea is to build a simple and small wrapper around *JCLI* binary.
 
 TODO:
 - [x] **address** - Address tooling and helper
-- [ ] **certificate** - Certificate generation tool
+- [x] **certificate** - Certificate generation tool
 - [x] **debug** - Debug tools for developers
 - [x] **genesis** - Block tooling and helper
 - [x] **key** - Key Generation
