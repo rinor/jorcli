@@ -73,7 +73,11 @@ func CertificateNewStakeDelegation(
 }
 
 // CertificateNewStakePoolRegistrationSingleOwner - build a stake pool registration certificate with single owner.
-// jcli certificate new stake-pool-registration --kes-key <KES_KEY> --vrf-key <VRF_KEY> --serial <SERIAL> [--owner <PUBLIC_KEY>] [output]
+// jcli certificate new stake-pool-registration --kes-key <KES_KEY>
+//                                              --vrf-key <VRF_KEY>
+//                                              --serial <SERIAL>
+//                                              [--owner <PUBLIC_KEY>]
+//                                              [output]
 func CertificateNewStakePoolRegistrationSingleOwner(
 	kes_key string,
 	vrf_key string,
@@ -107,7 +111,11 @@ func CertificateNewStakePoolRegistration(
 		return nil, fmt.Errorf("parameter missing : %s", "serial")
 	}
 
-	arg := []string{"certificate", "new", "stake-pool-registration", "--kes-key", kes_key, "--vrf-key", vrf_key, "--serial", serial}
+	arg := []string{
+		"certificate", "new", "stake-pool-registration",
+		"--kes-key", kes_key,
+		"--vrf-key", vrf_key, "--serial", serial,
+	}
 	for _, owner_pk := range owner {
 		arg = append(arg, "--owner", owner_pk) // FIXME: should check data validity!
 	}
@@ -165,5 +173,4 @@ func CertificateSign(
 	}
 
 	return ioutil.ReadFile(output_file)
-
 }
