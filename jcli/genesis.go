@@ -44,9 +44,7 @@ func GenesisEncode(
 	arg := []string{"genesis", "encode"}
 	if input_file != "" {
 		arg = append(arg, "--input", input_file)
-		if len(block0_txt) > 0 {
-			block0_txt = nil // reset STDIN - not needed since input_file has priority over STDIN
-		}
+		block0_txt = nil // reset STDIN - not needed since input_file has priority over STDIN
 	}
 	if output_file != "" {
 		arg = append(arg, "--output", output_file)
