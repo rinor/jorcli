@@ -1,4 +1,4 @@
-// Package jcli - jormungander jcli helpers.
+// Package jcli - jormungandr jcli helpers.
 package jcli
 
 import (
