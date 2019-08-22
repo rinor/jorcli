@@ -12,5 +12,5 @@ TODO:
 - [x] **genesis** - Block tooling and helper
 - [x] **key** - Key Generation
 - [ ] **rest** - Send request to node REST API
-- [ ] **transaction** - Build and view offline transaction
+- [x] **transaction** - Build and view offline transaction
 - [x] **utils** - Utilities that perform specialized tasks
