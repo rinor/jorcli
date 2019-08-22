@@ -114,7 +114,8 @@ func CertificateNewStakePoolRegistration(
 	arg := []string{
 		"certificate", "new", "stake-pool-registration",
 		"--kes-key", kes_key,
-		"--vrf-key", vrf_key, "--serial", serial,
+		"--vrf-key", vrf_key,
+		"--serial", serial,
 	}
 	for _, owner_pk := range owner {
 		arg = append(arg, "--owner", owner_pk) // FIXME: should check data validity!
