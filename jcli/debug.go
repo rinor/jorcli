@@ -3,6 +3,7 @@ package jcli
 import "fmt"
 
 // DebugMessage - Decode hex-encoded message an display its content.
+//
 // STDIN | jcli debug message [--input <input>]
 func DebugMessage(
 	stdin_hex []byte,

@@ -16,7 +16,7 @@ func TransactionNew(
 	arg := []string{"transaction", "new"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -47,7 +47,7 @@ func TransactionAddInput(
 	arg := []string{"transaction", "add-input", fragment_id, strconv.FormatUint(uint64(output_index), 10), strconv.FormatUint(value, 10)}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 	out, err := execStd(stdin_staging, "jcli", arg...)
 	if err != nil || staging_file == "" {
@@ -76,7 +76,7 @@ func TransactionAddAccount(
 	arg := []string{"transaction", "add-account", account, strconv.FormatUint(value, 10)}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -106,7 +106,7 @@ func TransactionAddOutput(
 	arg := []string{"transaction", "add-output", address, strconv.FormatUint(value, 10)}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -135,7 +135,7 @@ func TransactionAddWitness(
 	arg := []string{"transaction", "add-witness", witness_file}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -165,7 +165,7 @@ func TransactionAddCertificate(
 	arg := []string{"transaction", "add-certificate", certificate_bech32}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -198,7 +198,7 @@ func TransactionFinalize(
 	arg := []string{"transaction", "finalize"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 	arg = append(arg,
 		"--fee-certificate", strconv.FormatUint(fee_certificate, 10),
@@ -231,7 +231,7 @@ func TransactionSeal(
 	arg := []string{"transaction", "seal"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -257,7 +257,7 @@ func TransactionId(
 	arg := []string{"transaction", "id"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -282,7 +282,7 @@ func TransactionToMessage(
 	arg := []string{"transaction", "to-message"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 
 	out, err := execStd(stdin_staging, "jcli", arg...)
@@ -384,7 +384,7 @@ func TransactionInfo(
 	arg := []string{"transaction", "info"}
 	if staging_file != "" {
 		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
 	arg = append(arg,
 		"--fee-certificate", strconv.FormatUint(fee_certificate, 10),
@@ -422,8 +422,9 @@ func TransactionInfo(
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // // This is not yet implemented check https://github.com/input-output-hk/jormungandr/issues/674
-// //
+
 // // TransactionDataForWitness -
+// //
 // // STDIN | jcli transaction data-for-witness [--staging <staging-file>]
 // func TransactionDataForWitness(
 // 	stdin_staging []byte,
@@ -432,11 +433,11 @@ func TransactionInfo(
 // 	if len(stdin_staging) == 0 && staging_file == "" {
 // 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
 // 	}
-// 	arg := []string{"transaction", "data-for-witness"}
 
+// 	arg := []string{"transaction", "data-for-witness"}
 // 	if staging_file != "" {
 // 		arg = append(arg, "--staging", staging_file)
-// 		stdin_staging = nil
+// 		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 // 	}
 
 // 	out, err := execStd(stdin_staging, "jcli", arg...)

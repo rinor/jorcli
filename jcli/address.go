@@ -6,6 +6,7 @@ import (
 )
 
 // AddressInfoFromStdin - display the content and info of a bech32 formatted address.
+//
 // jcli does not use STDIN for this function, but keep it for convenience
 func AddressInfoFromStdin(
 	address_bech32 []byte,
@@ -17,6 +18,7 @@ func AddressInfoFromStdin(
 }
 
 // AddressInfo - display the content and info of a bech32 formatted address.
+//
 // jcli address info <ADDRESS (in bech32 format)>
 func AddressInfo(
 	address_bech32 string,
@@ -31,6 +33,7 @@ func AddressInfo(
 }
 
 // AddressAccountFromStdin - create an address from the the single public key.
+//
 // jcli does not use STDIN for this function, but keep it for convenience
 func AddressAccountFromStdin(
 	public_key []byte,
@@ -44,7 +47,7 @@ func AddressAccountFromStdin(
 }
 
 // AddressAccount - create an address from the the single public key.
-// FIXME: UPSTREAM the the -> the
+//
 // jcli address account <PUBLIC_KEY> [--prefix <address_prefix>] [--testing]
 func AddressAccount(
 	public_key string,
@@ -67,6 +70,7 @@ func AddressAccount(
 }
 
 // AddressSingleFromStdin - create an address from the single public key. This address does not have delegation.
+//
 // jcli does not use STDIN for this function, but keep it for convenience
 func AddressSingleFromStdin(
 	public_key []byte,
@@ -80,6 +84,7 @@ func AddressSingleFromStdin(
 }
 
 // AddressSingle - create an address from the single public key. This address does not have delegation.
+//
 // jcli address single <PUBLIC_KEY> [DELEGATION_KEY] [--testing]
 func AddressSingle(
 	public_key string,

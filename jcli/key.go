@@ -6,6 +6,7 @@ import (
 )
 
 // KeyGenerate - generate a private key without seed.
+//
 // jcli key generate --type=<key_type> [OUTPUT_FILE]
 func KeyGenerate(
 	key_type string,
@@ -18,6 +19,7 @@ func KeyGenerate(
 }
 
 // KeyGenerateFromSeed - generate a private key using a SEED value.
+//
 // jcli key generate --type=<key_type> [--seed=<SEED>] [OUTPUT_FILE]
 func KeyGenerateFromSeed(
 	seed string,
@@ -44,6 +46,7 @@ func KeyGenerateFromSeed(
 }
 
 // KeyToPublic - get the public key out of a given private key.
+//
 // STDIN | jcli key to-public [--input=input_file] [OUTPUT_FILE] (input file has priority over STDIN)
 func KeyToPublic(
 	stdin_sk []byte,
@@ -71,6 +74,7 @@ func KeyToPublic(
 }
 
 // KeyToBytes - get the bytes out of a private key. [TODO: encodes also public key but corverts it wrong]
+//
 // STDIN | jcli key to-bytes [OUTPUT_FILE] [INPUT_FILE]
 func KeyToBytes(
 	stdin_key []byte,
@@ -108,7 +112,7 @@ func KeyToBytes(
 }
 
 // KeyFromBytes - retrive a private key from the given bytes. [TODO: UPSTREAM encodes also public key but corverts it wrong]
-// FIXME: UPSTREAM retrive -> retrieve
+//
 // STDIN | jcli key from-bytes --type=<key_type> [INPUT_BYTES] [OUTPUT_FILE]
 func KeyFromBytes(
 	stdin_key []byte,

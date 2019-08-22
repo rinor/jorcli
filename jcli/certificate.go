@@ -6,6 +6,7 @@ import (
 )
 
 // CertificateGetStakePoolID - get the stake pool id from the given stake pool registration certificate.
+//
 // STDIN | jcli certificate get-stake-pool-id [<FILE_INPUT>] [<FILE_OUTPUT>]
 func CertificateGetStakePoolID(
 	stdin_cert []byte,
@@ -46,6 +47,7 @@ func CertificateGetStakePoolID(
 }
 
 // CertificateNewStakeDelegation - build a stake delegation certificate.
+//
 // jcli certificate new stake-delegation <STAKE_POOL_ID> <STAKE_KEY> [output]
 func CertificateNewStakeDelegation(
 	stake_pool_id string,
@@ -73,6 +75,7 @@ func CertificateNewStakeDelegation(
 }
 
 // CertificateNewStakePoolRegistrationSingleOwner - build a stake pool registration certificate with single owner.
+//
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
 //                                              --serial <SERIAL>
@@ -89,6 +92,7 @@ func CertificateNewStakePoolRegistrationSingleOwner(
 }
 
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate.
+//
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
 //                                              --serial <SERIAL>
@@ -132,7 +136,9 @@ func CertificateNewStakePoolRegistration(
 	return ioutil.ReadFile(output_file)
 }
 
-// CertificateSign - Sign certificate, you can call this command multiple time to add multiple signatures if this is required.
+// CertificateSign - Sign certificate,
+// you can call this command multiple time to add multiple signatures if this is required.
+//
 // STDIN | jcli certificate sign <signing-key file> [<input file>] [<output file>]
 func CertificateSign(
 	stdin_cert []byte,
