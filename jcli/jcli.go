@@ -27,14 +27,3 @@ func execStd(stdin []byte, name string, arg ...string) ([]byte, error) {
 	}
 	return stdout.Bytes(), nil
 }
-
-// JormungandrVersion - get jormungandr version.
-// Provided just for convenience.
-func JormungandrVersion() ([]byte, error) {
-	return execStd(nil, "jormungandr", "--version")
-}
-
-// Version - get jcli version.
-func Version() ([]byte, error) {
-	return execStd(nil, "jcli", "--version")
-}
