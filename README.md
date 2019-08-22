@@ -11,6 +11,16 @@ TODO:
 - [x] **debug** - Debug tools for developers
 - [x] **genesis** - Block tooling and helper
 - [x] **key** - Key Generation
-- [ ] **rest** - Send request to node REST API
 - [x] **transaction** - Build and view offline transaction
 - [x] **utils** - Utilities that perform specialized tasks
+- [ ] **rest** - Send request to node REST API
+  - [x] **account** - Account operations
+  - [x] **block** - Block operations
+  - [x] **leaders** - Node leaders operations
+  - [ ] **message** - Message sending
+  - [ ] **node** - Node information
+  - [ ] **settings** - Node settings
+  - [ ] **shutdown** - Shutdown node
+  - [ ] **stake-pools** - Stake pools operations
+  - [ ] **tip** - Blockchain tip information
+  - [ ] **utxo** - UTXO information
