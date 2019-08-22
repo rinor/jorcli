@@ -14,6 +14,7 @@ func AddressInfoFromStdin(
 	if len(address_bech32) == 0 {
 		return nil, fmt.Errorf("%s : EMPTY", "stdin_bech32")
 	}
+
 	return AddressInfo(strings.TrimSuffix(string(address_bech32), "\n"))
 }
 
@@ -43,6 +44,7 @@ func AddressAccountFromStdin(
 	if len(public_key) == 0 {
 		return nil, fmt.Errorf("%s : EMPTY", "public_key")
 	}
+
 	return AddressAccount(strings.TrimSuffix(string(public_key), "\n"), prefix, discrimination)
 }
 
@@ -80,6 +82,7 @@ func AddressSingleFromStdin(
 	if len(public_key) == 0 {
 		return nil, fmt.Errorf("%s : EMPTY", "public_key")
 	}
+
 	return AddressSingle(strings.TrimSuffix(string(public_key), "\n"), group_pk, discrimination)
 }
 

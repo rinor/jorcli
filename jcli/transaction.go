@@ -49,6 +49,7 @@ func TransactionAddInput(
 		arg = append(arg, "--staging", staging_file)
 		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
 	}
+
 	out, err := execStd(stdin_staging, "jcli", arg...)
 	if err != nil || staging_file == "" {
 		return out, err
@@ -367,14 +368,14 @@ func TransactionInfo(
 	fee_certificate uint64,
 	fee_coefficient uint64,
 	fee_constant uint64,
-	output_file string,
+	output_file string, // TODO: UPSTREAM unify with "--output" as other file output commands
 	format string,
-	only_utxos bool,
-	only_accounts bool,
-	only_outputs bool,
-	format_utxo_input string,
-	format_account_input string,
-	format_output string,
+	only_utxos bool, // TODO: UPSTREAM convert to --only-utxos
+	only_accounts bool, // TODO: UPSTREAM convert to --only-accounts
+	only_outputs bool, // TODO: UPSTREAM convert to --only-outputs
+	format_utxo_input string, // TODO: UPSTREAM convert to --format-utxo-input <data>
+	format_account_input string, // TODO: UPSTREAM convert to --format-account-input <data>
+	format_output string, // TODO: UPSTREAM convert to --format-output <data>
 	prefix string,
 ) ([]byte, error) {
 	if len(stdin_staging) == 0 && staging_file == "" {
@@ -400,7 +401,11 @@ func TransactionInfo(
 	if output_file != "" {
 		arg = append(arg, output_file)
 	}
-	arg = append(arg, strconv.FormatBool(only_utxos), strconv.FormatBool(only_accounts), strconv.FormatBool(only_outputs))
+	arg = append(arg,
+		strconv.FormatBool(only_utxos),
+		strconv.FormatBool(only_accounts),
+		strconv.FormatBool(only_outputs),
+	)
 	if format_utxo_input != "" {
 		arg = append(arg, format_utxo_input)
 	}

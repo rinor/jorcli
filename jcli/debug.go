@@ -12,8 +12,8 @@ func DebugMessage(
 	if len(stdin_hex) == 0 && input_file == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_hex", "input_file")
 	}
-	arg := []string{"debug", "message"}
 
+	arg := []string{"debug", "message"}
 	if input_file != "" {
 		arg = append(arg, "--input", input_file)
 		stdin_hex = nil

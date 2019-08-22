@@ -34,13 +34,12 @@ func CertificateGetStakePoolID(
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
 	// convert stdout to output_file
 	if output_file != "" && input_file == "" {
-		if err := ioutil.WriteFile(output_file, out, 0644); err != nil {
+		if err = ioutil.WriteFile(output_file, out, 0644); err != nil {
 			return nil, err
 		}
 	}
-
 	if output_file == "" {
-		return out, err
+		return out, nil
 	}
 
 	return ioutil.ReadFile(output_file)
@@ -91,7 +90,7 @@ func CertificateNewStakePoolRegistrationSingleOwner(
 	return CertificateNewStakePoolRegistration(kes_key, vrf_key, serial, []string{owner}, output_file)
 }
 
-// CertificateNewStakePoolRegistration - build a stake pool registration certificate.
+// CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
@@ -170,13 +169,12 @@ func CertificateSign(
 	// TODO: Remove this once UPSTREAM fixed (--input and --output)
 	// convert stdout to output_file
 	if output_file != "" && input_file == "" {
-		err = ioutil.WriteFile(output_file, out, 0644)
-		if err != nil {
+		if err = ioutil.WriteFile(output_file, out, 0644); err != nil {
 			return nil, err
 		}
 	}
 	if output_file == "" {
-		return out, err
+		return out, nil
 	}
 
 	return ioutil.ReadFile(output_file)

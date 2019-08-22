@@ -14,6 +14,7 @@ func UtilsBech32ConvertFromStdin(
 	if len(stdin_bech32) == 0 {
 		return nil, fmt.Errorf("%s : EMPTY", "stdin_bech32")
 	}
+
 	return UtilsBech32Convert(strings.TrimSuffix(string(stdin_bech32), "\n"), new_prefix)
 }
 
@@ -30,6 +31,7 @@ func UtilsBech32Convert(
 	if new_prefix == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "new_prefix")
 	}
+
 	arg := []string{"utils", "bech32-convert", bech32, new_prefix}
 
 	return execStd(nil, "jcli", arg...)

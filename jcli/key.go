@@ -15,6 +15,7 @@ func KeyGenerate(
 	if key_type == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "key_type")
 	}
+
 	return KeyGenerateFromSeed("", key_type, output_file_sk)
 }
 
@@ -70,6 +71,7 @@ func KeyToPublic(
 	if err != nil || output_file_pk == "" {
 		return out, err
 	}
+
 	return ioutil.ReadFile(output_file_pk)
 }
 
@@ -108,6 +110,7 @@ func KeyToBytes(
 	if err != nil || output_file_bytes == "" {
 		return out, err
 	}
+
 	return ioutil.ReadFile(output_file_bytes)
 }
 
@@ -144,13 +147,13 @@ func KeyFromBytes(
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
 	// convert stdout to output_file
 	if output_file_key != "" && input_file_bytes == "" {
-		if err := ioutil.WriteFile(output_file_key, out, 0644); err != nil {
+		if err = ioutil.WriteFile(output_file_key, out, 0644); err != nil {
 			return nil, err
 		}
 	}
-
 	if output_file_key == "" {
 		return out, nil
 	}
+
 	return ioutil.ReadFile(output_file_key)
 }
