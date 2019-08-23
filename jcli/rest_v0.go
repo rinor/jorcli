@@ -28,7 +28,7 @@ func RestAccount(account_id string, host string, output_format string) ([]byte, 
 
 /* ******************** BLOCK ******************** */
 
-// RestBlock - Get block data
+// RestBlock - Get block data.
 //
 // jcli rest v0 block <block-id> get --host <host>
 func RestBlock(block_id string, host string) ([]byte, error) {
@@ -125,7 +125,7 @@ func RestLeadersLogs(host string, output_format string) ([]byte, error) {
 
 // RestLeadersPost - Register new leader and get its ID.
 //
-// jcli rest v0 leaders post --host <host> [--file <input_file>]
+// STDIN | jcli rest v0 leaders post --host <host> [--file <input_file>]
 func RestLeadersPost(stdin_sk []byte, host string, input_file_sk string) ([]byte, error) {
 	if len(stdin_sk) == 0 && input_file_sk == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_sk", "input_file_sk")
@@ -145,14 +145,142 @@ func RestLeadersPost(stdin_sk []byte, host string, input_file_sk string) ([]byte
 
 /* ******************** MESSAGE ******************** */
 
+// RestMessageLogs - get the node's logs on the message pool.
+// This will provide information on pending transaction, rejected transaction
+// and or when a transaction has been added in a block
+//
+// jcli rest v0 message logs --host <host> [--output-format <format>]
+func RestMessageLogs(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "message", "logs", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
+
+// RestMessagePost - Post message and prints id for posted message.
+//
+// STDIN | jcli rest v0 message post --host <host> [--file <input_file>]
+func RestMessagePost(stdin_msg []byte, host string, input_file_msg string) ([]byte, error) {
+	if len(stdin_msg) == 0 && input_file_msg == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_msg", "input_file_msg")
+	}
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "message", "post", "--host", host}
+	if input_file_msg != "" {
+		arg = append(arg, "--file", input_file_msg)
+		stdin_msg = nil
+	}
+
+	return execStd(stdin_msg, "jcli", arg...)
+}
+
 /* ******************** NODE ******************** */
+
+// RestNodeStats - Get node information.
+//
+// jcli rest v0 node stats get --host <host> --output-format <format>
+func RestNodeStats(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "node", "stats", "get", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
 
 /* ******************** SETTINGS ******************** */
 
+// RestSettings - Get node settings.
+//
+// jcli rest v0 settings get --host <host> --output-format <format>
+func RestSettings(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "settings", "get", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
+
 /* ******************** SHUTDOWN ******************** */
+
+// RestShutdown - Shutdown node.
+//
+// jcli rest v0 shutdown get --host <host>
+func RestShutdown(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "shutdown", "get", "--host", host}
+
+	return execStd(nil, "jcli", arg...)
+}
 
 /* ******************** STAKE-POOLS ******************** */
 
+// RestStakePools - Get stake pool IDs
+//
+// jcli rest v0 stake-pools get --host <host> --output-format <format>
+func RestStakePools(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "stake-pools", "get", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
+
 /* ******************** TIP ******************** */
 
+// RestTip - Get tip.
+//
+// jcli rest v0 tip get --host <host>
+func RestTip(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "top", "get", "--host", host}
+
+	return execStd(nil, "jcli", arg...)
+}
+
 /* ******************** UTXO ******************** */
+
+// RestUTxOs - Get all UTXOs.
+//
+// jcli rest v0 utxo get --host <host> --output-format <format>
+func RestUTxOs(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "utxo", "get", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
