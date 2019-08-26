@@ -234,6 +234,24 @@ func RestShutdown(host string, output_format string) ([]byte, error) {
 	return execStd(nil, "jcli", arg...)
 }
 
+/* ******************** STAKE ******************** */
+
+// RestStake - Get stake distribution
+//
+// jcli rest v0 stake get --host <host> --output-format <format>
+func RestStake(host string, output_format string) ([]byte, error) {
+	if host == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "stake", "get", "--host", host}
+	if output_format != "" {
+		arg = append(arg, "--output-format", output_format)
+	}
+
+	return execStd(nil, "jcli", arg...)
+}
+
 /* ******************** STAKE-POOLS ******************** */
 
 // RestStakePools - Get stake pool IDs
