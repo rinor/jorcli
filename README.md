@@ -1,9 +1,12 @@
 # jorcli
-[Jormungandr](https://github.com/input-output-hk/jormungandr) jcli wrapper in [Go](https://golang.org/) - (**experimental**)
+[Jormungandr](https://github.com/input-output-hk/jormungandr) binary wrapper in [Go](https://golang.org/) - (**experimental**)
 
 Right now this is just a *Proof Of Concept* and may or may not become a *Prototype*.
 
-The idea is to build a simple and small wrapper around *JCLI* binary.
+The idea is to build:
+ - [ ] a simple and small wrapper around *JCLI* binary.
+ - [ ] a simple and small wrapper around *JORMUNGANDR* binary. (*maybe*)
+ - [ ] *JORMUNGANDR* rest API. (*maybe*)
 
 **DONE** *jcli* :
 - [x] **address** - Address tooling and helper
@@ -22,7 +25,10 @@ The idea is to build a simple and small wrapper around *JCLI* binary.
   - [x] **settings** - Node settings
   - [x] **shutdown** - Shutdown node
   - [x] **stake-pools** - Stake pools operations
+  - [x] **stake** - Gets stake distribution
   - [x] **tip** - Blockchain tip information
   - [x] **utxo** - UTXO information
 
-**TODO**:
+**TODO** *jormungandr* :
+
+**TODO** *jormungandr* rest API:
