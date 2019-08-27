@@ -179,3 +179,23 @@ func CertificateSign(
 
 	return ioutil.ReadFile(output_file)
 }
+
+// CertificatePrint - Print certificate.
+//
+// STDIN | jcli certificate print [<input file>]
+func CertificatePrint(
+	stdin_cert []byte,
+	input_file string,
+) ([]byte, error) {
+	if len(stdin_cert) == 0 && input_file == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_cert", "input_file")
+	}
+
+	arg := []string{"certificate", "print"}
+	if input_file != "" {
+		arg = append(arg, input_file) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdin_cert = nil              // reset STDIN - not needed since input_file has priority over STDIN
+	}
+
+	return execStd(stdin_cert, "jcli", arg...)
+}
