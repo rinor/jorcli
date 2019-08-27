@@ -3,6 +3,7 @@ package jcli
 import (
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 // CertificateGetStakePoolID - get the stake pool id from the given stake pool registration certificate.
@@ -77,29 +78,37 @@ func CertificateNewStakeDelegation(
 //
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
+//                                              --start-validity <SECONDS-SINCE-START>
+//                                              --management-threshold <THRESHOLD>
 //                                              --serial <SERIAL>
 //                                              [--owner <PUBLIC_KEY>]
 //                                              [output]
 func CertificateNewStakePoolRegistrationSingleOwner(
 	kes_key string,
 	vrf_key string,
+	start_validity uint64,
+	management_threshold uint8,
 	serial string,
 	owner string,
 	output_file string,
 ) ([]byte, error) {
-	return CertificateNewStakePoolRegistration(kes_key, vrf_key, serial, []string{owner}, output_file)
+	return CertificateNewStakePoolRegistration(kes_key, vrf_key, start_validity, management_threshold, serial, []string{owner}, output_file)
 }
 
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
+//                                              --start-validity <SECONDS-SINCE-START>
+//                                              --management-threshold <THRESHOLD>
 //                                              --serial <SERIAL>
 //                                              [--owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...]
 //                                              [output]
 func CertificateNewStakePoolRegistration(
 	kes_key string,
 	vrf_key string,
+	start_validity uint64,
+	management_threshold uint8,
 	serial string,
 	owner []string,
 	output_file string,
@@ -117,6 +126,8 @@ func CertificateNewStakePoolRegistration(
 	arg := []string{
 		"certificate", "new", "stake-pool-registration",
 		"--kes-key", kes_key,
+		"--start-validity", strconv.FormatUint(start_validity, 10),
+		"--management-threshold", strconv.FormatUint(uint64(management_threshold), 10),
 		"--vrf-key", vrf_key,
 		"--serial", serial,
 	}
