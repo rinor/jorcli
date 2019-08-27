@@ -1,4 +1,7 @@
 # jorcli
+
+[![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](LICENSE)
+
 [Jormungandr](https://github.com/input-output-hk/jormungandr) binary wrapper in [Go](https://golang.org/) - (**experimental**)
 
 Right now this is just a *Proof Of Concept* and may or may not become a *Prototype*.
@@ -15,6 +18,7 @@ The idea is to build:
 - [x] **genesis** - Block tooling and helper
 - [x] **key** - Key Generation
 - [x] **transaction** - Build and view offline transaction
+  - [ ] **data-for-witness** - Sign data hash [(not yet available on jcli)](https://github.com/input-output-hk/jormungandr/issues/674)
 - [x] **utils** - Utilities that perform specialized tasks
 - [x] **rest** - Send request to node REST API
   - [x] **account** - Account operations
@@ -27,7 +31,7 @@ The idea is to build:
   - [x] **stake-pools** - Stake pools operations
   - [x] **stake** - Gets stake distribution
   - [x] **tip** - Blockchain tip information
-  - [x] **utxo** - UTXO information
+  - [x] **utxo** - UTxO information
 
 **TODO** *jormungandr* :
 

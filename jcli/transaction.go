@@ -424,33 +424,32 @@ func TransactionInfo(
 	return ioutil.ReadFile(output_file)
 }
 
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+// This is not yet implemented in jcli                             //
+// Check https://github.com/input-output-hk/jormungandr/issues/674 //
+/////////////////////////////////////////////////////////////////////
 
-// // This is not yet implemented check https://github.com/input-output-hk/jormungandr/issues/674
+// TransactionDataForWitness - Sign data hash
+//
+// STDIN | jcli transaction data-for-witness [--staging <staging-file>]
+func TransactionDataForWitness(
+	stdin_staging []byte,
+	staging_file string,
+) ([]byte, error) {
+	if len(stdin_staging) == 0 && staging_file == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	}
 
-// // TransactionDataForWitness -
-// //
-// // STDIN | jcli transaction data-for-witness [--staging <staging-file>]
-// func TransactionDataForWitness(
-// 	stdin_staging []byte,
-// 	staging_file string,
-// ) ([]byte, error) {
-// 	if len(stdin_staging) == 0 && staging_file == "" {
-// 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
-// 	}
+	arg := []string{"transaction", "data-for-witness"}
+	if staging_file != "" {
+		arg = append(arg, "--staging", staging_file)
+		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	}
 
-// 	arg := []string{"transaction", "data-for-witness"}
-// 	if staging_file != "" {
-// 		arg = append(arg, "--staging", staging_file)
-// 		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
-// 	}
+	out, err := execStd(stdin_staging, "jcli", arg...)
+	if err != nil || staging_file == "" {
+		return out, err
+	}
 
-// 	out, err := execStd(stdin_staging, "jcli", arg...)
-// 	if err != nil || staging_file == "" {
-// 		return out, err
-// 	}
-
-// 	return ioutil.ReadFile(staging_file)
-// }
-
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	return ioutil.ReadFile(staging_file)
+}
