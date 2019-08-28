@@ -1,6 +1,8 @@
 # jorcli
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/rinor/jorcli)](https://goreportcard.com/report/github.com/rinor/jorcli)
 [![GoDoc](https://godoc.org/github.com/rinor/jorcli?status.svg)](https://godoc.org/github.com/rinor/jorcli)
+[![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/emersion/stability-badges#experimental)
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](LICENSE)
 
 [Jormungandr](https://github.com/input-output-hk/jormungandr) binary wrapper in [Go](https://golang.org/) - (**experimental**)
