@@ -88,19 +88,21 @@ func CertificateNewStakePoolRegistrationSingleOwner(
 	vrf_key string,
 	start_validity uint64,
 	management_threshold uint8,
-	serial string,
+	serial uint64,
 	owner string,
 	output_file string,
 ) ([]byte, error) {
 	return CertificateNewStakePoolRegistration(kes_key, vrf_key, start_validity, management_threshold, serial, []string{owner}, output_file)
 }
 
+// BUG(rinor): The certificate 'serial' is declared as uint64 when actually it should be uint128.
+
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //
 // jcli certificate new stake-pool-registration --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
 //                                              --start-validity <SECONDS-SINCE-START>
-//                                              --management-threshold <THRESHOLD>
+//                                              --management-threshold <THRESHOLD> (<= #owners and > 0)
 //                                              --serial <SERIAL>
 //                                              [--owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...]
 //                                              [output]
@@ -109,7 +111,7 @@ func CertificateNewStakePoolRegistration(
 	vrf_key string,
 	start_validity uint64,
 	management_threshold uint8,
-	serial string,
+	serial uint64,
 	owner []string,
 	output_file string,
 ) ([]byte, error) {
@@ -119,17 +121,17 @@ func CertificateNewStakePoolRegistration(
 	if vrf_key == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "vrf_key")
 	}
-	if serial == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "serial")
-	}
+
+	// TODO: Implement checks after confirm:
+	//       management_threshold > 0 && management_threshold <= len(owner)
 
 	arg := []string{
 		"certificate", "new", "stake-pool-registration",
 		"--kes-key", kes_key,
+		"--vrf-key", vrf_key,
 		"--start-validity", strconv.FormatUint(start_validity, 10),
 		"--management-threshold", strconv.FormatUint(uint64(management_threshold), 10),
-		"--vrf-key", vrf_key,
-		"--serial", serial,
+		"--serial", strconv.FormatUint(serial, 10),
 	}
 	for _, owner_pk := range owner {
 		arg = append(arg, "--owner", owner_pk) // FIXME: should check data validity!
