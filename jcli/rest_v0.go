@@ -10,7 +10,11 @@ import (
 // RestAccount - Get account state.
 //
 // jcli rest v0 account get <account-id> --host <host> [--output-format <format>]
-func RestAccount(account_id string, host string, output_format string) ([]byte, error) {
+func RestAccount(
+	account_id string,
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if account_id == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "account_id")
 	}
@@ -31,7 +35,10 @@ func RestAccount(account_id string, host string, output_format string) ([]byte, 
 // RestBlock - Get block data.
 //
 // jcli rest v0 block <block-id> get --host <host>
-func RestBlock(block_id string, host string) ([]byte, error) {
+func RestBlock(
+	block_id string,
+	host string,
+) ([]byte, error) {
 	if block_id == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "block_id")
 	}
@@ -47,7 +54,11 @@ func RestBlock(block_id string, host string) ([]byte, error) {
 // RestBlockNextID - Get block descendant ID.
 //
 // jcli rest v0 block <block-id> next-id get [--count <count>] --host <host>
-func RestBlockNextID(block_id string, count_ids uint, host string) ([]byte, error) {
+func RestBlockNextID(
+	block_id string,
+	count_ids uint,
+	host string,
+) ([]byte, error) {
 	if block_id == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "block_id")
 	}
@@ -77,7 +88,10 @@ func RestBlockNextID(block_id string, count_ids uint, host string) ([]byte, erro
 // RestLeadersDelete - Delete leader.
 //
 // jcli rest v0 leaders delete <id> --host <host>
-func RestLeadersDelete(leader_id uint32, host string) ([]byte, error) {
+func RestLeadersDelete(
+	leader_id uint32,
+	host string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -94,7 +108,10 @@ func RestLeadersDelete(leader_id uint32, host string) ([]byte, error) {
 // RestLeaders - Get list of leader IDs.
 //
 // jcli rest v0 leaders get --host <host> [--output-format <format>]
-func RestLeaders(host string, output_format string) ([]byte, error) {
+func RestLeaders(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -110,7 +127,10 @@ func RestLeaders(host string, output_format string) ([]byte, error) {
 // RestLeadersLogs - Get leadership logs.
 //
 // jcli rest v0 leaders logs get --host <host> [--output-format <format>]
-func RestLeadersLogs(host string, output_format string) ([]byte, error) {
+func RestLeadersLogs(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -126,7 +146,12 @@ func RestLeadersLogs(host string, output_format string) ([]byte, error) {
 // RestLeadersPost - Register new leader and get its ID.
 //
 // STDIN | jcli rest v0 leaders post --host <host> [--file <input_file>]
-func RestLeadersPost(stdin_sk []byte, host string, input_file_sk string) ([]byte, error) {
+func RestLeadersPost(
+	stdin_sk []byte,
+	host string,
+	input_file_sk string,
+) ([]byte, error) {
+
 	if len(stdin_sk) == 0 && input_file_sk == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_sk", "input_file_sk")
 	}
@@ -150,7 +175,10 @@ func RestLeadersPost(stdin_sk []byte, host string, input_file_sk string) ([]byte
 // and or when a transaction has been added in a block
 //
 // jcli rest v0 message logs --host <host> [--output-format <format>]
-func RestMessageLogs(host string, output_format string) ([]byte, error) {
+func RestMessageLogs(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -166,7 +194,11 @@ func RestMessageLogs(host string, output_format string) ([]byte, error) {
 // RestMessagePost - Post message and prints id for posted message.
 //
 // STDIN | jcli rest v0 message post --host <host> [--file <input_file>]
-func RestMessagePost(stdin_msg []byte, host string, input_file_msg string) ([]byte, error) {
+func RestMessagePost(
+	stdin_msg []byte,
+	host string,
+	input_file_msg string,
+) ([]byte, error) {
 	if len(stdin_msg) == 0 && input_file_msg == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_msg", "input_file_msg")
 	}
@@ -188,7 +220,10 @@ func RestMessagePost(stdin_msg []byte, host string, input_file_msg string) ([]by
 // RestNodeStats - Get node information.
 //
 // jcli rest v0 node stats get --host <host> --output-format <format>
-func RestNodeStats(host string, output_format string) ([]byte, error) {
+func RestNodeStats(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -206,7 +241,10 @@ func RestNodeStats(host string, output_format string) ([]byte, error) {
 // RestSettings - Get node settings.
 //
 // jcli rest v0 settings get --host <host> --output-format <format>
-func RestSettings(host string, output_format string) ([]byte, error) {
+func RestSettings(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -224,7 +262,10 @@ func RestSettings(host string, output_format string) ([]byte, error) {
 // RestShutdown - Shutdown node.
 //
 // jcli rest v0 shutdown get --host <host>
-func RestShutdown(host string, output_format string) ([]byte, error) {
+func RestShutdown(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -239,7 +280,10 @@ func RestShutdown(host string, output_format string) ([]byte, error) {
 // RestStake - Get stake distribution
 //
 // jcli rest v0 stake get --host <host> --output-format <format>
-func RestStake(host string, output_format string) ([]byte, error) {
+func RestStake(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -257,7 +301,10 @@ func RestStake(host string, output_format string) ([]byte, error) {
 // RestStakePools - Get stake pool IDs
 //
 // jcli rest v0 stake-pools get --host <host> --output-format <format>
-func RestStakePools(host string, output_format string) ([]byte, error) {
+func RestStakePools(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -275,7 +322,10 @@ func RestStakePools(host string, output_format string) ([]byte, error) {
 // RestTip - Get tip.
 //
 // jcli rest v0 tip get --host <host>
-func RestTip(host string, output_format string) ([]byte, error) {
+func RestTip(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
@@ -290,7 +340,10 @@ func RestTip(host string, output_format string) ([]byte, error) {
 // RestUTxOs - Get all UTXOs.
 //
 // jcli rest v0 utxo get --host <host> --output-format <format>
-func RestUTxOs(host string, output_format string) ([]byte, error) {
+func RestUTxOs(
+	host string,
+	output_format string,
+) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
