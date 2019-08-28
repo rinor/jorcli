@@ -76,22 +76,24 @@ func AddressAccount(
 // jcli does not use STDIN for this function, but keep it for convenience
 func AddressSingleFromStdin(
 	public_key []byte,
-	group_pk string,
+	group_public_key string,
+	prefix string,
 	discrimination string,
 ) ([]byte, error) {
 	if len(public_key) == 0 {
 		return nil, fmt.Errorf("%s : EMPTY", "public_key")
 	}
 
-	return AddressSingle(strings.TrimSuffix(string(public_key), "\n"), group_pk, discrimination)
+	return AddressSingle(strings.TrimSuffix(string(public_key), "\n"), group_public_key, prefix, discrimination)
 }
 
 // AddressSingle - create an address from the single public key. This address does not have delegation.
 //
-// jcli address single <PUBLIC_KEY> [DELEGATION_KEY] [--testing]
+// jcli address single <PUBLIC_KEY> [DELEGATION_KEY] [--prefix <address_prefix>] [--testing]
 func AddressSingle(
 	public_key string,
 	group_public_key string,
+	prefix string,
 	discrimination string,
 ) ([]byte, error) {
 	if public_key == "" {
@@ -101,6 +103,9 @@ func AddressSingle(
 	arg := []string{"address", "single", public_key}
 	if group_public_key != "" {
 		arg = append(arg, group_public_key)
+	}
+	if prefix != "" {
+		arg = append(arg, "--prefix", prefix)
 	}
 	if discrimination != "" {
 		arg = append(arg, "--"+discrimination)
