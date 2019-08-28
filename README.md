@@ -1,5 +1,6 @@
 # jorcli
 
+[![GoDoc](https://godoc.org/github.com/rinor/jorcli?status.svg)](https://godoc.org/github.com/rinor/jorcli)
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](LICENSE)
 
 [Jormungandr](https://github.com/input-output-hk/jormungandr) binary wrapper in [Go](https://golang.org/) - (**experimental**)
@@ -7,9 +8,10 @@
 Right now this is just a *Proof Of Concept* and may or may not become a *Prototype*.
 
 The idea is to build:
- - [ ] a simple and small wrapper around *JCLI* binary.
- - [ ] a simple and small wrapper around *JORMUNGANDR* binary. (*maybe*)
- - [ ] *JORMUNGANDR* rest API. (*maybe*)
+ - [ ] a simple and small wrapper around *jcli* binary. (*WIP*)
+ - [ ] a simple and small wrapper around *jormungandr* binary. (*maybe*)
+ - [ ] *jormungandr* rest API. (*maybe*)
+ - [ ] *jormungandr explorer node* graphql API. (*maybe*)
 
 **DONE** *jcli* :
 - [x] **address** - Address tooling and helper
@@ -36,3 +38,5 @@ The idea is to build:
 **TODO** *jormungandr* :
 
 **TODO** *jormungandr* rest API:
+
+**TODO** *jormungandr explorer node* graphql API:
