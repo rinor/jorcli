@@ -45,7 +45,6 @@ func TestGenesisEncode_file(t *testing.T) {
 	)
 
 	genesisBlock0Bin, err := jcli.GenesisEncode(block0Txt, inputFile, outputFile)
-
 	ok(t, err)
 	equals(t, expectedBlock0Bin, genesisBlock0Bin) // Prod: bytes.Equal(expectedBlock0Bin, genesisBlock0Bin)
 }
@@ -59,7 +58,6 @@ func TestGenesisEncode_stdin(t *testing.T) {
 	)
 
 	genesisBlock0Bin, err := jcli.GenesisEncode(block0Txt, inputFile, outputFile)
-
 	ok(t, err)
 	equals(t, expectedBlock0Bin, genesisBlock0Bin) // Prod: bytes.Equal(expectedBlock0Bin, genesisBlock0Bin)
 }

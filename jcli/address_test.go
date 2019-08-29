@@ -2,7 +2,6 @@ package jcli_test
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/rinor/jorcli/jcli"
 )
@@ -17,9 +16,9 @@ func ExampleAddressAccount() {
 	ac, err := jcli.AddressAccount(publicKey, addressPrefix, discrimination)
 
 	if err != nil {
-		fmt.Printf("AddressAccount: %s - %s", err, ac)
+		fmt.Printf("AddressAccount: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
+		fmt.Printf("%s", string(ac))
 	}
 	// Output:
 	//
@@ -36,9 +35,9 @@ func ExampleAddressAccountFromStdin() {
 	ac, err := jcli.AddressAccountFromStdin(publicKey, addressPrefix, discrimination)
 
 	if err != nil {
-		fmt.Printf("AddressAccountFromStdin: %s - %s", err, ac)
+		fmt.Printf("AddressAccountFromStdin: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
+		fmt.Printf("%s", string(ac))
 	}
 	// Output:
 	//
@@ -53,9 +52,9 @@ func ExampleAddressInfo() {
 	adi, err := jcli.AddressInfo(addressBech32)
 
 	if err != nil {
-		fmt.Printf("AddressInfo: %s - %s", err, adi)
+		fmt.Printf("AddressInfo: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
+		fmt.Printf("%s", string(adi))
 	}
 	// Output:
 	//
@@ -71,9 +70,9 @@ func ExampleAddressInfo_single() {
 	adi, err := jcli.AddressInfo(addressBech32)
 
 	if err != nil {
-		fmt.Printf("AddressInfo: %s - %s", err, adi)
+		fmt.Printf("AddressInfo: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
+		fmt.Printf("%s", string(adi))
 	}
 	// Output:
 	//
@@ -90,9 +89,9 @@ func ExampleAddressInfoFromStdin() {
 	adi, err := jcli.AddressInfoFromStdin(addressBech32)
 
 	if err != nil {
-		fmt.Printf("AddressInfoFromStdin: %s - %s", err, adi)
+		fmt.Printf("AddressInfoFromStdin: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
+		fmt.Printf("%s", string(adi))
 	}
 	// Output:
 	//
@@ -111,9 +110,9 @@ func ExampleAddressSingle() {
 	ac, err := jcli.AddressSingle(publicKey, groupPublicKey, addressPrefix, discrimination)
 
 	if err != nil {
-		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
+		fmt.Printf("AddressSingleFromStdin: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
+		fmt.Printf("%s", string(ac))
 	}
 	// Output:
 	//
@@ -131,9 +130,9 @@ func ExampleAddressSingleFromStdin() {
 	ac, err := jcli.AddressSingleFromStdin(publicKey, groupPublicKey, addressPrefix, discrimination)
 
 	if err != nil {
-		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
+		fmt.Printf("AddressSingleFromStdin: %s", err)
 	} else {
-		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
+		fmt.Printf("%s", string(ac))
 	}
 	// Output:
 	//
