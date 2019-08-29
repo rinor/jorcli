@@ -1,5 +1,6 @@
 # jorcli
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fb345d4e21584e38b13695438c733c79)](https://www.codacy.com/app/rinor/jorcli?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rinor/jorcli&amp;utm_campaign=Badge_Grade)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rinor/jorcli)](https://goreportcard.com/report/github.com/rinor/jorcli)
 [![GoDoc](https://godoc.org/github.com/rinor/jorcli?status.svg)](https://godoc.org/github.com/rinor/jorcli)
 [![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/emersion/stability-badges#experimental)
