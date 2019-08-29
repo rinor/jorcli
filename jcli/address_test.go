@@ -8,46 +8,55 @@ import (
 )
 
 func ExampleAddressAccount() {
-	publicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	addressPrefix := "ta"
-	discrimination := "testing"
+	var (
+		publicKey      = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+		addressPrefix  = "ta"
+		discrimination = "testing"
+	)
 
 	ac, err := jcli.AddressAccount(publicKey, addressPrefix, discrimination)
+
 	if err != nil {
 		fmt.Printf("AddressAccount: %s - %s", err, ac)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	// Output:
 	//
 	// ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap
 }
 
 func ExampleAddressAccountFromStdin() {
-	publicKey := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
-	addressPrefix := "ta"
-	discrimination := "testing"
+	var (
+		publicKey      = []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
+		addressPrefix  = "ta"
+		discrimination = "testing"
+	)
 
 	ac, err := jcli.AddressAccountFromStdin(publicKey, addressPrefix, discrimination)
+
 	if err != nil {
 		fmt.Printf("AddressAccountFromStdin: %s - %s", err, ac)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	// Output:
 	//
 	// ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap
 }
 
 func ExampleAddressInfo() {
-	addressBech32 := "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
+	var (
+		addressBech32 = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
+	)
 
 	adi, err := jcli.AddressInfo(addressBech32)
+
 	if err != nil {
 		fmt.Printf("AddressInfo: %s - %s", err, adi)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	// Output:
 	//
 	// discrimination: testing
@@ -55,14 +64,17 @@ func ExampleAddressInfo() {
 }
 
 func ExampleAddressInfo_single() {
-	addressBech32 := "ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm"
+	var (
+		addressBech32 = "ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm"
+	)
 
 	adi, err := jcli.AddressInfo(addressBech32)
+
 	if err != nil {
 		fmt.Printf("AddressInfo: %s - %s", err, adi)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	// Output:
 	//
 	// discrimination: testing
@@ -71,14 +83,17 @@ func ExampleAddressInfo_single() {
 }
 
 func ExampleAddressInfoFromStdin() {
-	addressBech32 := []byte("ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap")
+	var (
+		addressBech32 = []byte("ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap")
+	)
 
 	adi, err := jcli.AddressInfoFromStdin(addressBech32)
+
 	if err != nil {
 		fmt.Printf("AddressInfoFromStdin: %s - %s", err, adi)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(adi), "\n"))
 	// Output:
 	//
 	// discrimination: testing
@@ -86,34 +101,40 @@ func ExampleAddressInfoFromStdin() {
 }
 
 func ExampleAddressSingle() {
-	publicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	groupPublicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	addressPrefix := "ta"
-	discrimination := "testing"
+	var (
+		publicKey      = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+		groupPublicKey = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+		addressPrefix  = "ta"
+		discrimination = "testing"
+	)
 
 	ac, err := jcli.AddressSingle(publicKey, groupPublicKey, addressPrefix, discrimination)
+
 	if err != nil {
 		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	// Output:
 	//
 	// ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm
 }
 
 func ExampleAddressSingleFromStdin() {
-	publicKey := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
-	groupPublicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	addressPrefix := "ta"
-	discrimination := "testing"
+	var (
+		publicKey      = []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
+		groupPublicKey = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+		addressPrefix  = "ta"
+		discrimination = "testing"
+	)
 
 	ac, err := jcli.AddressSingleFromStdin(publicKey, groupPublicKey, addressPrefix, discrimination)
+
 	if err != nil {
 		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
-		return
+	} else {
+		fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	}
-	fmt.Printf("%s", strings.TrimSuffix(string(ac), "\n"))
 	// Output:
 	//
 	// ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm
