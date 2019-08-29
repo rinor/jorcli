@@ -1,0 +1,85 @@
+# The Blockchain Configuration defines the settings of the blockchain.
+blockchain_configuration:
+
+  # The block0-date defines the date the blockchain starts
+  # expected value in seconds since UNIX_EPOCH
+  #
+  # By default the value will be the current date and time. Or you can
+  # add a specific time by entering the number of seconds since UNIX
+  # Epoch
+  block0_date: 1567072873
+
+  # This is the type of discrimination of the blockchain
+  # of this blockchain is meant for production then
+  # use 'production' instead.
+  #
+  # otherwise leave as this
+  discrimination: test
+
+  # The initial consensus version:
+  #
+  # * BFT consensus: bft
+  # * Genesis Praos consensus: genesis
+  block0_consensus: bft
+
+  # Number of slots in each epoch.
+  #
+  # default value is 720
+  slots_per_epoch: 720
+
+  # The slot duration, in seconds, is the time between the creation
+  # of 2 blocks
+  #
+  # default value is 5s
+  slot_duration: 5s
+
+  # A list of Ed25519 PublicKey that represents the
+  # BFT leaders encoded as bech32. The order in the list matters.
+  consensus_leader_ids:
+    - ed25519_pk1whjpwnw43q39fqyx79asxl8vkrhgv5tt05f5qz5qepttf0d00lssltq7fg
+    - ed25519_pk1vvwp2s0n5jl5f4xcjurp2e92sj2awehkrydrlas4vgqr7xzt33jsadha32
+
+  # Genesis praos parameter D
+  #
+  # default value: 0.220
+  bft_slots_ratio: 0.220
+
+  # Genesis praos active slot coefficient
+  # Determines minimum stake required to try becoming slot leader, must be in range (0,1]
+  #
+  # default value: 0.100
+  consensus_genesis_praos_active_slot_coeff: 0.100
+
+  # The fee calculations settings
+  #
+  # total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
+  linear_fees:
+    # this is the minimum value to pay for every transaction
+    constant: 2
+    # the additional fee to pay for every inputs and outputs
+    coefficient: 1
+    # the additional fee to pay if the transaction embeds a certificate
+    certificate: 4
+
+  # The speed to update the KES Key in seconds
+  #
+  # default value: 12h
+  kes_update_speed: 12h
+
+# Initial state of the ledger. Each item is applied in order of this list
+initial:
+  # Initial deposits present in the blockchain
+  - fund:
+      # UTxO addresses or account
+      - address: ca1svs0mwkfky9htpam576mc93mee5709khre8dgnqslj6y3p5f77s5gpgv02w
+        value: 10000
+
+  # Initial certificates
+  #- cert: ..
+
+  # Initial deposits present in the blockchain
+  #- legacy_fund:
+  #    # Legacy Cardano address
+  #    - address: 48mDfYyQn21iyEPzCfkATEHTwZBcZJqXhRJezmswfvc6Ne89u1axXsiazmgd7SwT8VbafbVnCvyXhBSMhSkPiCezMkqHC4dmxRahRC86SknFu6JF6hwSg8
+  #      value: 123
+

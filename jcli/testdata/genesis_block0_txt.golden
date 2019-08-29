@@ -1,0 +1,23 @@
+---
+blockchain_configuration:
+  block0_date: 1567072873
+  discrimination: test
+  block0_consensus: bft
+  consensus_leader_ids:
+    - ed25519_pk1whjpwnw43q39fqyx79asxl8vkrhgv5tt05f5qz5qepttf0d00lssltq7fg
+    - ed25519_pk1vvwp2s0n5jl5f4xcjurp2e92sj2awehkrydrlas4vgqr7xzt33jsadha32
+  linear_fees:
+    constant: 2
+    coefficient: 1
+    certificate: 4
+  slots_per_epoch: 720
+  slot_duration: 5
+  kes_update_speed: 43200
+  consensus_genesis_praos_active_slot_coeff: "0.100"
+  bft_slots_ratio: "0.220"
+  max_number_of_transactions_per_block: ~
+  epoch_stability_depth: ~
+initial:
+  - fund:
+      - address: ca1svs0mwkfky9htpam576mc93mee5709khre8dgnqslj6y3p5f77s5gpgv02w
+        value: 10000
