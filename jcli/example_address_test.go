@@ -8,11 +8,11 @@ import (
 )
 
 func ExampleAddressAccount() {
-	public_key := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	address_prefix := "ta"
+	publicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+	addressPrefix := "ta"
 	discrimination := "testing"
 
-	ac, err := jcli.AddressAccount(public_key, address_prefix, discrimination)
+	ac, err := jcli.AddressAccount(publicKey, addressPrefix, discrimination)
 	if err != nil {
 		fmt.Printf("AddressAccount: %s - %s", err, ac)
 		return
@@ -24,11 +24,11 @@ func ExampleAddressAccount() {
 }
 
 func ExampleAddressAccountFromStdin() {
-	public_key := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
-	address_prefix := "ta"
+	publicKey := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
+	addressPrefix := "ta"
 	discrimination := "testing"
 
-	ac, err := jcli.AddressAccountFromStdin(public_key, address_prefix, discrimination)
+	ac, err := jcli.AddressAccountFromStdin(publicKey, addressPrefix, discrimination)
 	if err != nil {
 		fmt.Printf("AddressAccountFromStdin: %s - %s", err, ac)
 		return
@@ -40,9 +40,9 @@ func ExampleAddressAccountFromStdin() {
 }
 
 func ExampleAddressInfo() {
-	address_bech32 := "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
+	addressBech32 := "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
 
-	adi, err := jcli.AddressInfo(address_bech32)
+	adi, err := jcli.AddressInfo(addressBech32)
 	if err != nil {
 		fmt.Printf("AddressInfo: %s - %s", err, adi)
 		return
@@ -55,9 +55,9 @@ func ExampleAddressInfo() {
 }
 
 func ExampleAddressInfo_single() {
-	address_bech32 := "ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm"
+	addressBech32 := "ta1s3uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4u7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467x80kcm"
 
-	adi, err := jcli.AddressInfo(address_bech32)
+	adi, err := jcli.AddressInfo(addressBech32)
 	if err != nil {
 		fmt.Printf("AddressInfo: %s - %s", err, adi)
 		return
@@ -71,9 +71,9 @@ func ExampleAddressInfo_single() {
 }
 
 func ExampleAddressInfoFromStdin() {
-	address_bech32 := []byte("ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap")
+	addressBech32 := []byte("ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap")
 
-	adi, err := jcli.AddressInfoFromStdin(address_bech32)
+	adi, err := jcli.AddressInfoFromStdin(addressBech32)
 	if err != nil {
 		fmt.Printf("AddressInfoFromStdin: %s - %s", err, adi)
 		return
@@ -86,12 +86,12 @@ func ExampleAddressInfoFromStdin() {
 }
 
 func ExampleAddressSingle() {
-	public_key := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	group_public_key := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	address_prefix := "ta"
+	publicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+	groupPublicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+	addressPrefix := "ta"
 	discrimination := "testing"
 
-	ac, err := jcli.AddressSingle(public_key, group_public_key, address_prefix, discrimination)
+	ac, err := jcli.AddressSingle(publicKey, groupPublicKey, addressPrefix, discrimination)
 	if err != nil {
 		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
 		return
@@ -103,12 +103,12 @@ func ExampleAddressSingle() {
 }
 
 func ExampleAddressSingleFromStdin() {
-	public_key := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
-	group_public_key := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
-	address_prefix := "ta"
+	publicKey := []byte("ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v")
+	groupPublicKey := "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"
+	addressPrefix := "ta"
 	discrimination := "testing"
 
-	ac, err := jcli.AddressSingleFromStdin(public_key, group_public_key, address_prefix, discrimination)
+	ac, err := jcli.AddressSingleFromStdin(publicKey, groupPublicKey, addressPrefix, discrimination)
 	if err != nil {
 		fmt.Printf("AddressSingleFromStdin: %s - %s", err, ac)
 		return
