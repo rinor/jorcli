@@ -10,141 +10,154 @@ import (
 //
 // STDIN | jcli transaction new [--staging <staging-file>]
 func TransactionNew(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 ) ([]byte, error) {
 	arg := []string{"transaction", "new"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionAddInput - add UTxO input to the transaction.
 //
 // STDIN | jcli transaction add-input <transaction-id> <index> <value> [--staging <staging-file>]
 func TransactionAddInput(
-	stdin_staging []byte,
-	staging_file string,
-	fragment_id string,
-	output_index uint8,
+	stdinStaging []byte,
+	stagingFile string,
+	fragmentID string,
+	outputIndex uint8,
 	value uint64,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
-	if fragment_id == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "fragment_id")
-	}
-
-	arg := []string{"transaction", "add-input", fragment_id, strconv.FormatUint(uint64(output_index), 10), strconv.FormatUint(value, 10)}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if fragmentID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "fragmentID")
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	arg := []string{
+		"transaction", "add-input",
+		fragmentID,
+		strconv.FormatUint(uint64(outputIndex), 10),
+		strconv.FormatUint(value, 10),
+	}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+	}
+
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionAddAccount - add Account input to the transaction.
 //
 // STDIN | jcli transaction add-account <account> <value> [--staging <staging-file>]
 func TransactionAddAccount(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 	account string,
 	value uint64,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 	if account == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "account")
 	}
 
-	arg := []string{"transaction", "add-account", account, strconv.FormatUint(value, 10)}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	arg := []string{
+		"transaction", "add-account",
+		account,
+		strconv.FormatUint(value, 10),
+	}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionAddOutput - add output to the transaction.
 //
 // STDIN | jcli transaction add-output <address> <value> [--staging <staging-file>]
 func TransactionAddOutput(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 	address string,
 	value uint64,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 	if address == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "address")
 	}
 
-	arg := []string{"transaction", "add-output", address, strconv.FormatUint(value, 10)}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	arg := []string{
+		"transaction", "add-output",
+		address,
+		strconv.FormatUint(value, 10),
+	}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionAddWitness - add output to the finalized transaction.
 //
 // STDIN | jcli transaction add-witness <witness> [--staging <staging-file>]
 func TransactionAddWitness(
-	stdin_staging []byte,
-	staging_file string,
-	witness_file string, // FIXME: UPSTREAM add witness description since it is empty
+	stdinStaging []byte,
+	stagingFile string,
+	witnessFile string, // FIXME: UPSTREAM add witness description since it is empty
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
-	if witness_file == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "witness_file")
-	}
-
-	arg := []string{"transaction", "add-witness", witness_file}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if witnessFile == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "witnessFile")
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	arg := []string{"transaction", "add-witness", witnessFile}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+	}
+
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionAddCertificate - set a certificate to the Transaction.
@@ -152,29 +165,29 @@ func TransactionAddWitness(
 //
 // STDIN | jcli transaction add-certificate <value> [--staging <staging-file>]
 func TransactionAddCertificate(
-	stdin_staging []byte,
-	staging_file string,
-	certificate_bech32 string, // FIXME: UPSTREAM add value description since is ambiguous
+	stdinStaging []byte,
+	stagingFile string,
+	certificateBech32 string, // FIXME: UPSTREAM add value description since is ambiguous
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
-	if certificate_bech32 == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "certificate_bech32")
-	}
-
-	arg := []string{"transaction", "add-certificate", certificate_bech32}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if certificateBech32 == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "certificateBech32")
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	arg := []string{"transaction", "add-certificate", certificateBech32}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+	}
+
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionFinalize - Lock a transaction including provided fees and start adding witnesses.
@@ -185,62 +198,62 @@ func TransactionAddCertificate(
 //                                   [change]
 //                                   [--staging <staging-file>]
 func TransactionFinalize(
-	stdin_staging []byte,
-	staging_file string,
-	fee_certificate uint64,
-	fee_coefficient uint64,
-	fee_constant uint64,
-	change_address string, // FIXME: UPSTREAM add change description since is ambiguous
+	stdinStaging []byte,
+	stagingFile string,
+	feeCertificate uint64,
+	feeCoefficient uint64,
+	feeConstant uint64,
+	changeAddress string, // FIXME: UPSTREAM add change description since is ambiguous
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "finalize"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 	arg = append(arg,
-		"--fee-certificate", strconv.FormatUint(fee_certificate, 10),
-		"--fee-coefficient", strconv.FormatUint(fee_coefficient, 10),
-		"--fee-constant", strconv.FormatUint(fee_constant, 10),
+		"--fee-certificate", strconv.FormatUint(feeCertificate, 10),
+		"--fee-coefficient", strconv.FormatUint(feeCoefficient, 10),
+		"--fee-constant", strconv.FormatUint(feeConstant, 10),
 	)
-	if change_address != "" {
-		arg = append(arg, change_address)
+	if changeAddress != "" {
+		arg = append(arg, changeAddress)
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionSeal - Finalize the transaction.
 //
 // STDIN | jcli transaction seal [--staging <staging-file>]
 func TransactionSeal(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "seal"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionId - get the Transaction ID from the given transaction
@@ -248,50 +261,50 @@ func TransactionSeal(
 //
 // STDIN | jcli transaction id [--staging <staging-file>]
 func TransactionId(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "id"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionToMessage - get the message format out of a sealed transaction.
 //
 // STDIN | jcli transaction to-message [--staging <staging-file>]
 func TransactionToMessage(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "to-message"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
 
 // TransactionMakeWitness - create witnesses.
@@ -301,51 +314,55 @@ func TransactionToMessage(
 //                                       [--account-spending-counter <account-spending-counter> (mandatory if --type=account)]
 //                                       [<output file>] [<secret file>]
 func TransactionMakeWitness(
-	stdin_key []byte,
-	transaction_id string, // FIXME: UPSTREAM (the real transaction id is fragmentID, but here we need trancasctionID -> data-for-witness)
-	block0_hash string,
-	type_witness string, account_spending_counter uint32,
-	output_file string,
-	input_file_key string,
+	stdinKey []byte,
+	dataForWitness string, // FIXME: UPSTREAM (the real transaction id is fragmentID, but here we need trancasctionID -> data-for-witness)
+	block0Hash string,
+	typeWitness string, accountSpendingCounter uint32,
+	outputFile string,
+	inputFileKey string,
 ) ([]byte, error) {
-	if len(stdin_key) == 0 && input_file_key == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_key", "input_file_key")
+	if len(stdinKey) == 0 && inputFileKey == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinKey", "inputFileKey")
 	}
-	if block0_hash == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "block0_hash")
+	if block0Hash == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "block0Hash")
 	}
-	if type_witness == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "type_witness")
+	if typeWitness == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "typeWitness")
 	}
 
-	arg := []string{"transaction", "make-witness", "--genesis-block-hash", block0_hash, "--type", type_witness}
-	if type_witness == "account" {
-		arg = append(arg, "--account-spending-counter", strconv.FormatUint(uint64(account_spending_counter), 10))
+	arg := []string{
+		"transaction", "make-witness", dataForWitness,
+		"--genesis-block-hash", block0Hash,
+		"--type", typeWitness,
 	}
-	if output_file != "" {
-		arg = append(arg, output_file) // TODO: UPSTREAM unify with "--output" as other file output commands
+	if typeWitness == "account" {
+		arg = append(arg, "--account-spending-counter", strconv.FormatUint(uint64(accountSpendingCounter), 10))
 	}
-	if input_file_key != "" && output_file != "" {
-		arg = append(arg, input_file_key) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdin_key = nil                   // reset STDIN - not needed since input_file has priority over STDIN
+	if outputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+	}
+	if inputFileKey != "" && outputFile != "" {
+		arg = append(arg, inputFileKey) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinKey = nil                  // reset STDIN - not needed since input_file has priority over STDIN
 	}
 
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
 	// convert input_file to stdin
-	if input_file_key != "" && output_file == "" {
-		var err error // prevent variable shadowing of stdin_key
-		stdin_key, err = ioutil.ReadFile(input_file_key)
+	if inputFileKey != "" && outputFile == "" {
+		var err error // prevent variable shadowing of stdinKey
+		stdinKey, err = ioutil.ReadFile(inputFileKey)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	out, err := execStd(stdin_key, "jcli", arg...)
-	if err != nil || output_file == "" {
+	out, err := execStd(stdinKey, "jcli", arg...)
+	if err != nil || outputFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 // TransactionInfo - display the info regarding a given transaction.
@@ -364,33 +381,33 @@ func TransactionMakeWitness(
 //                               [<format-output>]
 //                               [--prefix <address prefix>]
 func TransactionInfo(
-	stdin_staging []byte, staging_file string,
-	fee_certificate uint64,
-	fee_coefficient uint64,
-	fee_constant uint64,
-	output_file string, // TODO: UPSTREAM unify with "--output" as other file output commands
+	stdinStaging []byte, stagingFile string,
+	feeCertificate uint64,
+	feeCoefficient uint64,
+	feeConstant uint64,
+	outputFile string, // TODO: UPSTREAM unify with "--output" as other file output commands
 	format string,
-	only_utxos bool, // TODO: UPSTREAM convert to --only-utxos
-	only_accounts bool, // TODO: UPSTREAM convert to --only-accounts
-	only_outputs bool, // TODO: UPSTREAM convert to --only-outputs
-	format_utxo_input string, // TODO: UPSTREAM convert to --format-utxo-input <data>
-	format_account_input string, // TODO: UPSTREAM convert to --format-account-input <data>
-	format_output string, // TODO: UPSTREAM convert to --format-output <data>
+	onlyUTxOs bool, // TODO: UPSTREAM convert to --only-utxos
+	onlyAccounts bool, // TODO: UPSTREAM convert to --only-accounts
+	onlyOutputs bool, // TODO: UPSTREAM convert to --only-outputs
+	formatUTxOInput string, // TODO: UPSTREAM convert to --format-utxo-input <data>
+	formatAccountInput string, // TODO: UPSTREAM convert to --format-account-input <data>
+	formatOutput string, // TODO: UPSTREAM convert to --format-output <data>
 	prefix string,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "info"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 	arg = append(arg,
-		"--fee-certificate", strconv.FormatUint(fee_certificate, 10),
-		"--fee-coefficient", strconv.FormatUint(fee_coefficient, 10),
-		"--fee-constant", strconv.FormatUint(fee_constant, 10),
+		"--fee-certificate", strconv.FormatUint(feeCertificate, 10),
+		"--fee-coefficient", strconv.FormatUint(feeCoefficient, 10),
+		"--fee-constant", strconv.FormatUint(feeConstant, 10),
 	)
 	if format != "" {
 		arg = append(arg, "--format", format)
@@ -398,30 +415,30 @@ func TransactionInfo(
 	if prefix != "" {
 		arg = append(arg, "--prefix", prefix)
 	}
-	if output_file != "" {
-		arg = append(arg, output_file)
+	if outputFile != "" {
+		arg = append(arg, outputFile)
 	}
 	arg = append(arg,
-		strconv.FormatBool(only_utxos),
-		strconv.FormatBool(only_accounts),
-		strconv.FormatBool(only_outputs),
+		strconv.FormatBool(onlyUTxOs),
+		strconv.FormatBool(onlyAccounts),
+		strconv.FormatBool(onlyOutputs),
 	)
-	if format_utxo_input != "" {
-		arg = append(arg, format_utxo_input)
+	if formatUTxOInput != "" {
+		arg = append(arg, formatUTxOInput)
 	}
-	if format_account_input != "" {
-		arg = append(arg, format_account_input)
+	if formatAccountInput != "" {
+		arg = append(arg, formatAccountInput)
 	}
-	if format_output != "" {
-		arg = append(arg, format_output)
+	if formatOutput != "" {
+		arg = append(arg, formatOutput)
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || output_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || outputFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -433,23 +450,23 @@ func TransactionInfo(
 //
 // STDIN | jcli transaction data-for-witness [--staging <staging-file>]
 func TransactionDataForWitness(
-	stdin_staging []byte,
-	staging_file string,
+	stdinStaging []byte,
+	stagingFile string,
 ) ([]byte, error) {
-	if len(stdin_staging) == 0 && staging_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_staging", "staging_file")
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
 
 	arg := []string{"transaction", "data-for-witness"}
-	if staging_file != "" {
-		arg = append(arg, "--staging", staging_file)
-		stdin_staging = nil // reset STDIN - not needed since staging_file has priority over STDIN
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdin_staging, "jcli", arg...)
-	if err != nil || staging_file == "" {
+	out, err := execStd(stdinStaging, "jcli", arg...)
+	if err != nil || stagingFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(staging_file)
+	return ioutil.ReadFile(stagingFile)
 }
