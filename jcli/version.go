@@ -10,3 +10,13 @@ func JormungandrVersion() ([]byte, error) {
 func Version() ([]byte, error) {
 	return execStd(nil, "jcli", "--version")
 }
+
+// VersionSource - get jcli source version.
+func VersionSource() ([]byte, error) {
+	return execStd(nil, "jcli", "--source-version")
+}
+
+// VersionFull - get jcli full version.
+func VersionFull() ([]byte, error) {
+	return execStd(nil, "jcli", "--full-version")
+}
