@@ -279,7 +279,7 @@ func TransactionId(
 
 // TransactionToMessage - get the message format out of a sealed transaction.
 //
-// STDIN | jcli transaction to-message [--staging <staging-file>]
+// STDIN | jcli transaction to-message [--staging <staging-file>] | STDOUT
 func TransactionToMessage(
 	stdinStaging []byte,
 	stagingFile string,
@@ -294,12 +294,30 @@ func TransactionToMessage(
 		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
-	if err != nil || stagingFile == "" {
-		return out, err
+	return execStd(stdinStaging, "jcli", arg...)
+}
+
+// TransactionToMessageFile - get the message format out of a sealed transaction
+// and write it to the given outputFile.
+// This is like TransactionToMessage with outFile added since jcli has STDOUT
+func TransactionToMessageFile(
+	stdinStaging []byte,
+	stagingFile string,
+	outputFile string,
+) ([]byte, error) {
+	if outputFile == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "outputFile")
 	}
 
-	return ioutil.ReadFile(stagingFile)
+	message, err := TransactionToMessage(stdinStaging, stagingFile)
+	if err != nil {
+		return nil, err
+	}
+	if err = ioutil.WriteFile(outputFile, message, 0644); err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadFile(outputFile)
 }
 
 // TransactionMakeWitness - create witnesses.
