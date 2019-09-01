@@ -8,7 +8,7 @@ import (
 
 // TransactionNew - create a new staging transaction. The transaction is initially empty.
 //
-// STDIN | jcli transaction new [--staging <staging-file>]
+// STDIN | jcli transaction new [--staging <staging-file>] | [STDOUT]
 func TransactionNew(
 	stdinStaging []byte,
 	stagingFile string,
@@ -274,12 +274,7 @@ func TransactionId(
 		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
-	if err != nil || stagingFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(stagingFile)
+	return execStd(stdinStaging, "jcli", arg...)
 }
 
 // TransactionToMessage - get the message format out of a sealed transaction.
@@ -456,17 +451,14 @@ func TransactionDataForWitness(
 	if len(stdinStaging) == 0 && stagingFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
-
-	arg := []string{"transaction", "data-for-witness"}
+	/*
+		arg := []string{"transaction", "data-for-witness"}
+	*/
+	arg := []string{"transaction", "id"} // FIXME: restore data-for-witness once implemented
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
 		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
-	if err != nil || stagingFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(stagingFile)
+	return execStd(stdinStaging, "jcli", arg...)
 }
