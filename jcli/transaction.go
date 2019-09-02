@@ -27,6 +27,8 @@ func TransactionNew(
 	return ioutil.ReadFile(stagingFile)
 }
 
+// TODO: TransactionAddInput tests and examples
+
 // TransactionAddInput - add UTxO input to the transaction.
 //
 // STDIN | jcli transaction add-input <transaction-id> <index> <value> [--staging <staging-file>]
@@ -160,6 +162,8 @@ func TransactionAddWitness(
 	return ioutil.ReadFile(stagingFile)
 }
 
+// TODO: TransactionAddCertificate tests. Example done
+
 // TransactionAddCertificate - set a certificate to the Transaction.
 // If there is already an extra certificate in the transaction it will be replaced with the new one.
 //
@@ -256,11 +260,13 @@ func TransactionSeal(
 	return ioutil.ReadFile(stagingFile)
 }
 
-// TransactionId - get the Transaction ID from the given transaction
+// TODO: TransactionID tests and examples
+
+// TransactionID - get the Transaction ID from the given transaction
 // (if the transaction is edited, the returned value will change).
 //
 // STDIN | jcli transaction id [--staging <staging-file>]
-func TransactionId(
+func TransactionID(
 	stdinStaging []byte,
 	stagingFile string,
 ) ([]byte, error) {

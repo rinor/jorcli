@@ -159,17 +159,153 @@ func ExampleTransactionDataForWitness_staging() {
 	if err != nil {
 		fmt.Printf("TransactionDataForWitness: %s", err)
 	} else {
-		fmt.Printf("%v", txDataForWitness)
+		fmt.Printf("%s", string(txDataForWitness))
 	}
+	// Ex: 260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c
 }
 
 func TestTransactionDataForWitness(t *testing.T) {
 	var (
 		stdinStaging             = loadBytes(t, "tx-04_finalize_staging.golden")
 		stagingFile              = ""
-		expectedtxDataForWitness = loadBytes(t, "tx-05_data-for-witness.golden")
+		expectedTxDataForWitness = loadBytes(t, "tx-05_data-for-witness.golden")
 	)
 	txDataForWitness, err := jcli.TransactionDataForWitness(stdinStaging, stagingFile)
 	ok(t, err)
-	equals(t, expectedtxDataForWitness, txDataForWitness)
+	equals(t, expectedTxDataForWitness, txDataForWitness)
+}
+
+func ExampleTransactionMakeWitness_stdin() {
+	var (
+		stdinKey               = []byte("ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4")
+		dataForWitness         = "260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c"
+		block0Hash             = "480b129ef7e681641adf5b0d849c725ad307f04ab7fe2381905db6f88ca9400f"
+		typeWitness            = "account"
+		accountSpendingCounter = uint32(0)
+		outputFile             = "witness.out"
+		inputFileKey           = "" // "witness.secret" - instead of stdinKey use a file that contains Private Key
+	)
+	witness, err := jcli.TransactionMakeWitness(stdinKey, dataForWitness, block0Hash, typeWitness, accountSpendingCounter, outputFile, inputFileKey)
+
+	if err != nil {
+		fmt.Printf("TransactionMakeWitness: %s", err)
+	} else {
+		fmt.Printf("%v", witness)
+	}
+}
+
+func TestTransactionMakeWitness(t *testing.T) {
+	var (
+		stdinKey               []byte                                                               //= loadBytes(t, "private_key_txt.golden")
+		dataForWitness         = "260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c" // strings.TrimSpace(string(loadBytes(t, "tx-05_data-for-witness.golden")))
+		block0Hash             = "480b129ef7e681641adf5b0d849c725ad307f04ab7fe2381905db6f88ca9400f"
+		typeWitness            = "account"
+		accountSpendingCounter = uint32(0)
+		outputFile             = ""
+		inputFileKey           = filePath(t, "private_key_txt.golden")
+		expectedWitness        = loadBytes(t, "tx-06_witness_out.golden")
+	)
+
+	witness, err := jcli.TransactionMakeWitness(stdinKey, dataForWitness, block0Hash, typeWitness, accountSpendingCounter, outputFile, inputFileKey)
+	ok(t, err)
+	equals(t, expectedWitness, witness)
+}
+
+func ExampleTransactionAddWitness_staging() {
+	var (
+		stdinStaging []byte
+		stagingFile  = "tx.staging"
+		witnessFile  = "witness.out"
+	)
+
+	tx, err := jcli.TransactionAddWitness(stdinStaging, stagingFile, witnessFile)
+
+	if err != nil {
+		fmt.Printf("TransactionAddWitness: %s", err)
+	} else {
+		fmt.Printf("%v", tx)
+	}
+}
+
+func TestTransactionAddWitness(t *testing.T) {
+	var (
+		stdinStaging = loadBytes(t, "tx-04_finalize_staging.golden")
+		stagingFile  = ""
+		witnessFile  = filePath(t, "tx-06_witness_out.golden")
+		expectedTx   = loadBytes(t, "tx-07_add_witness_staging.golden")
+	)
+
+	tx, err := jcli.TransactionAddWitness(stdinStaging, stagingFile, witnessFile)
+	ok(t, err)
+	equals(t, expectedTx, tx)
+}
+
+func ExampleTransactionSeal_staging() {
+	var (
+		stdinStaging []byte
+		stagingFile  = "tx.staging"
+	)
+
+	tx, err := jcli.TransactionSeal(stdinStaging, stagingFile)
+
+	if err != nil {
+		fmt.Printf("TransactionSeal: %s", err)
+	} else {
+		fmt.Printf("%v", tx)
+	}
+}
+
+func TestTransactionSeal(t *testing.T) {
+	var (
+		stdinStaging = loadBytes(t, "tx-07_add_witness_staging.golden")
+		stagingFile  = ""
+		expectedTx   = loadBytes(t, "tx-08_seal_staging.golden")
+	)
+
+	tx, err := jcli.TransactionSeal(stdinStaging, stagingFile)
+	ok(t, err)
+	equals(t, expectedTx, tx)
+}
+
+func ExampleTransactionToMessage_staging() {
+	var (
+		stdinStaging []byte
+		stagingFile  = "tx.staging"
+	)
+
+	message, err := jcli.TransactionToMessage(stdinStaging, stagingFile)
+
+	if err != nil {
+		fmt.Printf("TransactionToMessage: %s", err)
+	} else {
+		fmt.Printf("%v", message)
+	}
+}
+
+func TestTransactionToMessage(t *testing.T) {
+	var (
+		stdinStaging = loadBytes(t, "tx-08_seal_staging.golden")
+		stagingFile  = ""
+		expectedMsg  = loadBytes(t, "tx-09_to_message.golden")
+	)
+
+	msg, err := jcli.TransactionToMessage(stdinStaging, stagingFile)
+	ok(t, err)
+	equals(t, expectedMsg, msg)
+}
+
+func ExampleTransactionAddCertificate_staging() {
+	var (
+		stdinStaging      []byte
+		stagingFile       = "tx.staging"
+		certificateBech32 = "cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqyqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4wh5uv63nnjp5f7fzlseqdj6a46q55k2vq9ma6v34cf2dn3qf5edcpz250xxrgszt62zj3e7yysddr33e38dtryfsuqncmp9sdxs3z98zk45mr2u"
+	)
+
+	tx, err := jcli.TransactionAddCertificate(stdinStaging, stagingFile, certificateBech32)
+
+	if err != nil {
+		fmt.Printf("TransactionAddCertificate: %s", err)
+	} else {
+		fmt.Printf("%v", tx)
+	}
 }
