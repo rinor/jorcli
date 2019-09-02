@@ -108,7 +108,7 @@ func ExampleCertificateNewStakeDelegation() {
 	var (
 		stakePoolID = "b58e14670ac4336d0905744eb17546307bca47d24ff3726f0367ece990a471af"
 		stakeKey    = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v" // Public Key
-		outputFile  = ""
+		outputFile  = ""                                                                      // "" - output to STDOUT ([]byte) only, "stakePoolDelegation.new" - will also save output to that file
 	)
 
 	stakeNewDeleg, err := jcli.CertificateNewStakeDelegation(stakePoolID, stakeKey, outputFile)
@@ -123,10 +123,28 @@ func ExampleCertificateNewStakeDelegation() {
 	// cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4advwz3ns43pnd5ys2azwk965vvrmefraynlnwfhsxelvaxg2gud0yhlh5r
 }
 
-func ExampleCertificatePrint() {
+func ExampleCertificatePrint_signed() {
+	var (
+		stdinCert = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqyqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4wh5uv63nnjp5f7fzlseqdj6a46q55k2vq9ma6v34cf2dn3qf5edcpz250xxrgszt62zj3e7yysddr33e38dtryfsuqncmp9sdxs3z98zk45mr2u")
+		inputFile = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
+	)
+
+	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)
+
+	if err != nil {
+		fmt.Printf("CertificatePrint: %s", err)
+	} else {
+		fmt.Printf("%s", certPrint)
+	}
+	// Output:
+	//
+	// Certificate(PoolRegistration(PoolRegistration { serial: 1020304050, start_validity: TimeOffsetSeconds(DurationSeconds(0)), management_threshold: 1, owners: [786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e], keys: GenesisPraosLeader { kes_public_key: 954798c34404bd28528e7c4241ad1c63989dab19130e0278d84b069a11114e2b, vrf_public_key: 9c66a339c8344f922fc3206cb5dae814a594c0177dd3235c254d9c409a65b808 } }))
+}
+
+func ExampleCertificatePrint_stake() {
 	var (
 		stdinCert = []byte("cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4advwz3ns43pnd5ys2azwk965vvrmefraynlnwfhsxelvaxg2gud0yhlh5r")
-		inputFile = ""
+		inputFile = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
 	)
 
 	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)
