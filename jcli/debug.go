@@ -4,7 +4,7 @@ import "fmt"
 
 // DebugMessage - Decode hex-encoded message an display its content.
 //
-// STDIN | jcli debug message [--input <input>]
+//  [STDIN] | jcli debug message [--input <input>] | STDOUT
 func DebugMessage(
 	stdinHex []byte,
 	inputFile string,
