@@ -6,18 +6,18 @@ import "fmt"
 //
 // STDIN | jcli debug message [--input <input>]
 func DebugMessage(
-	stdin_hex []byte,
-	input_file string,
+	stdinHex []byte,
+	inputFile string,
 ) ([]byte, error) {
-	if len(stdin_hex) == 0 && input_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_hex", "input_file")
+	if len(stdinHex) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinHex", "inputFile")
 	}
 
 	arg := []string{"debug", "message"}
-	if input_file != "" {
-		arg = append(arg, "--input", input_file)
-		stdin_hex = nil
+	if inputFile != "" {
+		arg = append(arg, "--input", inputFile)
+		stdinHex = nil
 	}
 
-	return execStd(stdin_hex, "jcli", arg...)
+	return execStd(stdinHex, "jcli", arg...)
 }

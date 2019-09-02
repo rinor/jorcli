@@ -10,89 +10,68 @@ import (
 //
 // STDIN | jcli certificate get-stake-pool-id [<FILE_INPUT>] [<FILE_OUTPUT>]
 func CertificateGetStakePoolID(
-	stdin_cert []byte,
-	input_file string,
-	output_file string,
+	stdinCert []byte,
+	inputFile string,
+	outputFile string,
 ) ([]byte, error) {
-	if len(stdin_cert) == 0 && input_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_cert", "input_file")
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
 	}
 
 	arg := []string{"certificate", "get-stake-pool-id"}
-	if input_file != "" {
-		arg = append(arg, input_file) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdin_cert = nil              // reset STDIN - not needed since input_file has priority over STDIN
+	if inputFile != "" {
+		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
 	}
-	if output_file != "" && input_file != "" {
-		arg = append(arg, output_file) // TODO: UPSTREAM unify with "--output" as other file output commands
+	if outputFile != "" && inputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdin_cert, "jcli", arg...)
-	if err != nil /* || output_file == "" */ {
+	out, err := execStd(stdinCert, "jcli", arg...)
+	if err != nil /* || outputFile == "" */ {
 		return out, err
 	}
 
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
-	// convert stdout to output_file
-	if output_file != "" && input_file == "" {
-		if err = ioutil.WriteFile(output_file, out, 0644); err != nil {
+	// convert stdout to outputFile
+	if outputFile != "" && inputFile == "" {
+		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
 			return nil, err
 		}
 	}
-	if output_file == "" {
+	if outputFile == "" {
 		return out, nil
 	}
 
-	return ioutil.ReadFile(output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 // CertificateNewStakeDelegation - build a stake delegation certificate.
 //
 // jcli certificate new stake-delegation <STAKE_POOL_ID> <STAKE_KEY> [output]
 func CertificateNewStakeDelegation(
-	stake_pool_id string,
-	stake_key string,
-	output_file string,
+	stakePoolID string,
+	stakeKey string,
+	outputFile string,
 ) ([]byte, error) {
-	if stake_pool_id == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "stake_pool_id")
+	if stakePoolID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "stake_pstakePoolIDool_id")
 	}
-	if stake_key == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "stake_key")
+	if stakeKey == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "stakeKey")
 	}
 
-	arg := []string{"certificate", "new", "stake-delegation", stake_pool_id, stake_key}
-	if output_file != "" {
-		arg = append(arg, output_file) // TODO: UPSTREAM unify with "--output" as other file output commands
+	arg := []string{"certificate", "new", "stake-delegation", stakePoolID, stakeKey}
+	if outputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
 	out, err := execStd(nil, "jcli", arg...)
-	if err != nil || output_file == "" {
+	if err != nil || outputFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(output_file)
-}
-
-// CertificateNewStakePoolRegistrationSingleOwner - build a stake pool registration certificate with single owner.
-//
-// jcli certificate new stake-pool-registration --kes-key <KES_KEY>
-//                                              --vrf-key <VRF_KEY>
-//                                              --start-validity <SECONDS-SINCE-START>
-//                                              --management-threshold <THRESHOLD>
-//                                              --serial <SERIAL>
-//                                              [--owner <PUBLIC_KEY>]
-//                                              [output]
-func CertificateNewStakePoolRegistrationSingleOwner(
-	kes_key string,
-	vrf_key string,
-	start_validity uint64,
-	management_threshold uint8,
-	serial uint64,
-	owner string,
-	output_file string,
-) ([]byte, error) {
-	return CertificateNewStakePoolRegistration(kes_key, vrf_key, start_validity, management_threshold, serial, []string{owner}, output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 // BUG(rinor): The certificate 'serial' is declared as uint64 when actually it should be uint128.
@@ -107,45 +86,45 @@ func CertificateNewStakePoolRegistrationSingleOwner(
 //                                              [--owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...]
 //                                              [output]
 func CertificateNewStakePoolRegistration(
-	kes_key string,
-	vrf_key string,
-	start_validity uint64,
-	management_threshold uint8,
+	kesKey string,
+	vrfKey string,
+	startValidity uint64,
+	managementThreshold uint8,
 	serial uint64,
 	owner []string,
-	output_file string,
+	outputFile string,
 ) ([]byte, error) {
-	if kes_key == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "kes_key")
+	if kesKey == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "kesKey")
 	}
-	if vrf_key == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "vrf_key")
+	if vrfKey == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "vrfKey")
 	}
-
-	// TODO: Implement checks after confirm:
-	//       management_threshold > 0 && management_threshold <= len(owner)
+	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
+		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
+	}
 
 	arg := []string{
 		"certificate", "new", "stake-pool-registration",
-		"--kes-key", kes_key,
-		"--vrf-key", vrf_key,
-		"--start-validity", strconv.FormatUint(start_validity, 10),
-		"--management-threshold", strconv.FormatUint(uint64(management_threshold), 10),
+		"--kes-key", kesKey,
+		"--vrf-key", vrfKey,
+		"--start-validity", strconv.FormatUint(startValidity, 10),
+		"--management-threshold", strconv.FormatUint(uint64(managementThreshold), 10),
 		"--serial", strconv.FormatUint(serial, 10),
 	}
-	for _, owner_pk := range owner {
-		arg = append(arg, "--owner", owner_pk) // FIXME: should check data validity!
+	for _, ownerPublicKey := range owner {
+		arg = append(arg, "--owner", ownerPublicKey) // FIXME: should check data validity!
 	}
-	if output_file != "" {
-		arg = append(arg, output_file) // TODO: UPSTREAM unify with "--output" as other file output commands
+	if outputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
 	out, err := execStd(nil, "jcli", arg...)
-	if err != nil || output_file == "" {
+	if err != nil || outputFile == "" {
 		return out, err
 	}
 
-	return ioutil.ReadFile(output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 // CertificateSign - Sign certificate,
@@ -153,62 +132,62 @@ func CertificateNewStakePoolRegistration(
 //
 // STDIN | jcli certificate sign <signing-key file> [<input file>] [<output file>]
 func CertificateSign(
-	stdin_cert []byte,
-	signing_key_file string,
-	input_file string,
-	output_file string,
+	stdinCert []byte,
+	signingKeyFile string,
+	inputFile string,
+	outputFile string,
 ) ([]byte, error) {
-	if len(stdin_cert) == 0 && input_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_cert", "input_file")
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
 	}
-	if signing_key_file == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "signing_key_file")
-	}
-
-	arg := []string{"certificate", "sign", signing_key_file}
-	if input_file != "" {
-		arg = append(arg, input_file) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdin_cert = nil              // reset STDIN - not needed since input_file has priority over STDIN
-	}
-	if output_file != "" && input_file != "" {
-		arg = append(arg, output_file) // TODO: UPSTREAM unify with "--output" as other file output commands
+	if signingKeyFile == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "signingKeyFile")
 	}
 
-	out, err := execStd(stdin_cert, "jcli", arg...)
-	if err != nil /* || output_file == "" */ {
+	arg := []string{"certificate", "sign", signingKeyFile}
+	if inputFile != "" {
+		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
+	}
+	if outputFile != "" && inputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+	}
+
+	out, err := execStd(stdinCert, "jcli", arg...)
+	if err != nil /* || outputFile == "" */ {
 		return out, err
 	}
 
 	// TODO: Remove this once UPSTREAM fixed (--input and --output)
-	// convert stdout to output_file
-	if output_file != "" && input_file == "" {
-		if err = ioutil.WriteFile(output_file, out, 0644); err != nil {
+	// convert stdout to outputFile
+	if outputFile != "" && inputFile == "" {
+		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
 			return nil, err
 		}
 	}
-	if output_file == "" {
+	if outputFile == "" {
 		return out, nil
 	}
 
-	return ioutil.ReadFile(output_file)
+	return ioutil.ReadFile(outputFile)
 }
 
 // CertificatePrint - Print certificate.
 //
 // STDIN | jcli certificate print [<input file>]
 func CertificatePrint(
-	stdin_cert []byte,
-	input_file string,
+	stdinCert []byte,
+	inputFile string,
 ) ([]byte, error) {
-	if len(stdin_cert) == 0 && input_file == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_cert", "input_file")
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
 	}
 
 	arg := []string{"certificate", "print"}
-	if input_file != "" {
-		arg = append(arg, input_file) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdin_cert = nil              // reset STDIN - not needed since input_file has priority over STDIN
+	if inputFile != "" {
+		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
 	}
 
-	return execStd(stdin_cert, "jcli", arg...)
+	return execStd(stdinCert, "jcli", arg...)
 }

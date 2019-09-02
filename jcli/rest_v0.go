@@ -11,20 +11,20 @@ import (
 //
 // jcli rest v0 account get <account-id> --host <host> [--output-format <format>]
 func RestAccount(
-	account_id string,
+	accountID string,
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
-	if account_id == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "account_id")
+	if accountID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "accountID")
 	}
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "account", "get", account_id, "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	arg := []string{"rest", "v0", "account", "get", accountID, "--host", host}
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -36,17 +36,17 @@ func RestAccount(
 //
 // jcli rest v0 block <block-id> get --host <host>
 func RestBlock(
-	block_id string,
+	blockID string,
 	host string,
 ) ([]byte, error) {
-	if block_id == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "block_id")
+	if blockID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "block", block_id, "get", "--host", host}
+	arg := []string{"rest", "v0", "block", blockID, "get", "--host", host}
 
 	return execStd(nil, "jcli", arg...)
 }
@@ -55,28 +55,28 @@ func RestBlock(
 //
 // jcli rest v0 block <block-id> next-id get [--count <count>] --host <host>
 func RestBlockNextID(
-	block_id string,
-	count_ids uint,
+	blockID string,
+	countIds uint,
 	host string,
 ) ([]byte, error) {
-	if block_id == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "block_id")
+	if blockID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	// NOTE: don't like this uint at all, but keep it for now
-	countDefault, countMin, countMax := uint(1), uint(1), uint(100) // count_ids must be in this range 1-100.
+	countDefault, countMin, countMax := uint(1), uint(1), uint(100) // countIds must be in this range 1-100.
 
-	if count_ids < countMin || count_ids > countMax {
-		count_ids = countDefault
-		// return nil, fmt.Errorf("%s: value must be between %d - %d", "count_ids", countMin, countMax)
+	if countIds < countMin || countIds > countMax {
+		countIds = countDefault
+		// return nil, fmt.Errorf("%s: value must be between %d - %d", "countIds", countMin, countMax)
 	}
 
 	arg := []string{
-		"rest", "v0", "block", block_id, "next-id", "get",
-		"--count", strconv.FormatUint(uint64(count_ids), 10),
+		"rest", "v0", "block", blockID, "next-id", "get",
+		"--count", strconv.FormatUint(uint64(countIds), 10),
 		"--host", host,
 	}
 
@@ -89,7 +89,7 @@ func RestBlockNextID(
 //
 // jcli rest v0 leaders delete <id> --host <host>
 func RestLeadersDelete(
-	leader_id uint32,
+	leaderID uint32,
 	host string,
 ) ([]byte, error) {
 	if host == "" {
@@ -98,7 +98,7 @@ func RestLeadersDelete(
 
 	arg := []string{
 		"rest", "v0", "leaders", "delete",
-		strconv.FormatUint(uint64(leader_id), 10), // FIXME: leader_id > 0
+		strconv.FormatUint(uint64(leaderID), 10), // FIXME: leaderID > 0
 		"--host", host,
 	}
 
@@ -110,15 +110,15 @@ func RestLeadersDelete(
 // jcli rest v0 leaders get --host <host> [--output-format <format>]
 func RestLeaders(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "leaders", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -129,15 +129,15 @@ func RestLeaders(
 // jcli rest v0 leaders logs get --host <host> [--output-format <format>]
 func RestLeadersLogs(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "leaders", "logs", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -147,25 +147,25 @@ func RestLeadersLogs(
 //
 // STDIN | jcli rest v0 leaders post --host <host> [--file <input_file>]
 func RestLeadersPost(
-	stdin_sk []byte,
+	stdinSk []byte,
 	host string,
-	input_file_sk string,
+	inputFileSk string,
 ) ([]byte, error) {
 
-	if len(stdin_sk) == 0 && input_file_sk == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_sk", "input_file_sk")
+	if len(stdinSk) == 0 && inputFileSk == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFileSk")
 	}
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "leaders", "post", "--host", host}
-	if input_file_sk != "" {
-		arg = append(arg, "--file", input_file_sk)
-		stdin_sk = nil
+	if inputFileSk != "" {
+		arg = append(arg, "--file", inputFileSk)
+		stdinSk = nil
 	}
 
-	return execStd(stdin_sk, "jcli", arg...)
+	return execStd(stdinSk, "jcli", arg...)
 }
 
 /* ******************** MESSAGE ******************** */
@@ -177,15 +177,15 @@ func RestLeadersPost(
 // jcli rest v0 message logs --host <host> [--output-format <format>]
 func RestMessageLogs(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "message", "logs", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -195,24 +195,24 @@ func RestMessageLogs(
 //
 // STDIN | jcli rest v0 message post --host <host> [--file <input_file>]
 func RestMessagePost(
-	stdin_msg []byte,
+	stdinMsg []byte,
 	host string,
-	input_file_msg string,
+	inputFileMsg string,
 ) ([]byte, error) {
-	if len(stdin_msg) == 0 && input_file_msg == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin_msg", "input_file_msg")
+	if len(stdinMsg) == 0 && inputFileMsg == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinMsg", "inputFileMsg")
 	}
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "message", "post", "--host", host}
-	if input_file_msg != "" {
-		arg = append(arg, "--file", input_file_msg)
-		stdin_msg = nil
+	if inputFileMsg != "" {
+		arg = append(arg, "--file", inputFileMsg)
+		stdinMsg = nil
 	}
 
-	return execStd(stdin_msg, "jcli", arg...)
+	return execStd(stdinMsg, "jcli", arg...)
 }
 
 /* ******************** NODE ******************** */
@@ -222,15 +222,15 @@ func RestMessagePost(
 // jcli rest v0 node stats get --host <host> --output-format <format>
 func RestNodeStats(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "node", "stats", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -243,15 +243,15 @@ func RestNodeStats(
 // jcli rest v0 settings get --host <host> --output-format <format>
 func RestSettings(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "settings", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -264,7 +264,7 @@ func RestSettings(
 // jcli rest v0 shutdown get --host <host>
 func RestShutdown(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
@@ -282,15 +282,15 @@ func RestShutdown(
 // jcli rest v0 stake get --host <host> --output-format <format>
 func RestStake(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "stake", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -303,15 +303,15 @@ func RestStake(
 // jcli rest v0 stake-pools get --host <host> --output-format <format>
 func RestStakePools(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "stake-pools", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
@@ -324,7 +324,7 @@ func RestStakePools(
 // jcli rest v0 tip get --host <host>
 func RestTip(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
@@ -342,15 +342,15 @@ func RestTip(
 // jcli rest v0 utxo get --host <host> --output-format <format>
 func RestUTxOs(
 	host string,
-	output_format string,
+	outputFormat string,
 ) ([]byte, error) {
 	if host == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{"rest", "v0", "utxo", "get", "--host", host}
-	if output_format != "" {
-		arg = append(arg, "--output-format", output_format)
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
 	}
 
 	return execStd(nil, "jcli", arg...)
