@@ -20,7 +20,7 @@ func AddressInfoFromStdin(
 
 // AddressInfo - display the content and info of a bech32 formatted address.
 //
-// jcli address info <ADDRESS (in bech32 format)>
+//  jcli address info <ADDRESS (in bech32 format)> | STDOUT
 func AddressInfo(
 	addressBech32 string,
 ) ([]byte, error) {
@@ -50,7 +50,7 @@ func AddressAccountFromStdin(
 
 // AddressAccount - create an address from the the single public key.
 //
-// jcli address account <PUBLIC_KEY> [--prefix <address_prefix>] [--testing]
+//  jcli address account <PUBLIC_KEY> [--prefix <address_prefix>] [--testing] | STDOUT
 func AddressAccount(
 	publicKey string,
 	prefix string,
@@ -89,7 +89,7 @@ func AddressSingleFromStdin(
 
 // AddressSingle - create an address from the single public key. This address does not have delegation.
 //
-// jcli address single <PUBLIC_KEY> [DELEGATION_KEY] [--prefix <address_prefix>] [--testing]
+//  jcli address single <PUBLIC_KEY> [DELEGATION_KEY] [--prefix <address_prefix>] [--testing] | STDOUT
 func AddressSingle(
 	publicKey string,
 	groupPublicKey string,

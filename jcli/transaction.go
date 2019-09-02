@@ -8,7 +8,7 @@ import (
 
 // TransactionNew - create a new staging transaction. The transaction is initially empty.
 //
-// STDIN | jcli transaction new [--staging <staging-file>] | [STDOUT]
+//  [STDIN] | jcli transaction new [--staging <staging-file>] | [STDOUT]
 func TransactionNew(
 	stdinStaging []byte,
 	stagingFile string,
@@ -16,7 +16,7 @@ func TransactionNew(
 	arg := []string{"transaction", "new"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -31,7 +31,7 @@ func TransactionNew(
 
 // TransactionAddInput - add UTxO input to the transaction.
 //
-// STDIN | jcli transaction add-input <transaction-id> <index> <value> [--staging <staging-file>]
+//  [STDIN] | jcli transaction add-input <transaction-id> <index> <value> [--staging <staging-file>] | [STDOUT]
 func TransactionAddInput(
 	stdinStaging []byte,
 	stagingFile string,
@@ -54,7 +54,7 @@ func TransactionAddInput(
 	}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -67,7 +67,7 @@ func TransactionAddInput(
 
 // TransactionAddAccount - add Account input to the transaction.
 //
-// STDIN | jcli transaction add-account <account> <value> [--staging <staging-file>]
+//  [STDIN] | jcli transaction add-account <account> <value> [--staging <staging-file>] | [STDOUT]
 func TransactionAddAccount(
 	stdinStaging []byte,
 	stagingFile string,
@@ -88,7 +88,7 @@ func TransactionAddAccount(
 	}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -101,7 +101,7 @@ func TransactionAddAccount(
 
 // TransactionAddOutput - add output to the transaction.
 //
-// STDIN | jcli transaction add-output <address> <value> [--staging <staging-file>]
+//  [STDIN] | jcli transaction add-output <address> <value> [--staging <staging-file>] | [STDOUT]
 func TransactionAddOutput(
 	stdinStaging []byte,
 	stagingFile string,
@@ -122,7 +122,7 @@ func TransactionAddOutput(
 	}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -135,7 +135,7 @@ func TransactionAddOutput(
 
 // TransactionAddWitness - add output to the finalized transaction.
 //
-// STDIN | jcli transaction add-witness <witness> [--staging <staging-file>]
+//  [STDIN] | jcli transaction add-witness <witness> [--staging <staging-file>] | [STDOUT]
 func TransactionAddWitness(
 	stdinStaging []byte,
 	stagingFile string,
@@ -151,7 +151,7 @@ func TransactionAddWitness(
 	arg := []string{"transaction", "add-witness", witnessFile}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -167,7 +167,7 @@ func TransactionAddWitness(
 // TransactionAddCertificate - set a certificate to the Transaction.
 // If there is already an extra certificate in the transaction it will be replaced with the new one.
 //
-// STDIN | jcli transaction add-certificate <value> [--staging <staging-file>]
+//  [STDIN] | jcli transaction add-certificate <value> [--staging <staging-file>] | [STDOUT]
 func TransactionAddCertificate(
 	stdinStaging []byte,
 	stagingFile string,
@@ -183,7 +183,7 @@ func TransactionAddCertificate(
 	arg := []string{"transaction", "add-certificate", certificateBech32}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -196,11 +196,12 @@ func TransactionAddCertificate(
 
 // TransactionFinalize - Lock a transaction including provided fees and start adding witnesses.
 //
-// STDIN | jcli transaction finalize [--fee-certificate <certificate>]
-//                                   [--fee-coefficient <coefficient>]
-//                                   [--fee-constant <constant>]
-//                                   [change]
-//                                   [--staging <staging-file>]
+//  [STDIN] | jcli transaction finalize
+//                                      [--fee-certificate <certificate>]
+//                                      [--fee-coefficient <coefficient>]
+//                                      [--fee-constant <constant>]
+//                                      [change]
+//                                      [--staging <staging-file>] | [STDOUT]
 func TransactionFinalize(
 	stdinStaging []byte,
 	stagingFile string,
@@ -216,7 +217,7 @@ func TransactionFinalize(
 	arg := []string{"transaction", "finalize"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 	arg = append(arg,
 		"--fee-certificate", strconv.FormatUint(feeCertificate, 10),
@@ -237,7 +238,7 @@ func TransactionFinalize(
 
 // TransactionSeal - Finalize the transaction.
 //
-// STDIN | jcli transaction seal [--staging <staging-file>]
+//  [STDIN] | jcli transaction seal [--staging <staging-file>] | [STDOUT]
 func TransactionSeal(
 	stdinStaging []byte,
 	stagingFile string,
@@ -249,7 +250,7 @@ func TransactionSeal(
 	arg := []string{"transaction", "seal"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	out, err := execStd(stdinStaging, "jcli", arg...)
@@ -265,7 +266,7 @@ func TransactionSeal(
 // TransactionID - get the Transaction ID from the given transaction
 // (if the transaction is edited, the returned value will change).
 //
-// STDIN | jcli transaction id [--staging <staging-file>]
+//  [STDIN] | jcli transaction id [--staging <staging-file>] | [STDOUT]
 func TransactionID(
 	stdinStaging []byte,
 	stagingFile string,
@@ -277,7 +278,7 @@ func TransactionID(
 	arg := []string{"transaction", "id"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	return execStd(stdinStaging, "jcli", arg...)
@@ -285,7 +286,7 @@ func TransactionID(
 
 // TransactionToMessage - get the message format out of a sealed transaction.
 //
-// STDIN | jcli transaction to-message [--staging <staging-file>] | STDOUT
+//  [STDIN] | jcli transaction to-message [--staging <staging-file>] | [STDOUT]
 func TransactionToMessage(
 	stdinStaging []byte,
 	stagingFile string,
@@ -297,7 +298,7 @@ func TransactionToMessage(
 	arg := []string{"transaction", "to-message"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	return execStd(stdinStaging, "jcli", arg...)
@@ -305,7 +306,7 @@ func TransactionToMessage(
 
 // TransactionToMessageFile - get the message format out of a sealed transaction
 // and write it to the given outputFile.
-// This is like TransactionToMessage with outFile added since jcli has STDOUT
+// This is like TransactionToMessage with outFile added since jcli has only STDOUT
 func TransactionToMessageFile(
 	stdinStaging []byte,
 	stagingFile string,
@@ -328,10 +329,13 @@ func TransactionToMessageFile(
 
 // TransactionMakeWitness - create witnesses.
 //
-// STDIN | jcli transaction make-witness <transaction-id> --genesis-block-hash <genesis-block-hash>
-//                                       --type <witness-type (utxo,legacy-utxo,account)>
-//                                       [--account-spending-counter <account-spending-counter> (mandatory if --type=account)]
-//                                       [<output file>] [<secret file>]
+//  [STDIN] | jcli transaction make-witness
+//                                          <transaction-id>
+//                                          --genesis-block-hash <genesis-block-hash>
+//                                          --type <witness-type (utxo,legacy-utxo,account)>
+//                                          [--account-spending-counter <account-spending-counter> (mandatory if --type=account)]
+//                                          [<output file>]
+//                                          [<secret file>] | [STDOUT]
 func TransactionMakeWitness(
 	stdinKey []byte,
 	dataForWitness string, // FIXME: UPSTREAM (the real transaction id is fragmentID, but here we need trancasctionID -> data-for-witness)
@@ -363,13 +367,16 @@ func TransactionMakeWitness(
 	}
 	if inputFileKey != "" && outputFile != "" {
 		arg = append(arg, inputFileKey) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinKey = nil                  // reset STDIN - not needed since input_file has priority over STDIN
+		stdinKey = nil
 	}
 
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
+	//
 	// convert input_file to stdin
 	if inputFileKey != "" && outputFile == "" {
-		var err error // prevent variable shadowing of stdinKey
+		var (
+			err error // [xXx] - prevent variable shadowing of stdinKey
+		)
 		stdinKey, err = ioutil.ReadFile(inputFileKey)
 		if err != nil {
 			return nil, err
@@ -386,32 +393,33 @@ func TransactionMakeWitness(
 
 // TransactionInfo - display the info regarding a given transaction.
 //
-// STDIN | jcli transaction info [--staging <staging-file>]
-//                               [--fee-certificate <certificate>]
-//                               [--fee-coefficient <coefficient>]
-//                               [--fee-constant <constant>]
-//                               [--format <format>]
-//                               [<output file>]
-//                               [<only-utxos>]
-//                               [<only-accounts>]
-//                               [<only-outputs>]
-//                               [<format-utxo-input>]
-//                               [<format-account-input>]
-//                               [<format-output>]
-//                               [--prefix <address prefix>]
+//  [STDIN] | jcli transaction info
+//                                  [--staging <staging-file>]
+//                                  [--fee-certificate <certificate>]
+//                                  [--fee-coefficient <coefficient>]
+//                                  [--fee-constant <constant>]
+//                                  [--format <format>]
+//                                  [<output file>]
+//                                  [<only-utxos>]
+//                                  [<only-accounts>]
+//                                  [<only-outputs>]
+//                                  [<format-utxo-input>]
+//                                  [<format-account-input>]
+//                                  [<format-output>]
+//                                  [--prefix <address prefix>] | [STDOUT]
 func TransactionInfo(
 	stdinStaging []byte, stagingFile string,
 	feeCertificate uint64,
 	feeCoefficient uint64,
 	feeConstant uint64,
-	outputFile string, // TODO: UPSTREAM unify with "--output" as other file output commands
+	outputFile string, //         TODO: UPSTREAM unify with "--output" as other file output commands
 	format string,
-	onlyUTxOs bool, // TODO: UPSTREAM convert to --only-utxos
-	onlyAccounts bool, // TODO: UPSTREAM convert to --only-accounts
-	onlyOutputs bool, // TODO: UPSTREAM convert to --only-outputs
-	formatUTxOInput string, // TODO: UPSTREAM convert to --format-utxo-input <data>
+	onlyUTxOs bool, //            TODO: UPSTREAM convert to --only-utxos
+	onlyAccounts bool, //         TODO: UPSTREAM convert to --only-accounts
+	onlyOutputs bool, //          TODO: UPSTREAM convert to --only-outputs
+	formatUTxOInput string, //    TODO: UPSTREAM convert to --format-utxo-input <data>
 	formatAccountInput string, // TODO: UPSTREAM convert to --format-account-input <data>
-	formatOutput string, // TODO: UPSTREAM convert to --format-output <data>
+	formatOutput string, //       TODO: UPSTREAM convert to --format-output <data>
 	prefix string,
 ) ([]byte, error) {
 	if len(stdinStaging) == 0 && stagingFile == "" {
@@ -421,7 +429,7 @@ func TransactionInfo(
 	arg := []string{"transaction", "info"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 	arg = append(arg,
 		"--fee-certificate", strconv.FormatUint(feeCertificate, 10),
@@ -467,7 +475,7 @@ func TransactionInfo(
 
 // TransactionDataForWitness - Sign data hash
 //
-// STDIN | jcli transaction data-for-witness [--staging <staging-file>]
+//  [STDIN] | jcli transaction data-for-witness [--staging <staging-file>] | [STDOUT]
 func TransactionDataForWitness(
 	stdinStaging []byte,
 	stagingFile string,
@@ -481,7 +489,7 @@ func TransactionDataForWitness(
 	arg := []string{"transaction", "id"} // FIXME: restore data-for-witness once implemented
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil // reset STDIN - not needed since stagingFile has priority over STDIN
+		stdinStaging = nil
 	}
 
 	return execStd(stdinStaging, "jcli", arg...)

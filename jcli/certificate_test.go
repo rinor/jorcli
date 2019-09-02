@@ -126,7 +126,7 @@ func ExampleCertificateNewStakeDelegation() {
 func ExampleCertificatePrint_signed() {
 	var (
 		stdinCert = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqyqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4wh5uv63nnjp5f7fzlseqdj6a46q55k2vq9ma6v34cf2dn3qf5edcpz250xxrgszt62zj3e7yysddr33e38dtryfsuqncmp9sdxs3z98zk45mr2u")
-		inputFile = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
+		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePool.signed_cert" - will load the certificate from that file
 	)
 
 	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)
@@ -144,7 +144,7 @@ func ExampleCertificatePrint_signed() {
 func ExampleCertificatePrint_stake() {
 	var (
 		stdinCert = []byte("cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4advwz3ns43pnd5ys2azwk965vvrmefraynlnwfhsxelvaxg2gud0yhlh5r")
-		inputFile = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
+		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePoolDelegation.new" - will load the certificate from that file
 	)
 
 	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)

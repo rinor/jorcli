@@ -20,7 +20,7 @@ func UtilsBech32ConvertFromStdin(
 
 // UtilsBech32Convert - convert a bech32 with hrp n into a bech32 with prefix m.
 //
-// jcli utils bech32-convert <FROM_BECH32> <NEW_PREFIX>
+//  jcli utils bech32-convert <FROM_BECH32> <NEW_PREFIX> | STDOUT
 func UtilsBech32Convert(
 	bech32 string,
 	newPrefix string,

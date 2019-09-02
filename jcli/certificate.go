@@ -8,7 +8,7 @@ import (
 
 // CertificateGetStakePoolID - get the stake pool id from the given stake pool registration certificate.
 //
-// STDIN | jcli certificate get-stake-pool-id [<FILE_INPUT>] [<FILE_OUTPUT>]
+//  [STDIN] | jcli certificate get-stake-pool-id [<FILE_INPUT>] [<FILE_OUTPUT>] | [STDOUT]
 func CertificateGetStakePoolID(
 	stdinCertSigned []byte,
 	inputFile string,
@@ -21,7 +21,7 @@ func CertificateGetStakePoolID(
 	arg := []string{"certificate", "get-stake-pool-id"}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinCertSigned = nil        // reset STDIN - not needed since inputFile has priority over STDIN
+		stdinCertSigned = nil
 	}
 	if outputFile != "" && inputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
@@ -33,6 +33,7 @@ func CertificateGetStakePoolID(
 	}
 
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
+	//
 	// convert stdout to outputFile
 	if outputFile != "" && inputFile == "" {
 		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
@@ -48,7 +49,7 @@ func CertificateGetStakePoolID(
 
 // CertificateNewStakeDelegation - build a stake delegation certificate.
 //
-// jcli certificate new stake-delegation <STAKE_POOL_ID> <STAKE_KEY> [output]
+//  jcli certificate new stake-delegation <STAKE_POOL_ID> <STAKE_KEY> [output] | [STDOUT]
 func CertificateNewStakeDelegation(
 	stakePoolID string,
 	stakeKey string,
@@ -78,13 +79,14 @@ func CertificateNewStakeDelegation(
 
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //
-// jcli certificate new stake-pool-registration --kes-key <KES_KEY>
+//  jcli certificate new stake-pool-registration
+//                                              --kes-key <KES_KEY>
 //                                              --vrf-key <VRF_KEY>
 //                                              --start-validity <SECONDS-SINCE-START>
-//                                              --management-threshold <THRESHOLD> (<= #owners and > 0)
+//                                              --management-threshold <THRESHOLD>
 //                                              --serial <SERIAL>
 //                                              [--owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...]
-//                                              [output]
+//                                              [output] | STDOUT
 func CertificateNewStakePoolRegistration(
 	kesKey string,
 	vrfKey string,
@@ -100,6 +102,8 @@ func CertificateNewStakePoolRegistration(
 	if vrfKey == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "vrfKey")
 	}
+
+	// managementThreshold <= #owners and > 0
 	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
 		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
 	}
@@ -130,7 +134,7 @@ func CertificateNewStakePoolRegistration(
 // CertificateSign - Sign certificate,
 // you can call this command multiple time to add multiple signatures if this is required.
 //
-// STDIN | jcli certificate sign <signing-key file> [<input file>] [<output file>]
+//  [STDIN] | jcli certificate sign <signing-key file> [<input file>] [<output file>] | [STDOUT]
 func CertificateSign(
 	stdinCert []byte,
 	signingKeyFile string,
@@ -147,7 +151,7 @@ func CertificateSign(
 	arg := []string{"certificate", "sign", signingKeyFile}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
+		stdinCert = nil
 	}
 	if outputFile != "" && inputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
@@ -159,6 +163,7 @@ func CertificateSign(
 	}
 
 	// TODO: Remove this once UPSTREAM fixed (--input and --output)
+	//
 	// convert stdout to outputFile
 	if outputFile != "" && inputFile == "" {
 		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
@@ -174,7 +179,7 @@ func CertificateSign(
 
 // CertificatePrint - Print certificate.
 //
-// STDIN | jcli certificate print [<input file>]
+//  [STDIN] | jcli certificate print [<input file>] | STDOUT
 func CertificatePrint(
 	stdinCert []byte,
 	inputFile string,
@@ -186,7 +191,7 @@ func CertificatePrint(
 	arg := []string{"certificate", "print"}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
+		stdinCert = nil
 	}
 
 	return execStd(stdinCert, "jcli", arg...)

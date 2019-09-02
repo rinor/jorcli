@@ -7,7 +7,7 @@ import (
 
 // KeyGenerate - generate a private key using a SEED value.
 //
-// jcli key generate --type=<key_type> [--seed=<SEED>] [OUTPUT_FILE]
+//  jcli key generate --type=<key_type> [--seed=<SEED>] [OUTPUT_FILE] | [STDOUT]
 func KeyGenerate(
 	seed string,
 	keyType string,
@@ -34,7 +34,7 @@ func KeyGenerate(
 
 // KeyToPublic - get the public key out of a given private key.
 //
-// STDIN | jcli key to-public [--input=input_file] [OUTPUT_FILE] (input file has priority over STDIN)
+//  [STDIN] | jcli key to-public [--input=input_file] [OUTPUT_FILE] | [STDOUT]
 func KeyToPublic(
 	stdinSk []byte,
 	inputFileSk string,
@@ -47,7 +47,7 @@ func KeyToPublic(
 	arg := []string{"key", "to-public"}
 	if inputFileSk != "" {
 		arg = append(arg, "--input", inputFileSk)
-		stdinSk = nil // reset STDIN - not needed since input_file has priority over STDIN
+		stdinSk = nil
 	}
 	if outputFilePk != "" {
 		arg = append(arg, outputFilePk) // TODO: UPSTREAM unify with "--output" as other file output commands
@@ -61,9 +61,11 @@ func KeyToPublic(
 	return ioutil.ReadFile(outputFilePk)
 }
 
-// KeyToBytes - get the bytes out of a private key. [TODO: encodes also public key but corverts it wrong]
+// TODO: KeyToBytes - (report that) encodes also public key but corverts it wrong
+
+// KeyToBytes - get the bytes out of a private key.
 //
-// STDIN | jcli key to-bytes [OUTPUT_FILE] [INPUT_FILE]
+//  [STDIN] | jcli key to-bytes [OUTPUT_FILE] [INPUT_FILE] | [STDOUT]
 func KeyToBytes(
 	stdinSk []byte,
 	outputFile string,
@@ -79,10 +81,11 @@ func KeyToBytes(
 	}
 	if inputFileSk != "" && outputFile != "" {
 		arg = append(arg, inputFileSk) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinSk = nil                  // reset STDIN since not needed
+		stdinSk = nil
 	}
 
 	// TODO: Remove this once UPSTREAM fixed (--input and --output)
+	//
 	// convert input_file to stdin
 	if inputFileSk != "" && outputFile == "" {
 		var err error // prevent variable shadowing of stdinSk
@@ -100,9 +103,11 @@ func KeyToBytes(
 	return ioutil.ReadFile(outputFile)
 }
 
-// KeyFromBytes - retrive a private key from the given bytes. [TODO: UPSTREAM encodes also public key but corverts it wrong]
+// TODO: KeyFromBytes - (report that) encodes also public key but corverts it wrong
+
+// KeyFromBytes - retrive a private key from the given bytes.
 //
-// STDIN | jcli key from-bytes --type=<key_type> [INPUT_BYTES] [OUTPUT_FILE]
+//  [STDIN] | jcli key from-bytes --type=<key_type> [INPUT_BYTES] [OUTPUT_FILE] | [STDOUT]
 func KeyFromBytes(
 	stdinSk []byte,
 	keyType string,
@@ -119,7 +124,7 @@ func KeyFromBytes(
 	arg := []string{"key", "from-bytes", "--type", keyType}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinSk = nil                // reset STDIN since not needed
+		stdinSk = nil
 	}
 	if outputFileSk != "" && inputFile != "" {
 		arg = append(arg, outputFileSk) // TODO: UPSTREAM unify with "--output" as other file output commands
@@ -131,6 +136,7 @@ func KeyFromBytes(
 	}
 
 	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
+	//
 	// convert stdout to output_file
 	if outputFileSk != "" && inputFile == "" {
 		if err = ioutil.WriteFile(outputFileSk, out, 0644); err != nil {
