@@ -10,24 +10,24 @@ import (
 //
 // STDIN | jcli certificate get-stake-pool-id [<FILE_INPUT>] [<FILE_OUTPUT>]
 func CertificateGetStakePoolID(
-	stdinCert []byte,
+	stdinCertSigned []byte,
 	inputFile string,
 	outputFile string,
 ) ([]byte, error) {
-	if len(stdinCert) == 0 && inputFile == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
+	if len(stdinCertSigned) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCertSigned", "inputFile")
 	}
 
 	arg := []string{"certificate", "get-stake-pool-id"}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinCert = nil              // reset STDIN - not needed since inputFile has priority over STDIN
+		stdinCertSigned = nil        // reset STDIN - not needed since inputFile has priority over STDIN
 	}
 	if outputFile != "" && inputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdinCert, "jcli", arg...)
+	out, err := execStd(stdinCertSigned, "jcli", arg...)
 	if err != nil /* || outputFile == "" */ {
 		return out, err
 	}
