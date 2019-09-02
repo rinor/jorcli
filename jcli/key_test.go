@@ -11,7 +11,8 @@ func ExampleKeyGenerate_noseed() {
 	var (
 		seed         = ""
 		keyType      = "ed25519extended"
-		outputFileSk = ""
+		outputFileSk = "" // "" - output to STDOUT ([]byte) only, "privateKey.sk" - will also save output to that file
+
 	)
 
 	privateKey, err := jcli.KeyGenerate(seed, keyType, outputFileSk)
@@ -27,7 +28,7 @@ func ExampleKeyGenerate_seed() {
 	var (
 		seed         = "0000000000000000000000000000000000000000000000000000000000000000"
 		keyType      = "ed25519extended"
-		outputFileSk = ""
+		outputFileSk = "" // "" - output to STDOUT ([]byte) only, "privateKey.sk" - will also save output to that file
 	)
 
 	privateKey, err := jcli.KeyGenerate(seed, keyType, outputFileSk)
@@ -58,8 +59,8 @@ func TestKeyToPublic_file(t *testing.T) {
 func ExampleKeyToPublic_stdin() {
 	var (
 		stdinSk      = []byte("ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4")
-		inputFileSk  = ""
-		outputFilePk = ""
+		inputFileSk  = "" // "" - input from STDIN (stdinSk []byte), "privateKey.sk" - will load the private key from that file
+		outputFilePk = "" // "" - output to STDOUT ([]byte) only, "publicKey.pk" - will also save the public key to that file
 	)
 
 	publicKey, err := jcli.KeyToPublic(stdinSk, inputFileSk, outputFilePk)
