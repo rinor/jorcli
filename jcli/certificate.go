@@ -27,7 +27,7 @@ func CertificateGetStakePoolID(
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdinCertSigned, "jcli", arg...)
+	out, err := jcli(stdinCertSigned, arg...)
 	if err != nil /* || outputFile == "" */ {
 		return out, err
 	}
@@ -67,7 +67,7 @@ func CertificateNewStakeDelegation(
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(nil, "jcli", arg...)
+	out, err := jcli(nil, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -123,7 +123,7 @@ func CertificateNewStakePoolRegistration(
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(nil, "jcli", arg...)
+	out, err := jcli(nil, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -157,7 +157,7 @@ func CertificateSign(
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdinCert, "jcli", arg...)
+	out, err := jcli(stdinCert, arg...)
 	if err != nil /* || outputFile == "" */ {
 		return out, err
 	}
@@ -194,5 +194,5 @@ func CertificatePrint(
 		stdinCert = nil
 	}
 
-	return execStd(stdinCert, "jcli", arg...)
+	return jcli(stdinCert, arg...)
 }

@@ -27,7 +27,7 @@ func RestAccount(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** BLOCK ******************** */
@@ -48,7 +48,7 @@ func RestBlock(
 
 	arg := []string{"rest", "v0", "block", blockID, "get", "--host", host}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // RestBlockNextID - Get block descendant ID.
@@ -80,7 +80,7 @@ func RestBlockNextID(
 		"--host", host,
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** LEADERS ******************** */
@@ -102,7 +102,7 @@ func RestLeadersDelete(
 		"--host", host,
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // RestLeaders - Get list of leader IDs.
@@ -121,7 +121,7 @@ func RestLeaders(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // RestLeadersLogs - Get leadership logs.
@@ -140,7 +140,7 @@ func RestLeadersLogs(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // RestLeadersPost - Register new leader and get its ID.
@@ -164,7 +164,7 @@ func RestLeadersPost(
 		stdinSk = nil
 	}
 
-	return execStd(stdinSk, "jcli", arg...)
+	return jcli(stdinSk, arg...)
 }
 
 /* ******************** MESSAGE ******************** */
@@ -187,7 +187,7 @@ func RestMessageLogs(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // RestMessagePost - Post message and prints id for posted message.
@@ -211,7 +211,7 @@ func RestMessagePost(
 		stdinMsg = nil
 	}
 
-	return execStd(stdinMsg, "jcli", arg...)
+	return jcli(stdinMsg, arg...)
 }
 
 /* ******************** NODE ******************** */
@@ -232,7 +232,7 @@ func RestNodeStats(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** SETTINGS ******************** */
@@ -253,7 +253,7 @@ func RestSettings(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** SHUTDOWN ******************** */
@@ -271,7 +271,7 @@ func RestShutdown(
 
 	arg := []string{"rest", "v0", "shutdown", "get", "--host", host}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** STAKE ******************** */
@@ -292,7 +292,7 @@ func RestStake(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** STAKE-POOLS ******************** */
@@ -313,7 +313,7 @@ func RestStakePools(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** TIP ******************** */
@@ -330,7 +330,7 @@ func RestTip(
 
 	arg := []string{"rest", "v0", "top", "get", "--host", host}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 /* ******************** UTXO ******************** */
@@ -351,5 +351,5 @@ func RestUTxO(
 		arg = append(arg, "--output-format", outputFormat)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }

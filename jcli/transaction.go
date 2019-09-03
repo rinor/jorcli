@@ -19,7 +19,7 @@ func TransactionNew(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -57,7 +57,7 @@ func TransactionAddInput(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -91,7 +91,7 @@ func TransactionAddAccount(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -125,7 +125,7 @@ func TransactionAddOutput(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -154,7 +154,7 @@ func TransactionAddWitness(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -186,7 +186,7 @@ func TransactionAddCertificate(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -228,7 +228,7 @@ func TransactionFinalize(
 		arg = append(arg, changeAddress)
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -253,7 +253,7 @@ func TransactionSeal(
 		stdinStaging = nil
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || stagingFile == "" {
 		return out, err
 	}
@@ -281,7 +281,7 @@ func TransactionID(
 		stdinStaging = nil
 	}
 
-	return execStd(stdinStaging, "jcli", arg...)
+	return jcli(stdinStaging, arg...)
 }
 
 // TransactionToMessage - get the message format out of a sealed transaction.
@@ -301,7 +301,7 @@ func TransactionToMessage(
 		stdinStaging = nil
 	}
 
-	return execStd(stdinStaging, "jcli", arg...)
+	return jcli(stdinStaging, arg...)
 }
 
 // TransactionToMessageFile - get the message format out of a sealed transaction
@@ -383,7 +383,7 @@ func TransactionMakeWitness(
 		}
 	}
 
-	out, err := execStd(stdinKey, "jcli", arg...)
+	out, err := jcli(stdinKey, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -460,7 +460,7 @@ func TransactionInfo(
 		arg = append(arg, formatOutput)
 	}
 
-	out, err := execStd(stdinStaging, "jcli", arg...)
+	out, err := jcli(stdinStaging, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -492,5 +492,5 @@ func TransactionDataForWitness(
 		stdinStaging = nil
 	}
 
-	return execStd(stdinStaging, "jcli", arg...)
+	return jcli(stdinStaging, arg...)
 }

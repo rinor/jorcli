@@ -30,7 +30,7 @@ func AddressInfo(
 
 	arg := []string{"address", "info", addressBech32}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // AddressAccountFromStdin - create an address from the the single public key.
@@ -68,7 +68,7 @@ func AddressAccount(
 		arg = append(arg, "--"+discrimination)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }
 
 // AddressSingleFromStdin - create an address from the single public key. This address does not have delegation.
@@ -111,5 +111,5 @@ func AddressSingle(
 		arg = append(arg, "--"+discrimination)
 	}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }

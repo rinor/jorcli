@@ -6,14 +6,16 @@ import (
 	"os/exec"
 )
 
-// execStd ...
-func execStd(stdin []byte, name string, arg ...string) ([]byte, error) {
+const jcliName = "jcli"
+
+// jcli executes "stdin | 'jcliName' args | stdout"
+func jcli(stdin []byte, arg ...string) ([]byte, error) {
 	var (
 		cmd    *exec.Cmd
 		stdout bytes.Buffer
 		stderr bytes.Buffer
 	)
-	cmd = exec.Command(name, arg...)
+	cmd = exec.Command(jcliName, arg...)
 	// TODO: check also exec.CommandContext(ctx context.Context, name string, arg ...string)
 
 	cmd.Stdout = &stdout

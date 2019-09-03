@@ -34,5 +34,5 @@ func UtilsBech32Convert(
 
 	arg := []string{"utils", "bech32-convert", bech32, newPrefix}
 
-	return execStd(nil, "jcli", arg...)
+	return jcli(nil, arg...)
 }

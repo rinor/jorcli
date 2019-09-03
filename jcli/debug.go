@@ -19,5 +19,5 @@ func DebugMessage(
 		stdinHex = nil
 	}
 
-	return execStd(stdinHex, "jcli", arg...)
+	return jcli(stdinHex, arg...)
 }

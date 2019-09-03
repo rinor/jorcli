@@ -9,7 +9,7 @@ import (
 //
 //  jcli genesis init | STDOUT
 func GenesisInit() ([]byte, error) {
-	return execStd(nil, "jcli", "genesis", "init")
+	return jcli(nil, "genesis", "init")
 }
 
 // GenesisHash - print the block hash (aka the block id) of the block0.
@@ -29,7 +29,7 @@ func GenesisHash(
 		block0Bin = nil
 	}
 
-	return execStd(block0Bin, "jcli", arg...)
+	return jcli(block0Bin, arg...)
 }
 
 // GenesisEncode - create the block 0 file (the genesis block of the blockchain) from a given yaml file.
@@ -53,7 +53,7 @@ func GenesisEncode(
 		arg = append(arg, "--output", outputFile)
 	}
 
-	out, err := execStd(block0Txt, "jcli", arg...)
+	out, err := jcli(block0Txt, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -82,7 +82,7 @@ func GenesisDecode(
 		arg = append(arg, "--output", outputFile)
 	}
 
-	out, err := execStd(block0Bin, "jcli", arg...)
+	out, err := jcli(block0Bin, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}

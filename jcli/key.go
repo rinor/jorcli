@@ -24,7 +24,7 @@ func KeyGenerate(
 		arg = append(arg, outputFileSk)
 	}
 
-	out, err := execStd(nil, "jcli", arg...)
+	out, err := jcli(nil, arg...)
 	if err != nil || outputFileSk == "" {
 		return out, err
 	}
@@ -53,7 +53,7 @@ func KeyToPublic(
 		arg = append(arg, outputFilePk) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdinSk, "jcli", arg...)
+	out, err := jcli(stdinSk, arg...)
 	if err != nil || outputFilePk == "" {
 		return out, err
 	}
@@ -95,7 +95,7 @@ func KeyToBytes(
 		}
 	}
 
-	out, err := execStd(stdinSk, "jcli", arg...)
+	out, err := jcli(stdinSk, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -130,7 +130,7 @@ func KeyFromBytes(
 		arg = append(arg, outputFileSk) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
-	out, err := execStd(stdinSk, "jcli", arg...)
+	out, err := jcli(stdinSk, arg...)
 	if err != nil /* || outputFileSk == "" */ {
 		return out, err
 	}
