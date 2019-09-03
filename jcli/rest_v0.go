@@ -335,10 +335,10 @@ func RestTip(
 
 /* ******************** UTXO ******************** */
 
-// RestUTxOs - Get all UTXOs.
+// RestUTxO - Get all UTXOs.
 //
 //  jcli rest v0 utxo get --host <host> --output-format <format> | STDOUT
-func RestUTxOs(
+func RestUTxO(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
