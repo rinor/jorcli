@@ -1,77 +1,73 @@
-{{if .Storage}}
-# --storage
+{{- if .Storage}}
 storage: {{ .Storage }}
 {{end}}
 
-{{with .Explorer}}
+{{- with .Explorer}}
 explorer:
-  enabled: {{ .Enabled }} # --enable-explorer
+  enabled: {{ .Enabled }}
 {{end}}
 
-{{with .Rest}}
+{{- with .Rest}}
 rest:
   listen: {{ .Listen }}
-  {{with .Cors}}
+  {{- with .Cors}}
   cors:
-    {{if .AllowedOrigins}}
+    {{- if .AllowedOrigins}}
     allowed_origins:
-      {{range .AllowedOrigins}}
+      {{- range .AllowedOrigins}}
       - {{ . }}
-      {{end}}
-    {{end}}
+      {{- end}}
+    {{- end}}
     max_age_secs: {{ .MaxAgeSecs }}
-  {{end}}
-  {{if .Pkcs12}}
+  {{- end}}
+  {{- if .Pkcs12}}
   pkcs12: {{ .Pkcs12 }}
-  {{end}}
+  {{- end}}
 {{end}}
 
-{{with .P2P}}
+{{- with .P2P}}
 p2p:
   public_address: {{ .PublicAddress }}
-  {{if .ListenAddress}}
+  {{- if .ListenAddress}}
   listen_address: {{ .ListenAddress }}
-  {{end}}
-  {{with .TopicsOfInterest}}
+  {{- end}}
+  {{- with .TopicsOfInterest}}
   topics_of_interest:
     messages: {{ .Messages }}
     blocks: {{ .Blocks }}
-  {{end}}
+  {{- end}}
 
-  {{if .TrustedPeers}}
+  {{- if .TrustedPeers}}
   trusted_peers:
-    {{range .TrustedPeers}}
-    - {{ . }}
-    {{end}}
-  {{end}}
+    {{- range .TrustedPeers}}
+	- {{ . }}
+    {{- end}}
+  {{- end}}
 {{end}}
 
-
-{{with .Log}}
+{{- with .Log}}
 log:
-  level:  {{ .Level }} # --log-level
-  format: {{ .Format }} # --log-format <log_format>
-  output: {{ .Output }} # --log-output <log_output>
+  level:  {{ .Level }}
+  format: {{ .Format }}
+  output: {{ .Output }}
 {{end}}
 
-{{with .Mempool}}
+{{- with .Mempool}}
 mempool:
     fragment_ttl: {{ .FragmentTTL }}
     log_ttl: {{ .LogTTL }}
     garbage_collection_interval: {{ .GarbageCollectionInterval }}
 {{end}}
 
-{{with .Leadership}}
+{{- with .Leadership}}
 leadership:
     log_ttl: {{ .LogTTL }}
     garbage_collection_interval: {{ .GarbageCollectionInterval }}
 {{end}}
 
-
-{{if .SecretFiles}}
-# --secret
+{{- if .SecretFiles}}
 secret_files:
-  {{range .SecretFiles}}
+  {{- range .SecretFiles}}
   - {{ . }}
-  {{end}}
-{{end}}
+  {{- end}}
+{{- end}}
