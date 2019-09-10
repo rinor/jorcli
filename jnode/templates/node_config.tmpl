@@ -1,0 +1,77 @@
+{{if .Storage}}
+# --storage
+storage: {{ .Storage }}
+{{end}}
+
+{{with .Explorer}}
+explorer:
+  enabled: {{ .Enabled }} # --enable-explorer
+{{end}}
+
+{{with .Rest}}
+rest:
+  listen: {{ .Listen }}
+  {{with .Cors}}
+  cors:
+    {{if .AllowedOrigins}}
+    allowed_origins:
+      {{range .AllowedOrigins}}
+      - {{ . }}
+      {{end}}
+    {{end}}
+    max_age_secs: {{ .MaxAgeSecs }}
+  {{end}}
+  {{if .Pkcs12}}
+  pkcs12: {{ .Pkcs12 }}
+  {{end}}
+{{end}}
+
+{{with .P2P}}
+p2p:
+  public_address: {{ .PublicAddress }}
+  {{if .ListenAddress}}
+  listen_address: {{ .ListenAddress }}
+  {{end}}
+  {{with .TopicsOfInterest}}
+  topics_of_interest:
+    messages: {{ .Messages }}
+    blocks: {{ .Blocks }}
+  {{end}}
+
+  {{if .TrustedPeers}}
+  trusted_peers:
+    {{range .TrustedPeers}}
+    - {{ . }}
+    {{end}}
+  {{end}}
+{{end}}
+
+
+{{with .Log}}
+log:
+  level:  {{ .Level }} # --log-level
+  format: {{ .Format }} # --log-format <log_format>
+  output: {{ .Output }} # --log-output <log_output>
+{{end}}
+
+{{with .Mempool}}
+mempool:
+    fragment_ttl: {{ .FragmentTTL }}
+    log_ttl: {{ .LogTTL }}
+    garbage_collection_interval: {{ .GarbageCollectionInterval }}
+{{end}}
+
+{{with .Leadership}}
+leadership:
+    log_ttl: {{ .LogTTL }}
+    garbage_collection_interval: {{ .GarbageCollectionInterval }}
+{{end}}
+
+
+{{if .SecretFiles}}
+# --secret
+secret_files:
+  {{range .SecretFiles}}
+  - {{ . }}
+  {{end}}
+{{end}}

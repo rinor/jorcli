@@ -1,4 +1,4 @@
-{{with .BlockchainConfiguration -}}
+{{- with .BlockchainConfiguration -}}
 blockchain_configuration:
   block0_date: {{ .Block0Date }}
   discrimination: {{ .Discrimination }}
@@ -10,21 +10,19 @@ blockchain_configuration:
   bft_slots_ratio: {{ .BftSlotsRatio }}
   max_number_of_transactions_per_block: {{ .MaxNumberOfTransactionsPerBlock }}
   epoch_stability_depth: {{ .EpochStabilityDepth }}
-
   {{with .LinearFees -}}
   linear_fees:
     constant: {{ .Constant }}
     coefficient: {{ .Coefficient }}
     certificate: {{ .Certificate }}
   {{- end}}
-
   consensus_leader_ids:
   {{- range .ConsensusLeaderIds}}
     - {{ . -}}
   {{end}}
-{{- end}}
+{{end}}
 
-{{with .Initial -}}
+{{- with .Initial -}}
 initial:
 {{- range .}}
   {{- with .Fund}}

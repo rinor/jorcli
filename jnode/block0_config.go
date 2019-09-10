@@ -1,18 +1,63 @@
 package jnode
 
 import (
+	"bytes"
 	"fmt"
+	"text/template"
 	"time"
 )
 
-// block0Config Genesis config
-type block0Config struct {
-	BlockchainConfiguration blockchainConfig    // `"blockchain_configuration"`
-	Initial                 []blockchainInitial // `"initial"`
+// block0ConfigTemplate ...
+const block0ConfigTemplate = `
+{{- with .BlockchainConfiguration -}}
+blockchain_configuration:
+  block0_date: {{ .Block0Date }}
+  discrimination: {{ .Discrimination }}
+  block0_consensus: {{ .Block0Consensus }}
+  slots_per_epoch: {{ .SlotsPerEpoch }}
+  slot_duration: {{ .SlotDuration }}
+  kes_update_speed: {{ .KesUpdateSpeed }}
+  consensus_genesis_praos_active_slot_coeff: {{ .ConsensusGenesisPraosActiveSlotCoeff }}
+  bft_slots_ratio: {{ .BftSlotsRatio }}
+  max_number_of_transactions_per_block: {{ .MaxNumberOfTransactionsPerBlock }}
+  epoch_stability_depth: {{ .EpochStabilityDepth }}
+  {{with .LinearFees -}}
+  linear_fees:
+    constant: {{ .Constant }}
+    coefficient: {{ .Coefficient }}
+    certificate: {{ .Certificate }}
+  {{- end}}
+  consensus_leader_ids:
+  {{- range .ConsensusLeaderIds}}
+    - {{ . -}}
+  {{end}}
+{{end}}
+
+{{- with .Initial -}}
+initial:
+{{- range .}}
+  {{- with .Fund}}
+  - fund:
+      {{- range .}}
+      - address: {{ .Address }}
+        value: {{ .Value}}
+      {{- end -}}
+  {{- end -}}
+  {{if .Cert}}
+  - cert: {{ .Cert }}
+  {{- end}}
+{{- end}}
+{{- end}}
+`
+
+// Block0Config Genesis config
+type Block0Config struct {
+	BlockchainConfiguration BlockchainConfig    // `"blockchain_configuration"`
+	Initial                 []BlockchainInitial // `"initial"`
 }
 
-// blockchainConfig ...
-type blockchainConfig struct {
+// BlockchainConfig ...
+type BlockchainConfig struct {
 	Discrimination                  string // `"discrimination"`
 	Block0Consensus                 string // `"block0_consensus"`
 	Block0Date                      int64  // `"block0_date"`
@@ -34,21 +79,21 @@ type blockchainConfig struct {
 	ConsensusLeaderIds []string // `"consensus_leader_ids"`
 }
 
-// blockchainInitial ...
-type blockchainInitial struct {
-	Fund []initialFund // `"fund"`
+// BlockchainInitial ...
+type BlockchainInitial struct {
+	Fund []InitialFund // `"fund"`
 	Cert string        // `"cert"`
 }
 
-// initialFund ...
-type initialFund struct {
+// InitialFund ...
+type InitialFund struct {
 	Address string // `"address"`
 	Value   uint64 // `"value"`
 }
 
 // NewBlock0Config provides default block0 config
-func NewBlock0Config() *block0Config {
-	var chainConfig blockchainConfig
+func NewBlock0Config() *Block0Config {
+	var chainConfig BlockchainConfig
 
 	chainConfig.Discrimination = "test"
 	chainConfig.Block0Consensus = "genesis_praos"
@@ -64,13 +109,27 @@ func NewBlock0Config() *block0Config {
 	chainConfig.LinearFees.Coefficient = 0
 	chainConfig.LinearFees.Constant = 0
 
-	return &block0Config{
+	return &Block0Config{
 		BlockchainConfiguration: chainConfig,
 	}
 }
 
+// ToYaml parses the config template and returns yaml
+func (block0Cfg *Block0Config) ToYaml() ([]byte, error) {
+	var block0Yaml bytes.Buffer
+
+	t := template.Must(template.New("block0ConfigTemplate").Parse(block0ConfigTemplate))
+
+	err := t.Execute(&block0Yaml, block0Cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return block0Yaml.Bytes(), nil
+}
+
 // AddConsensusLeader to block0 Blockchain Configuration
-func (block0Cfg *block0Config) AddConsensusLeader(leaderPublicKey string) error {
+func (block0Cfg *Block0Config) AddConsensusLeader(leaderPublicKey string) error {
 	// FIXME: check validity
 	if leaderPublicKey == "" {
 		return fmt.Errorf("parameter missing : %s", "leaderPublicKey")
@@ -85,7 +144,7 @@ func (block0Cfg *block0Config) AddConsensusLeader(leaderPublicKey string) error 
 }
 
 // AddInitialCertificate to block0 Initial config
-func (block0Cfg *block0Config) AddInitialCertificate(cert string) error {
+func (block0Cfg *Block0Config) AddInitialCertificate(cert string) error {
 	// FIXME: check validity
 	if cert == "" {
 		return fmt.Errorf("parameter missing : %s", "cert")
@@ -93,28 +152,28 @@ func (block0Cfg *block0Config) AddInitialCertificate(cert string) error {
 
 	block0Cfg.Initial = append(
 		block0Cfg.Initial,
-		blockchainInitial{Cert: cert},
+		BlockchainInitial{Cert: cert},
 	)
 
 	return nil
 }
 
 // AddInitialFund to block0 Initial config
-func (block0Cfg *block0Config) AddInitialFund(address string, value uint64) error {
+func (block0Cfg *Block0Config) AddInitialFund(address string, value uint64) error {
 	// FIXME: check validity
 	if address == "" {
 		return fmt.Errorf("parameter missing : %s", "address")
 	}
 
-	fundInit := initialFund{
+	fundInit := InitialFund{
 		Address: address,
 		Value:   value,
 	}
 
 	block0Cfg.Initial = append(
 		block0Cfg.Initial,
-		blockchainInitial{
-			Fund: []initialFund{fundInit},
+		BlockchainInitial{
+			Fund: []InitialFund{fundInit},
 		},
 	)
 
