@@ -27,9 +27,11 @@ blockchain_configuration:
     coefficient: {{ .Coefficient }}
     certificate: {{ .Certificate }}
   {{- end}}
+  {{- if .ConsensusLeaderIds}}
   consensus_leader_ids:
-  {{- range .ConsensusLeaderIds}}
+    {{- range .ConsensusLeaderIds}}
     - {{ . -}}
+    {{end}}
   {{end}}
 {{end}}
 
@@ -58,25 +60,25 @@ type Block0Config struct {
 
 // BlockchainConfig ...
 type BlockchainConfig struct {
-	Discrimination                  string // `"discrimination"`
-	Block0Consensus                 string // `"block0_consensus"`
-	Block0Date                      int64  // `"block0_date"`
-	SlotDuration                    int    // `"slot_duration"`
-	SlotsPerEpoch                   int    // `"slots_per_epoch"`
-	EpochStabilityDepth             int    // `"epoch_stability_depth"`
-	KesUpdateSpeed                  int    // `"kes_update_speed"`
-	MaxNumberOfTransactionsPerBlock int    // `"max_number_of_transactions_per_block"`
+	Discrimination                       string     // `"discrimination"`
+	Block0Consensus                      string     // `"block0_consensus"`
+	Block0Date                           int64      // `"block0_date"`
+	SlotDuration                         uint8      // `"slot_duration"`
+	SlotsPerEpoch                        uint32     // `"slots_per_epoch"`
+	EpochStabilityDepth                  uint32     // `"epoch_stability_depth"`
+	KesUpdateSpeed                       uint32     // `"kes_update_speed"`
+	MaxNumberOfTransactionsPerBlock      uint32     // `"max_number_of_transactions_per_block"`
+	BftSlotsRatio                        float64    // `"bft_slots_ratio"`
+	ConsensusGenesisPraosActiveSlotCoeff float64    // `"consensus_genesis_praos_active_slot_coeff"`
+	LinearFees                           LinearFees // `"linear_fees"`
+	ConsensusLeaderIds                   []string   // `"consensus_leader_ids"`
+}
 
-	BftSlotsRatio                        float64 // `"bft_slots_ratio"`
-	ConsensusGenesisPraosActiveSlotCoeff float64 // `"consensus_genesis_praos_active_slot_coeff"`
-
-	LinearFees struct {
-		Certificate int // `"certificate"`
-		Coefficient int // `"coefficient"`
-		Constant    int // `"constant"`
-	} // `"linear_fees"`
-
-	ConsensusLeaderIds []string // `"consensus_leader_ids"`
+// LinearFees ...
+type LinearFees struct {
+	Certificate uint64 // `"certificate"`
+	Coefficient uint64 // `"coefficient"`
+	Constant    uint64 // `"constant"`
 }
 
 // BlockchainInitial ...
@@ -98,11 +100,11 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.Discrimination = "test"
 	chainConfig.Block0Consensus = "genesis_praos"
 	chainConfig.Block0Date = time.Now().Unix()
-	chainConfig.SlotDuration = 20
-	chainConfig.SlotsPerEpoch = 30
-	chainConfig.EpochStabilityDepth = 1
+	chainConfig.SlotDuration = 120
+	chainConfig.SlotsPerEpoch = 720
+	chainConfig.EpochStabilityDepth = 10
 	chainConfig.KesUpdateSpeed = 43200
-	chainConfig.BftSlotsRatio = 0.0
+	chainConfig.BftSlotsRatio = 0.22
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
 	chainConfig.MaxNumberOfTransactionsPerBlock = 255
 	chainConfig.LinearFees.Certificate = 0
@@ -112,20 +114,6 @@ func NewBlock0Config() *Block0Config {
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,
 	}
-}
-
-// ToYaml parses the config template and returns yaml
-func (block0Cfg *Block0Config) ToYaml() ([]byte, error) {
-	var block0Yaml bytes.Buffer
-
-	t := template.Must(template.New("block0ConfigTemplate").Parse(block0ConfigTemplate))
-
-	err := t.Execute(&block0Yaml, block0Cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return block0Yaml.Bytes(), nil
 }
 
 // AddConsensusLeader to block0 Blockchain Configuration
@@ -178,4 +166,21 @@ func (block0Cfg *Block0Config) AddInitialFund(address string, value uint64) erro
 	)
 
 	return nil
+}
+
+// ToYaml parses the config template and returns yaml
+func (block0Cfg *Block0Config) ToYaml() ([]byte, error) {
+	var block0Yaml bytes.Buffer
+
+	tmpl, err := template.New("block0ConfigTemplate").Parse(block0ConfigTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tmpl.Execute(&block0Yaml, block0Cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return block0Yaml.Bytes(), nil
 }

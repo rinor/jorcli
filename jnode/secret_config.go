@@ -48,9 +48,12 @@ type SecretBft struct {
 func (secretCfg *SecretConfig) ToYaml() ([]byte, error) {
 	var secretYaml bytes.Buffer
 
-	t := template.Must(template.New("secretConfigTemplate").Parse(secretConfigTemplate))
+	tmpl, err := template.New("secretConfigTemplate").Parse(secretConfigTemplate)
+	if err != nil {
+		return nil, err
+	}
 
-	err := t.Execute(&secretYaml, secretCfg)
+	err = tmpl.Execute(&secretYaml, secretCfg)
 	if err != nil {
 		return nil, err
 	}

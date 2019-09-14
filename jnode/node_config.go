@@ -48,7 +48,7 @@ p2p:
   {{- if .TrustedPeers}}
   trusted_peers:
     {{- range .TrustedPeers}}
-	- {{ . }}
+    - {{ . }}
     {{- end}}
   {{- end}}
 {{end}}
@@ -80,8 +80,6 @@ secret_files:
   {{- end}}
 {{- end}}
 `
-
-var _ = nodeConfigTemplate
 
 // NodeConfig --config
 type NodeConfig struct {
@@ -122,12 +120,12 @@ type ConfigCors struct {
 	MaxAgeSecs     int      // `"max_age_secs"`
 }
 
-// ConfigExplorer ...
+// ConfigExplorer --enable-explorer
 type ConfigExplorer struct {
-	Enabled bool // `"enabled"`127.0.0.2
+	Enabled bool // `"enabled"`
 }
 
-// ConfigLog ...
+// ConfigLog --log-level, --log-format, --log-output <log_output>
 type ConfigLog struct {
 	Level  string // `"level"`
 	Format string // `"format"`
@@ -168,23 +166,15 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.Explorer.Enabled = true
 
 	nodeCfg.Rest.Listen = "127.0.0.1:8443"
-	// nodeCfg.Rest.Pkcs12 = "00000000000000"
 	nodeCfg.Rest.Cors.MaxAgeSecs = 0
-	// nodeCfg.Rest.Cors.AllowedOrigins = append(nodeCfg.Rest.Cors.AllowedOrigins, "*")
 
 	nodeCfg.P2P.PublicAddress = "/ip4/127.0.0.1/tcp/8299"
-	// nodeCfg.P2P.ListenAddress = "/ip4/127.0.0.1/tcp/8299"
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
-	// nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, "/ip4/127.0.0.2/tcp/8299")
-	// nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, "/ip4/127.0.0.3/tcp/8299")
 
-	// nodeCfg.SecretFiles = append(nodeCfg.SecretFiles, "secret_01.key")
-	// nodeCfg.SecretFiles = append(nodeCfg.SecretFiles, "secret_02.key")
-
-	nodeCfg.Log.Level = "trace"
-	nodeCfg.Log.Format = "yaml"
-	nodeCfg.Log.Output = "stdout"
+	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
+	nodeCfg.Log.Format = "plain"  // "json", "plain"
+	nodeCfg.Log.Output = "stdout" // "stdout", "stderr", ...
 
 	nodeCfg.Mempool.FragmentTTL = "30m"
 	nodeCfg.Mempool.LogTTL = "1h"
@@ -200,9 +190,12 @@ func NewNodeConfig() *NodeConfig {
 func (nodeCfg *NodeConfig) ToYaml() ([]byte, error) {
 	var cfgYaml bytes.Buffer
 
-	t := template.Must(template.New("nodeConfigTemplate").Parse(nodeConfigTemplate))
+	tmpl, err := template.New("nodeConfigTemplate").Parse(nodeConfigTemplate)
+	if err != nil {
+		return nil, err
+	}
 
-	err := t.Execute(&cfgYaml, nodeCfg)
+	err = tmpl.Execute(&cfgYaml, nodeCfg)
 	if err != nil {
 		return nil, err
 	}

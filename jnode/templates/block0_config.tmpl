@@ -16,9 +16,11 @@ blockchain_configuration:
     coefficient: {{ .Coefficient }}
     certificate: {{ .Certificate }}
   {{- end}}
+  {{- if .ConsensusLeaderIds}}
   consensus_leader_ids:
-  {{- range .ConsensusLeaderIds}}
+    {{- range .ConsensusLeaderIds}}
     - {{ . -}}
+    {{end}}
   {{end}}
 {{end}}
 

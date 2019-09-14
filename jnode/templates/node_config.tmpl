@@ -40,7 +40,7 @@ p2p:
   {{- if .TrustedPeers}}
   trusted_peers:
     {{- range .TrustedPeers}}
-	- {{ . }}
+    - {{ . }}
     {{- end}}
   {{- end}}
 {{end}}
