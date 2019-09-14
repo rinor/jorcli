@@ -6,7 +6,9 @@ import (
 	"os/exec"
 )
 
-const jcliName = "jcli"
+var (
+	jcliName = "jcli"
+)
 
 // jcli executes "stdin | 'jcliName' args | stdout"
 func jcli(stdin []byte, arg ...string) ([]byte, error) {
@@ -28,4 +30,9 @@ func jcli(stdin []byte, arg ...string) ([]byte, error) {
 		return stderr.Bytes(), err
 	}
 	return stdout.Bytes(), nil
+}
+
+// BinName set the executable name/path if not the default one.
+func BinName(name string) {
+	jcliName = name
 }
