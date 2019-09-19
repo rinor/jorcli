@@ -21,6 +21,12 @@ blockchain_configuration:
   bft_slots_ratio: {{ .BftSlotsRatio }}
   max_number_of_transactions_per_block: {{ .MaxNumberOfTransactionsPerBlock }}
   epoch_stability_depth: {{ .EpochStabilityDepth }}
+  {{- if .Treasury}}
+  treasury: {{ .Treasury }}
+  {{- end}}
+  {{- if .Rewards }}
+  reward-pot: {{ .Rewards }}
+  {{- end}}
   {{with .LinearFees -}}
   linear_fees:
     constant: {{ .Constant }}
@@ -72,6 +78,9 @@ type BlockchainConfig struct {
 	ConsensusGenesisPraosActiveSlotCoeff float64    // `"consensus_genesis_praos_active_slot_coeff"`
 	LinearFees                           LinearFees // `"linear_fees"`
 	ConsensusLeaderIds                   []string   // `"consensus_leader_ids"`
+	Treasury                             uint64     // `"treasury"`
+	Rewards                              uint64     // ``"reward-pot"``
+
 }
 
 // LinearFees ...
@@ -107,6 +116,8 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.BftSlotsRatio = 0.22
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
 	chainConfig.MaxNumberOfTransactionsPerBlock = 255
+	chainConfig.Treasury = 0
+	chainConfig.Rewards = 0
 	chainConfig.LinearFees.Certificate = 0
 	chainConfig.LinearFees.Coefficient = 0
 	chainConfig.LinearFees.Constant = 0

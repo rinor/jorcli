@@ -91,7 +91,7 @@ func CertificateNewStakePoolRegistration(
 	kesKey string,
 	vrfKey string,
 	startValidity uint64,
-	managementThreshold uint8,
+	managementThreshold uint16,
 	serial uint64,
 	owner []string,
 	outputFile string,
