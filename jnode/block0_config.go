@@ -79,7 +79,7 @@ type BlockchainConfig struct {
 	LinearFees                           LinearFees // `"linear_fees"`
 	ConsensusLeaderIds                   []string   // `"consensus_leader_ids"`
 	Treasury                             uint64     // `"treasury"`
-	Rewards                              uint64     // ``"reward-pot"``
+	Rewards                              uint64     // `"reward-pot"`
 
 }
 

@@ -10,8 +10,12 @@ blockchain_configuration:
   bft_slots_ratio: {{ .BftSlotsRatio }}
   max_number_of_transactions_per_block: {{ .MaxNumberOfTransactionsPerBlock }}
   epoch_stability_depth: {{ .EpochStabilityDepth }}
+  {{- if .Treasury}}
   treasury: {{ .Treasury }}
+  {{- end}}
+  {{- if .Rewards }}
   reward-pot: {{ .Rewards }}
+  {{- end}}
   {{with .LinearFees -}}
   linear_fees:
     constant: {{ .Constant }}
