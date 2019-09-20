@@ -7,7 +7,6 @@
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](LICENSE)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frinor%2Fjorcli.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frinor%2Fjorcli?ref=badge_shield)
 
-
 [Jörmungandr](https://github.com/input-output-hk/jormungandr) tools in [Go](https://golang.org/) - (**experimental**)
 
 Right now this is just a *Proof Of Concept* and may or may not become a *Prototype*.
@@ -18,7 +17,7 @@ The idea is to build:
 - [x] a simple and small wrapper around *Jörmungandr node* binary. (*alpha*)
 - [ ] *Jörmungandr rest* API. (*wip*)
 - [ ] *Jörmungandr explorer node* graphql API. (*wip*)
-- [ ] *Jörmungandr* grpc. (*maybe*)
+- [ ] *Jörmungandr* grpc client. (*maybe*)
 
 **DONE** *jcli* :
 
@@ -63,4 +62,6 @@ The idea is to build:
 
 - [ ] build from [explorer](https://github.com/input-output-hk/jormungandr/tree/master/jormungandr/src/rest/explorer)
 
-**TODO** *Jörmungandr* grpc:
+**TODO** *Jörmungandr* grpc client:
+
+- [ ] build from [node.proto](https://github.com/input-output-hk/chain-libs/blob/master/network-grpc/proto/node.proto)
