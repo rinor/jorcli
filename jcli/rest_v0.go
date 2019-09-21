@@ -328,7 +328,7 @@ func RestTip(
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "top", "get", "--host", host}
+	arg := []string{"rest", "v0", "tip", "get", "--host", host}
 
 	return jcli(nil, arg...)
 }
