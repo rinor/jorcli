@@ -202,3 +202,8 @@ func (nodeCfg *NodeConfig) ToYaml() ([]byte, error) {
 
 	return cfgYaml.Bytes(), nil
 }
+
+// AddSecretFile to node config
+func (nodeCfg *NodeConfig) AddSecretFile(secretFile string) {
+	nodeCfg.SecretFiles = append(nodeCfg.SecretFiles, secretFile)
+}

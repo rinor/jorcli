@@ -44,6 +44,11 @@ type SecretBft struct {
 	SigningKey string // `"signing_key"`
 }
 
+// NewSecretConfig ...
+func NewSecretConfig() *SecretConfig {
+	return &SecretConfig{}
+}
+
 // ToYaml parses the config template and returns yaml
 func (secretCfg *SecretConfig) ToYaml() ([]byte, error) {
 	var secretYaml bytes.Buffer

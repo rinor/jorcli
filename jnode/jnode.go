@@ -4,8 +4,10 @@ package jnode
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 var (
@@ -26,7 +28,8 @@ type Jnode struct {
 	Stdout     io.Writer
 	Stderr     io.Writer
 
-	cmd *exec.Cmd
+	cmd    *exec.Cmd
+	chStop chan struct{}
 }
 
 // NewJnode returns a Jnode with some defaults.
@@ -35,10 +38,11 @@ func NewJnode() *Jnode {
 		WorkingDir: os.TempDir(),
 		Stdout:     os.Stdout,
 		Stderr:     os.Stderr,
+		chStop:     make(chan struct{}),
 	}
 }
 
-// Run the node and wait.
+// Start the node and wait.
 func (jnode *Jnode) Run() error {
 	var arg []string
 
@@ -79,15 +83,49 @@ func (jnode *Jnode) Run() error {
 		return err
 	}
 
-	return jnode.cmd.Wait()
+	// return jnode.cmd.Wait()
+
+	go func() {
+		err := jnode.cmd.Wait()
+		if err != nil {
+			log.Printf("jnode.Run : %v", err)
+		}
+		select {
+		case <-jnode.chStop:
+		default:
+			close(jnode.chStop)
+		}
+	}()
+
+	return nil
+}
+
+// Wait for the node to stop.
+func (jnode *Jnode) Wait() {
+	<-jnode.chStop
 }
 
 // Stop the node if running.
 func (jnode *Jnode) Stop() error {
 	if jnode.cmd.Process == nil {
-		return nil // no need for error. Keep it simple
+		return fmt.Errorf("%s : exec: not started", "jnode.Stop")
 	}
 	return jnode.cmd.Process.Kill()
+}
+
+// StopAfter seconds.
+func (jnode *Jnode) StopAfter(seconds int) {
+	if jnode.cmd.Process == nil {
+		return // fmt.Errorf("%s : exec: not started", "jnode.Stop")
+	}
+
+	go func() {
+		select {
+		case <-jnode.chStop:
+		case <-time.After(time.Duration(seconds) * time.Second):
+			_ = jnode.Stop()
+		}
+	}()
 }
 
 // Pid provided for the running node process.
@@ -96,6 +134,11 @@ func (jnode *Jnode) Pid() int {
 		return 0
 	}
 	return jnode.cmd.Process.Pid
+}
+
+// AddSecretFile to node config
+func (jnode *Jnode) AddSecretFile(secretFile string) {
+	jnode.Secrets = append(jnode.Secrets, secretFile)
 }
 
 // BinName set the executable name/full path if not the default one.
