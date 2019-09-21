@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
-	"strings"
 )
 
 // CertificateGetStakePoolID - get the stake pool id from the given stake pool registration certificate.
@@ -57,13 +56,17 @@ func CertificateNewStakeDelegation(
 	outputFile string,
 ) ([]byte, error) {
 	if stakePoolID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "stake_pstakePoolIDool_id")
+		return nil, fmt.Errorf("parameter missing : %s", "stakePoolID")
 	}
 	if stakeKey == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "stakeKey")
 	}
 
-	arg := []string{"certificate", "new", "stake-delegation", stakePoolID, stakeKey}
+	arg := []string{
+		"certificate", "new", "stake-delegation",
+		stakePoolID,
+		stakeKey,
+	}
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
@@ -77,51 +80,6 @@ func CertificateNewStakeDelegation(
 }
 
 // BUG(rinor): The certificate 'serial' is declared as uint64 when actually it should be uint128.
-
-// CertificateNewStakePoolRegistrationFromStdin - same as CertificateNewStakePoolRegistration, but using byte input.
-func CertificateNewStakePoolRegistrationFromStdin(
-	kesKey []byte,
-	vrfKey []byte,
-	startValidity uint64,
-	managementThreshold uint16,
-	serial uint64,
-	owner [][]byte,
-	outputFile string,
-) ([]byte, error) {
-	if len(kesKey) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "kesKey")
-	}
-	if len(vrfKey) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "vrfKey")
-	}
-
-	// managementThreshold <= #owners and > 0
-	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
-		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
-	}
-
-	arg := []string{
-		"certificate", "new", "stake-pool-registration",
-		"--kes-key", strings.TrimSpace(string(kesKey)),
-		"--vrf-key", strings.TrimSpace(string(vrfKey)),
-		"--start-validity", strconv.FormatUint(startValidity, 10),
-		"--management-threshold", strconv.FormatUint(uint64(managementThreshold), 10),
-		"--serial", strconv.FormatUint(serial, 10),
-	}
-	for _, ownerPublicKey := range owner {
-		arg = append(arg, "--owner", strings.TrimSpace(string(ownerPublicKey))) // FIXME: should check data validity!
-	}
-	if outputFile != "" {
-		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
-	}
-
-	out, err := jcli(nil, arg...)
-	if err != nil || outputFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(outputFile)
-}
 
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //

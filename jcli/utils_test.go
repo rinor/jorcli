@@ -23,21 +23,3 @@ func ExampleUtilsBech32Convert() {
 	//
 	// ca1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ugqz89h
 }
-
-func ExampleUtilsBech32ConvertFromStdin() {
-	var (
-		bech32    = []byte("ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap")
-		newPrefix = "ca"
-	)
-
-	bech32WithNewPrefix, err := jcli.UtilsBech32ConvertFromStdin(bech32, newPrefix)
-
-	if err != nil {
-		fmt.Printf("UtilsBech32ConvertFromStdin: %s", err)
-	} else {
-		fmt.Printf("%s", string(bech32WithNewPrefix))
-	}
-	// Output:
-	//
-	// ca1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ugqz89h
-}
