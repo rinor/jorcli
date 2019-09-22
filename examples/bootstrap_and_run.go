@@ -59,7 +59,6 @@ func main() {
 		// "http://127.0.0.1:8443/api"
 		restApiAddress = restProto + "://" + restAddress + ":" + strconv.Itoa(restPort) + "/api" // proto://ip:port/api
 	)
-	_ = restApiAddress
 
 	var (
 		consensus      = "genesis_praos" // bft or genesis_praos
@@ -296,44 +295,35 @@ func main() {
 	//  jcli rest usage //
 	//////////////////////
 
-	waitSec := 5
-	wait(waitSec)
+	wait(5)
+
 	restSettings, err := jcli.RestSettings(restApiAddress, "json")
 	log.Printf("RestSettings: %s - %v", b2s(restSettings), err)
 
-	wait(waitSec)
 	restNodeStats, err := jcli.RestNodeStats(restApiAddress, "json")
 	log.Printf("RestNodeStats: %s - %v", b2s(restNodeStats), err)
 
-	wait(waitSec)
 	restTip, err := jcli.RestTip(restApiAddress)
 	log.Printf("RestTip: %s - %v", b2s(restTip), err)
 
-	wait(waitSec)
 	restAccFc, err := jcli.RestAccount(b2s(faucetAddr), restApiAddress, "json")
 	log.Printf("RestAccount Faucet: %s - %v", b2s(restAccFc), err)
 
-	wait(waitSec)
 	restAccFx, err := jcli.RestAccount(b2s(fixedAddr), restApiAddress, "json")
 	log.Printf("RestAccount Fixed: %s - %v", b2s(restAccFx), err)
 
-	wait(waitSec)
 	restLeaders, err := jcli.RestLeaders(restApiAddress, "json")
 	log.Printf("RestLeaders: %s - %v", b2s(restLeaders), err)
 
-	wait(waitSec)
 	restStakePools, err := jcli.RestStakePools(restApiAddress, "json")
 	log.Printf("RestStakePools: %s - %v", b2s(restStakePools), err)
 
-	wait(waitSec)
 	restStake, err := jcli.RestStake(restApiAddress, "json")
 	log.Printf("RestStake: %s - %v", b2s(restStake), err)
 
-	wait(waitSec)
 	restLeadersLogs, err := jcli.RestLeadersLogs(restApiAddress, "json")
 	log.Printf("RestLeadersLogs: %s - %v", b2s(restLeadersLogs), err)
 
-	wait(waitSec)
 	restMessageLogs, err := jcli.RestMessageLogs(restApiAddress, "json")
 	log.Printf("RestMessageLogs: %s - %v", b2s(restMessageLogs), err)
 

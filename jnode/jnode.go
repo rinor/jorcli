@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -42,7 +44,7 @@ func NewJnode() *Jnode {
 	}
 }
 
-// Start the node and wait.
+// Run starts the node.
 func (jnode *Jnode) Run() error {
 	var arg []string
 
@@ -83,21 +85,34 @@ func (jnode *Jnode) Run() error {
 		return err
 	}
 
-	// return jnode.cmd.Wait()
-
-	go func() {
-		err := jnode.cmd.Wait()
-		if err != nil {
-			log.Printf("jnode.Run : %v", err)
-		}
-		select {
-		case <-jnode.chStop:
-		default:
-			close(jnode.chStop)
-		}
-	}()
+	go jnode.cmdWait()
+	jnode.handleSigs()
 
 	return nil
+}
+
+// cmdWait for the node to terminate,
+// ans close the stop channel.
+func (jnode *Jnode) cmdWait() {
+	err := jnode.cmd.Wait()
+	if err != nil {
+		log.Printf("%v", err)
+	}
+	select {
+	case <-jnode.chStop:
+	default:
+		close(jnode.chStop)
+	}
+}
+
+// handleSigs SIGINT + SIGTERM
+func (jnode *Jnode) handleSigs() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		_ = jnode.Stop()
+	}()
 }
 
 // Wait for the node to stop.
