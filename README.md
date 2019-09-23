@@ -19,6 +19,21 @@ The idea is to build:
 - [ ] *Jörmungandr explorer node* graphql API. (*wip*)
 - [ ] *Jörmungandr* grpc client. (*maybe*)
 
+## Installation
+
+Standard `go get`:
+
+```shell
+_$ go get github.com/rinor/jorcli
+```
+
+## Usage & Examples
+
+For usage and examples see the [Godoc](https://godoc.org/github.com/rinor/jorcli).
+Check also [examples](examples) folder in this repo.
+
+## Status
+
 **DONE** *jcli* :
 
 - [x] **address** - Address tooling and helper
