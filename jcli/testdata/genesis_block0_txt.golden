@@ -17,6 +17,8 @@ blockchain_configuration:
   bft_slots_ratio: "0.220"
   max_number_of_transactions_per_block: ~
   epoch_stability_depth: ~
+  treasury: ~
+  rewards: ~
 initial:
   - fund:
       - address: ca1svs0mwkfky9htpam576mc93mee5709khre8dgnqslj6y3p5f77s5gpgv02w
