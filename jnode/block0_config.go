@@ -25,7 +25,7 @@ blockchain_configuration:
   treasury: {{ .Treasury }}
   {{- end}}
   {{- if .Rewards }}
-  reward-pot: {{ .Rewards }}
+  rewards: {{ .Rewards }}
   {{- end}}
   {{with .LinearFees -}}
   linear_fees:
@@ -78,8 +78,10 @@ type BlockchainConfig struct {
 	ConsensusGenesisPraosActiveSlotCoeff float64    // `"consensus_genesis_praos_active_slot_coeff"`
 	LinearFees                           LinearFees // `"linear_fees"`
 	ConsensusLeaderIds                   []string   // `"consensus_leader_ids"`
-	Treasury                             uint64     // `"treasury"`
-	Rewards                              uint64     // `"reward-pot"`
+
+	// FIXME: implement as per latest version.
+	Treasury uint64 // `"treasury"`
+	Rewards  uint64 // `"rewards"`
 
 }
 

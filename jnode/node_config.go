@@ -44,7 +44,9 @@ p2p:
     messages: {{ .Messages }}
     blocks: {{ .Blocks }}
   {{- end}}
-
+  {{- if .AllowPrivateAddresses}}
+  allow_private_addresses: {{ .AllowPrivateAddresses }}
+  {{- end}}
   {{- if .TrustedPeers}}
   trusted_peers:
     {{- range .TrustedPeers}}
@@ -95,10 +97,11 @@ type NodeConfig struct {
 
 // ConfigP2P ...
 type ConfigP2P struct {
-	PublicAddress    string                 // `"public_address"`
-	ListenAddress    string                 // `"listen_address"`
-	TrustedPeers     []string               // `"trusted_peers"`
-	TopicsOfInterest ConfigTopicsOfInterest // `"topics_of_interest"`
+	PublicAddress         string                 // `"public_address"`
+	ListenAddress         string                 // `"listen_address"`
+	TrustedPeers          []string               // `"trusted_peers"`
+	TopicsOfInterest      ConfigTopicsOfInterest // `"topics_of_interest"`
+	AllowPrivateAddresses bool                   // `"allow_private_addresses"`
 }
 
 // ConfigTopicsOfInterest ...

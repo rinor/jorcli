@@ -21,17 +21,22 @@ var (
 type Jnode struct {
 	GenesisBlock     string   // --genesis-block (bin file)
 	GenesisBlockHash string   // --genesis-block-hash
-	Config           string   // --config <file>
+	ConfigFile       string   // --config <file>
 	Storage          string   // --storage <storage>
-	Secrets          []string // --secret <secret>
+	SecretFiles      []string // --secret <secret>...
+	TrustedPeers     []string // --trusted-peer <trusted_peer>...
 	EnableExplorer   bool     // --enable-explorer
+	// Log
+	LogFormat string // --log-format <log_format>
+	LogLevel  string // --log-level <log_level>
+	LogOutput string // --log-output <log_output>
 	// Extra
 	WorkingDir string
 	Stdout     io.Writer
 	Stderr     io.Writer
-
-	cmd    *exec.Cmd
-	chStop chan struct{}
+	// internal usage
+	cmd  *exec.Cmd
+	done chan struct{}
 }
 
 // NewJnode returns a Jnode with some defaults.
@@ -40,18 +45,16 @@ func NewJnode() *Jnode {
 		WorkingDir: os.TempDir(),
 		Stdout:     os.Stdout,
 		Stderr:     os.Stderr,
-		chStop:     make(chan struct{}),
+		done:       make(chan struct{}),
 	}
 }
 
-// Run starts the node.
-func (jnode *Jnode) Run() error {
+func (jnode *Jnode) buildCmdArg() []string {
 	var arg []string
 
-	if jnode.Config == "" {
-		return fmt.Errorf("parameter missing : %s", "jnode.Config")
+	if jnode.ConfigFile != "" {
+		arg = append(arg, "--config", jnode.ConfigFile)
 	}
-	arg = append(arg, "--config", jnode.Config)
 
 	if jnode.GenesisBlock != "" {
 		arg = append(arg, "--genesis-block", jnode.GenesisBlock)
@@ -61,32 +64,58 @@ func (jnode *Jnode) Run() error {
 		arg = append(arg, "--genesis-block-hash", jnode.GenesisBlockHash)
 	}
 
-	if len(jnode.Secrets) > 0 {
-		for i := range jnode.Secrets {
-			arg = append(arg, "--secret", jnode.Secrets[i])
+	if jnode.Storage != "" {
+		arg = append(arg, "--storage", jnode.Storage)
+	}
+
+	if len(jnode.SecretFiles) > 0 {
+		for i := range jnode.SecretFiles {
+			arg = append(arg, "--secret", jnode.SecretFiles[i])
 		}
 	}
 
-	if jnode.Storage != "" {
-		arg = append(arg, "--storage", jnode.Storage)
+	if len(jnode.TrustedPeers) > 0 {
+		for i := range jnode.TrustedPeers {
+			arg = append(arg, "--trusted-peer", jnode.TrustedPeers[i])
+		}
+	}
+
+	if jnode.LogFormat != "" {
+		arg = append(arg, "--log-format", jnode.LogFormat)
+	}
+	if jnode.LogLevel != "" {
+		arg = append(arg, "--log-level", jnode.LogLevel)
+	}
+	if jnode.LogOutput != "" {
+		arg = append(arg, "--log-output", jnode.LogOutput)
 	}
 
 	if jnode.EnableExplorer {
 		arg = append(arg, "--enable-explorer")
 	}
+	return arg
+}
 
-	jnode.cmd = exec.Command(jnodeName, arg...)
+// Run starts the node.
+func (jnode *Jnode) Run() error {
+	jnode.cmd = exec.Command(jnodeName, jnode.buildCmdArg()...)
 
 	jnode.cmd.Dir = jnode.WorkingDir
 	jnode.cmd.Stdout = jnode.Stdout
 	jnode.cmd.Stderr = jnode.Stderr
 
-	if err := jnode.cmd.Start(); err != nil {
+	err := jnode.cmd.Start()
+	if err != nil {
 		return err
 	}
 
-	go jnode.cmdWait()
+	// FIXME: find an affective way to catch errors of stderr
+	// since cmd.Start does not care about them.
+	// Ex: config errors will cause Start() to report no errors
+	//     when in fact the node reports errors on stderr and stops.
+
 	jnode.handleSigs()
+	go jnode.cmdWait()
 
 	return nil
 }
@@ -99,9 +128,9 @@ func (jnode *Jnode) cmdWait() {
 		log.Printf("%v", err)
 	}
 	select {
-	case <-jnode.chStop:
+	case <-jnode.done:
 	default:
-		close(jnode.chStop)
+		close(jnode.done)
 	}
 }
 
@@ -117,7 +146,7 @@ func (jnode *Jnode) handleSigs() {
 
 // Wait for the node to stop.
 func (jnode *Jnode) Wait() {
-	<-jnode.chStop
+	<-jnode.done
 }
 
 // Stop the node if running.
@@ -129,18 +158,19 @@ func (jnode *Jnode) Stop() error {
 }
 
 // StopAfter seconds.
-func (jnode *Jnode) StopAfter(seconds int) {
+func (jnode *Jnode) StopAfter(d time.Duration) error {
 	if jnode.cmd.Process == nil {
-		return // fmt.Errorf("%s : exec: not started", "jnode.Stop")
+		return fmt.Errorf("%s : exec: not started", "jnode.StopAfter")
 	}
 
 	go func() {
 		select {
-		case <-jnode.chStop:
-		case <-time.After(time.Duration(seconds) * time.Second):
+		case <-jnode.done:
+		case <-time.After(d):
 			_ = jnode.Stop()
 		}
 	}()
+	return nil
 }
 
 // Pid provided for the running node process.
@@ -153,7 +183,7 @@ func (jnode *Jnode) Pid() int {
 
 // AddSecretFile to node config
 func (jnode *Jnode) AddSecretFile(secretFile string) {
-	jnode.Secrets = append(jnode.Secrets, secretFile)
+	jnode.SecretFiles = append(jnode.SecretFiles, secretFile)
 }
 
 // BinName set the executable name/full path if not the default one.
