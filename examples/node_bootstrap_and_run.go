@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -47,30 +48,73 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
-func wait(secs int) {
-	time.Sleep(time.Duration(secs) * time.Second)
+// buildAccountAddr returns a new account address
+func buildAccountAddr(seed string, addressPrefix string, discrimination string) (string, error) {
+	var (
+		err error
+
+		faucetSK   []byte
+		faucetPK   []byte
+		faucetAddr []byte
+	)
+	// private key
+	faucetSK, err = jcli.KeyGenerate(seed, "Ed25519Extended", "")
+	if err != nil {
+		return "", fmt.Errorf("KeyGenerate: %s - %s", err, faucetSK)
+	}
+	// public key
+	faucetPK, err = jcli.KeyToPublic(faucetSK, "", "")
+	if err != nil {
+		return "", fmt.Errorf("KeyToPublic: %s - %s", err, faucetPK)
+	}
+	// account address
+	faucetAddr, err = jcli.AddressAccount(b2s(faucetPK), addressPrefix, discrimination)
+	if err != nil {
+		return "", fmt.Errorf("AddressAccount: %s - %s", err, faucetAddr)
+	}
+	return b2s(faucetAddr), err
 }
 
 func main() {
 	var (
-		restProto   = "http"      // proto
+		err error
+
 		restAddress = "127.0.0.1" // ip
 		restPort    = 8443        // port
-		// "http://127.0.0.1:8443/api"
-		restApiAddress = restProto + "://" + restAddress + ":" + strconv.Itoa(restPort) + "/api" // proto://ip:port/api
-	)
 
-	var (
 		consensus      = "genesis_praos" // bft or genesis_praos
 		discrimination = "testing"       // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta"      // "" (empty defaults to "ca")
 	)
 
-	// set binary name/path if not default
-	/*
-		jcli.BinName("jcli")         // defaults to "jcli"
-		jnode.BinName("jormungandr") // defaults to "jormungandr"
-	*/
+	// set binary name/path if not default,
+	// provided as example since the ones set here,
+	// are also the default values.
+	jcli.BinName("jcli")         // default is "jcli"
+	jnode.BinName("jormungandr") // default is "jormungandr"
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// START - BULK generate                                                           //
+	//                                                                                 //
+	// this will be used to generate bulk addresses and include them in genesis block0 //
+	// so we can use them as source for bulk transactions from other examples.         //
+	const ( //
+		seedStart  = 101 // seed key generation start
+		totSrcAddr = 100 // total number of account addresses
+	)
+	var srcFaucets [totSrcAddr]string
+	// build bulk addresses
+	for i := 0; i < totSrcAddr; i++ {
+		srcFaucets[i], err = buildAccountAddr(
+			seed(seedStart+i),
+			addressPrefix,
+			discrimination,
+		)
+		fatalOn(err)
+	}
+	//                                                                                //
+	// DONE - BULK generate                                                           //
+	////////////////////////////////////////////////////////////////////////////////////
 
 	// get jcli version
 	jcliVersion, err := jcli.VersionFull()
@@ -187,7 +231,7 @@ func main() {
 	block0cfg.BlockchainConfiguration.Block0Consensus = consensus
 	block0cfg.BlockchainConfiguration.Discrimination = block0Discrimination
 	block0cfg.BlockchainConfiguration.SlotDuration = 10
-	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 6
+	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 60
 	block0cfg.BlockchainConfiguration.LinearFees.Constant = 10
 
 	err = block0cfg.AddConsensusLeader(b2s(leaderPK))
@@ -203,16 +247,25 @@ func main() {
 	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFaucetCertSigned))
 	fatalOn(err)
 	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFixedCertSigned))
-	fatalOn(err)
+
+	//////////////////////////////////////////////////////////////////
+	// START - Add BULK generated addresses to genesis block0       //
+	for i := range srcFaucets {
+		err = block0cfg.AddInitialFund(srcFaucets[i], 1_000_000_000)
+		fatalOn(err)
+	}
+	// DONE - Add BULK generated addresses to genesis block0        //
+	//////////////////////////////////////////////////////////////////
 
 	block0Yaml, err := block0cfg.ToYaml()
 	fatalOn(err)
-	// need this file for starting the node
+	// need this file for starting the node (--genesis-block)
 	block0BinFile := workingDir + string(os.PathSeparator) + "block-0.bin"
 
 	// block0BinFile will be created by jcli
 	block0Bin, err := jcli.GenesisEncode(block0Yaml, "", block0BinFile)
 	fatalOn(err, b2s(block0Bin))
+
 	/*
 		// Or we can create block0BinFile by our self
 		block0Bin, err := jcli.GenesisEncode(block0Yaml, "", "")
@@ -236,7 +289,7 @@ func main() {
 
 	secretCfgYaml, err := secretCfg.ToYaml()
 	fatalOn(err)
-	// need this file for starting the node
+	// need this file for starting the node (--secret)
 	secretCfgFile := workingDir + string(os.PathSeparator) + "pool-secret.yaml"
 	err = ioutil.WriteFile(secretCfgFile, secretCfgYaml, 0644)
 	fatalOn(err)
@@ -254,9 +307,12 @@ func main() {
 	nodeCfg.P2P.PublicAddress = "/ip4/" + restAddress + "/tcp/8299"  // /ip4/127.0.0.1/tcp/8299 is also default value
 	nodeCfg.Log.Level = "debug"                                      // default is "trace"
 
+	// config not yet available on upstream, it will be needed for testing on private ip addresses
+	// nodeCfg.P2P.AllowPrivateAddresses = true // default false
+
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
-	// need this file for starting the node
+	// need this file for starting the node (--config)
 	nodeCfgFile := workingDir + string(os.PathSeparator) + "node-config.yaml"
 	err = ioutil.WriteFile(nodeCfgFile, nodeCfgYaml, 0644)
 	fatalOn(err)
@@ -270,8 +326,8 @@ func main() {
 	node := jnode.NewJnode()
 	node.WorkingDir = workingDir
 	node.GenesisBlock = block0BinFile
-	node.Config = nodeCfgFile
-	node.AddSecretFile(secretCfgFile) // or node.Secrets = append(node.Secrets, secretCfgFile)
+	node.ConfigFile = nodeCfgFile
+	node.AddSecretFile(secretCfgFile) // or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
 	fatalOn(err)
@@ -281,56 +337,13 @@ func main() {
 	// Run the node (Start + Wait)
 	err = node.Run()
 	if err != nil {
-		log.Printf("node.Run FAILED: %v", err)
+		log.Fatalf("node.Run FAILED: %v", err)
 	}
 
-	// node.Stop() // Stop the node now
-	node.StopAfter(300) // Stop the node after x seconds
+	// _ = node.Stop() // Stop the node now
+	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
 
-	// can also use use jcli rest to stop the node
-	// rsd, err := jcli.RestShutdown(restApiAddress, "")
-	// log.Printf("RestShutdown: %s - %v", b2s(rsd), err)
-
-	//////////////////////
-	//  jcli rest usage //
-	//////////////////////
-
-	wait(5)
-
-	restSettings, err := jcli.RestSettings(restApiAddress, "json")
-	log.Printf("RestSettings: %s - %v", b2s(restSettings), err)
-
-	restNodeStats, err := jcli.RestNodeStats(restApiAddress, "json")
-	log.Printf("RestNodeStats: %s - %v", b2s(restNodeStats), err)
-
-	restTip, err := jcli.RestTip(restApiAddress)
-	log.Printf("RestTip: %s - %v", b2s(restTip), err)
-
-	restAccFc, err := jcli.RestAccount(b2s(faucetAddr), restApiAddress, "json")
-	log.Printf("RestAccount Faucet: %s - %v", b2s(restAccFc), err)
-
-	restAccFx, err := jcli.RestAccount(b2s(fixedAddr), restApiAddress, "json")
-	log.Printf("RestAccount Fixed: %s - %v", b2s(restAccFx), err)
-
-	restLeaders, err := jcli.RestLeaders(restApiAddress, "json")
-	log.Printf("RestLeaders: %s - %v", b2s(restLeaders), err)
-
-	restStakePools, err := jcli.RestStakePools(restApiAddress, "json")
-	log.Printf("RestStakePools: %s - %v", b2s(restStakePools), err)
-
-	restStake, err := jcli.RestStake(restApiAddress, "json")
-	log.Printf("RestStake: %s - %v", b2s(restStake), err)
-
-	restLeadersLogs, err := jcli.RestLeadersLogs(restApiAddress, "json")
-	log.Printf("RestLeadersLogs: %s - %v", b2s(restLeadersLogs), err)
-
-	restMessageLogs, err := jcli.RestMessageLogs(restApiAddress, "json")
-	log.Printf("RestMessageLogs: %s - %v", b2s(restMessageLogs), err)
-
-	// Wait for the node to stop.
-	log.Println("Waiting...")
-	node.Wait() // This blocks here. use "jcli rest v0 shutdown get -h "http://127.0.0.1:8443/api""
-
-	// All done. Node has stopped.
-	log.Println("...Done")
+	log.Println("Running...")
+	node.Wait()            // Wait for the node to stop.
+	log.Println("...Done") // All done. Node has stopped.
 }
