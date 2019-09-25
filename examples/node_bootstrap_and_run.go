@@ -75,12 +75,31 @@ func buildAccountAddr(seed string, addressPrefix string, discrimination string) 
 	return b2s(faucetAddr), err
 }
 
+// get a fixed date if possible.
+// needed for testing only to have a known genesis hash.
+func block0Date() int64 {
+	block0Date, err := time.Parse(time.RFC3339, "2017-09-29T00:00:00.000Z")
+	if err != nil {
+		return time.Now().Unix()
+	}
+	return block0Date.Unix()
+}
+
 func main() {
 	var (
 		err error
 
-		restAddress = "127.0.0.1" // ip
-		restPort    = 8443        // port
+		// Rest
+		restAddr    = "127.0.0.1" // rest ip
+		restPort    = 8001        // rest port
+		restAddress = restAddr + ":" + strconv.Itoa(restPort)
+
+		// P2P
+		p2pIPver         = "ip4"       // ipv4 or ipv6
+		p2pProto         = "tcp"       // tcp
+		p2pPubAddr       = "127.0.0.1" // PublicAddres
+		p2pPort          = 9001        // node P2P Port
+		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPort)
 
 		consensus      = "genesis_praos" // bft or genesis_praos
 		discrimination = "testing"       // "" (empty defaults to "production")
@@ -233,6 +252,7 @@ func main() {
 	block0cfg.BlockchainConfiguration.SlotDuration = 10
 	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 60
 	block0cfg.BlockchainConfiguration.LinearFees.Constant = 10
+	block0cfg.BlockchainConfiguration.Block0Date = block0Date()
 
 	err = block0cfg.AddConsensusLeader(b2s(leaderPK))
 	fatalOn(err)
@@ -247,6 +267,7 @@ func main() {
 	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFaucetCertSigned))
 	fatalOn(err)
 	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFixedCertSigned))
+	fatalOn(err)
 
 	//////////////////////////////////////////////////////////////////
 	// START - Add BULK generated addresses to genesis block0       //
@@ -259,13 +280,13 @@ func main() {
 
 	block0Yaml, err := block0cfg.ToYaml()
 	fatalOn(err)
+
 	// need this file for starting the node (--genesis-block)
 	block0BinFile := workingDir + string(os.PathSeparator) + "block-0.bin"
 
 	// block0BinFile will be created by jcli
 	block0Bin, err := jcli.GenesisEncode(block0Yaml, "", block0BinFile)
 	fatalOn(err, b2s(block0Bin))
-
 	/*
 		// Or we can create block0BinFile by our self
 		block0Bin, err := jcli.GenesisEncode(block0Yaml, "", "")
@@ -273,6 +294,10 @@ func main() {
 		err = ioutil.WriteFile(block0BinFile, block0Bin, 0644)
 		fatalOn(err)
 	*/
+
+	block0Hash, err := jcli.GenesisHash(block0Bin, "")
+	fatalOn(err, b2s(block0Hash))
+	log.Printf("Genesis Hash: %s", block0Hash)
 
 	// fmt.Printf("%s", block0Yaml)
 
@@ -302,12 +327,13 @@ func main() {
 
 	nodeCfg := jnode.NewNodeConfig()
 
-	nodeCfg.Storage = ""                                             // memory storage ("jnode_storage" default)
-	nodeCfg.Rest.Listen = restAddress + ":" + strconv.Itoa(restPort) // 127.0.0.1:8443 is also default value
-	nodeCfg.P2P.PublicAddress = "/ip4/" + restAddress + "/tcp/8299"  // /ip4/127.0.0.1/tcp/8299 is also default value
-	nodeCfg.Log.Level = "debug"                                      // default is "trace"
+	nodeCfg.Storage = ""                         // memory storage ("jnode_storage" default)
+	nodeCfg.Rest.Listen = restAddress            // 127.0.0.1:8443 is default value
+	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.Log.Level = "debug"                  // default is "trace"
 
-	// config not yet available on upstream, it will be needed for testing on private ip addresses
+	// config not yet available on upstream,
+	// it will be needed for testing on private ip addresses
 	// nodeCfg.P2P.AllowPrivateAddresses = true // default false
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
@@ -327,7 +353,8 @@ func main() {
 	node.WorkingDir = workingDir
 	node.GenesisBlock = block0BinFile
 	node.ConfigFile = nodeCfgFile
-	node.AddSecretFile(secretCfgFile) // or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
+	node.AddSecretFile(secretCfgFile)
+	// or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
 	fatalOn(err)
@@ -343,7 +370,7 @@ func main() {
 	// _ = node.Stop() // Stop the node now
 	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
 
-	log.Println("Running...")
-	node.Wait()            // Wait for the node to stop.
-	log.Println("...Done") // All done. Node has stopped.
+	log.Println("Leader Node - Running...")
+	node.Wait()                          // Wait for the node to stop.
+	log.Println("...Leader Node - Done") // All done. Node has stopped.
 }
