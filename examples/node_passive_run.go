@@ -52,10 +52,10 @@ func main() {
 		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPort)
 
 		// Trusted peers
-		trustedPeer = "/ip4/127.0.0.1/tcp/9001"
+		trustedPeerLeader = "/ip4/127.0.0.1/tcp/9001"
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "9facc7df455ee673f409ca062da0104f15b8b729a0faf694f457d3f3d390e6a8"
+		block0Hash = "1162376908bb94488eb2e2d4cc4572b192034a3eb603a3019a0a471683d10333"
 	)
 
 	// set binary name/path if not default,
@@ -82,9 +82,8 @@ func main() {
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.Log.Level = "debug"                  // default is "trace"
 
-	// config not yet available on upstream,
-	// it will be needed for testing on private ip addresses
-	// nodeCfg.P2P.AllowPrivateAddresses = true // default false
+	// needed for testing on private ip addresses
+	nodeCfg.P2P.AllowPrivateAddresses = true // default false
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
@@ -100,10 +99,11 @@ func main() {
 	//////////////////////
 
 	node := jnode.NewJnode()
+
 	node.WorkingDir = workingDir
 	node.ConfigFile = nodeCfgFile
-	node.AddTrustedPeer(trustedPeer)   // add leader from example (1) as trusted
-	node.GenesisBlockHash = block0Hash // add block0 hash
+	node.GenesisBlockHash = block0Hash     // add block0 hash
+	node.AddTrustedPeer(trustedPeerLeader) // add leader from example (1) as trusted
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
 	fatalOn(err)

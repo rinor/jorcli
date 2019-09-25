@@ -17,8 +17,9 @@ func b2s(b []byte) string {
 
 func main() {
 	var (
-		restApiAddress = "http://127.0.0.1:8001/api" // leader leader
+		restApiAddress = "http://127.0.0.1:8001/api" // leader node
 		// restApiAddress = "http://127.0.0.1:8002/api" // passive node
+		// restApiAddress = "http://127.0.0.1:8003/api" // stakepool node
 
 		// addresses generated from "node_bootstrap_and_run" example
 		// we are using seed option, hence we know those values here

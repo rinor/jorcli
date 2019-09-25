@@ -85,6 +85,7 @@ func block0Date() int64 {
 	return block0Date.Unix()
 }
 
+/* seeds used [0-4] */
 func main() {
 	var (
 		err error
@@ -187,9 +188,9 @@ func main() {
 	leaderPK, err := jcli.KeyToPublic(leaderSK, "", "")
 	fatalOn(err, b2s(leaderPK))
 
-	////////////////
-	// STAKE POOL //
-	////////////////
+	/////////////////////////
+	// STAKE POOL Creation //
+	/////////////////////////
 
 	// VRF
 	poolVrfSK, err := jcli.KeyGenerate(seed(3), "Curve25519_2HashDH", "")
@@ -203,33 +204,48 @@ func main() {
 	poolKesPK, err := jcli.KeyToPublic(poolKesSK, "", "")
 	fatalOn(err, b2s(poolKesPK))
 
-	// note we will use the faucet as the owner to this pool
-	var stakePoolOwners []string
-	stakePoolOwners = append(stakePoolOwners, b2s(faucetPK))
+	// note we will use the Faucet and Fixed as owners of this pool
+	stakePoolOwners := []string{
+		b2s(faucetPK),
+		b2s(fixedPK),
+	}
+	stakePoolManagementThreshold := uint16(len(stakePoolOwners)) // uint16(2) -  (since we have 2 owners)
+	stakePoolSerial := uint64(1010101010)
+	stakePoolStartValidity := uint64(0)
 
 	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(
 		b2s(poolKesPK),
 		b2s(poolVrfPK),
-		uint64(0),
-		uint16(1),
-		uint64(1010101010),
+		stakePoolStartValidity,
+		stakePoolManagementThreshold,
+		stakePoolSerial,
 		stakePoolOwners,
 		"",
 	)
 	fatalOn(err, b2s(stakePoolCert))
 
-	// note we are using faucet as the owner of the pool
+	// Sign the certificate with FAUCET private key
 	stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, faucetFileSK, "", "")
 	fatalOn(err, b2s(stakePoolCertSigned))
+
+	// Sign the certificate also with FIXED private key
+	stakePoolCertSigned, err = jcli.CertificateSign(stakePoolCertSigned, fixedFileSK, "", "")
+	fatalOn(err, b2s(stakePoolCertSigned))
+
+	///////////////////////////
+	// STAKE POOL Delegation //
+	///////////////////////////
 
 	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCertSigned, "", "")
 	fatalOn(err, b2s(stakePoolID))
 
+	// FAUCET delegation (is also one the pool owners)
 	stakeDelegationFaucetCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(faucetPK), "")
 	fatalOn(err, b2s(stakeDelegationFaucetCert))
 	stakeDelegationFaucetCertSigned, err := jcli.CertificateSign(stakeDelegationFaucetCert, faucetFileSK, "", "")
 	fatalOn(err, b2s(stakeDelegationFaucetCertSigned))
 
+	// FIXED delegation (is also one the pool owners)
 	stakeDelegationFixedCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(fixedPK), "")
 	fatalOn(err, b2s(stakeDelegationFixedCert))
 	stakeDelegationFixedCertSigned, err := jcli.CertificateSign(stakeDelegationFixedCert, fixedFileSK, "", "")
@@ -272,7 +288,7 @@ func main() {
 	//////////////////////////////////////////////////////////////////
 	// START - Add BULK generated addresses to genesis block0       //
 	for i := range srcFaucets {
-		err = block0cfg.AddInitialFund(srcFaucets[i], 1_000_000_000)
+		err = block0cfg.AddInitialFund(srcFaucets[i], 25_000_000_000)
 		fatalOn(err)
 	}
 	// DONE - Add BULK generated addresses to genesis block0        //
@@ -297,7 +313,6 @@ func main() {
 
 	block0Hash, err := jcli.GenesisHash(block0Bin, "")
 	fatalOn(err, b2s(block0Hash))
-	log.Printf("Genesis Hash: %s", block0Hash)
 
 	// fmt.Printf("%s", block0Yaml)
 
@@ -332,9 +347,8 @@ func main() {
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.Log.Level = "debug"                  // default is "trace"
 
-	// config not yet available on upstream,
-	// it will be needed for testing on private ip addresses
-	// nodeCfg.P2P.AllowPrivateAddresses = true // default false
+	// needed for testing on private ip addresses
+	nodeCfg.P2P.AllowPrivateAddresses = true // default false
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
@@ -350,6 +364,7 @@ func main() {
 	//////////////////////
 
 	node := jnode.NewJnode()
+
 	node.WorkingDir = workingDir
 	node.GenesisBlock = block0BinFile
 	node.ConfigFile = nodeCfgFile
@@ -370,6 +385,8 @@ func main() {
 	// _ = node.Stop() // Stop the node now
 	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
 
+	log.Printf("Genesis Hash: %s", block0Hash)
+	log.Printf("StakePool ID: %s", stakePoolID)
 	log.Println("Leader Node - Running...")
 	node.Wait()                          // Wait for the node to stop.
 	log.Println("...Leader Node - Done") // All done. Node has stopped.
