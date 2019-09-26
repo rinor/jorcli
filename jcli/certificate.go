@@ -106,6 +106,9 @@ func CertificateNewStakePoolRegistration(
 	if vrfKey == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "vrfKey")
 	}
+	if len(owner) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "owner")
+	}
 
 	// managementThreshold <= #owners and > 0
 	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
