@@ -6,16 +6,17 @@ import (
 )
 
 const nodeConfigTemplate = `
-{{- if .Storage}}
+{{- if .Storage -}}
 storage: {{ .Storage }}
 {{end}}
 
 {{- with .Explorer}}
 explorer:
   enabled: {{ .Enabled }}
-{{end}}
+{{- end}}
 
-{{- with .Rest}}
+{{- if .Rest.Enabled }}
+{{with .Rest}}
 rest:
   listen: {{ .Listen }}
   {{- with .Cors}}
@@ -32,6 +33,7 @@ rest:
   pkcs12: {{ .Pkcs12 }}
   {{- end}}
 {{end}}
+{{- end}}
 
 {{- with .P2P}}
 p2p:
@@ -112,15 +114,16 @@ type ConfigTopicsOfInterest struct {
 
 // ConfigRest ...
 type ConfigRest struct {
-	Listen string     // `"listen"`
-	Pkcs12 string     // `"pkcs12"`
-	Cors   ConfigCors // `"cors"`
+	Enabled bool       // custom addition
+	Listen  string     // `"listen"`
+	Pkcs12  string     // `"pkcs12"`
+	Cors    ConfigCors // `"cors"`
 }
 
 // ConfigCors ...
 type ConfigCors struct {
 	AllowedOrigins []string // `"allowed_origins"`
-	MaxAgeSecs     int      // `"max_age_secs"`
+	MaxAgeSecs     int      // `"max_age_secs"`true
 }
 
 // ConfigExplorer --enable-explorer
@@ -166,12 +169,14 @@ func NewNodeConfig() *NodeConfig {
 
 	nodeCfg.Storage = "jnode_storage"
 
-	nodeCfg.Explorer.Enabled = true
+	nodeCfg.Explorer.Enabled = false
 
+	nodeCfg.Rest.Enabled = false
 	nodeCfg.Rest.Listen = "127.0.0.1:8443"
 	nodeCfg.Rest.Cors.MaxAgeSecs = 0
 
 	nodeCfg.P2P.PublicAddress = "/ip4/127.0.0.1/tcp/8299"
+	nodeCfg.P2P.ListenAddress = "/ip4/127.0.0.1/tcp/8299"
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
 
