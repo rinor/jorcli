@@ -120,9 +120,9 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.MaxNumberOfTransactionsPerBlock = 255
 	chainConfig.Treasury = 0
 	chainConfig.Rewards = 0
-	chainConfig.LinearFees.Certificate = 0
-	chainConfig.LinearFees.Coefficient = 0
-	chainConfig.LinearFees.Constant = 0
+	chainConfig.LinearFees.Certificate = 10000
+	chainConfig.LinearFees.Coefficient = 50
+	chainConfig.LinearFees.Constant = 1000
 
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,

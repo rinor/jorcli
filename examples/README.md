@@ -3,7 +3,7 @@
 1) [node_genesis_bootstrap_and_run](#genesis-node-bootstrap-and-run)
 2) [node_passive_run](#passive-node-run)
 3) [node_stakepool_create_and_run](#stakepool-node-create-and-run)
-10) [jcli_rest_v0](#jcli-rest-v0)
+4) [jcli_rest_v0](#jcli-rest-v0)
 
 ## Genesis Node Bootstrap And Run
 
@@ -14,7 +14,7 @@ It shows the usage of:
 - [jcli](https://godoc.org/github.com/rinor/jorcli/jcli)
 - [jnode](https://godoc.org/github.com/rinor/jorcli/jnode)
 
-### Info
+### Info Genesis Node
 
 TODO
 
@@ -22,8 +22,8 @@ TODO
 
 Start a passive node with:
 
-- `--genesis-block-hash` from [node_genesis_bootstrap_and_run](#node-genesis-bootstrap-and-run)
-- `--trusted-peer` the node from [node_genesis_bootstrap_and_run](#node-genesis-bootstrap-and-run)
+- `--genesis-block-hash` from [node_genesis_bootstrap_and_run](#genesis-node-bootstrap-and-run)
+- `--trusted-peer` the node from [node_genesis_bootstrap_and_run](#genesis-node-bootstrap-and-run)
 
 and connect to **leader** node.
 
@@ -31,7 +31,7 @@ It shows the usage of:
 
 - [jnode](https://godoc.org/github.com/rinor/jorcli/jnode)
 
-### Info
+### Info Passive Node
 
 TODO
 
@@ -40,15 +40,16 @@ TODO
 Creates a StakePool node with appropriate configuration:
 
 - `--secret` self generate pool secrets
-- `--trusted-peer` the node from [node_genesis_bootstrap_and_run](#node-genesis-bootstrap-and-run)
-- `--trusted-peer` the node from [node_passive_run](#node-passive-run)
+- `--trusted-peer` the node from [node_genesis_bootstrap_and_run](#genesis-node-bootstrap-and-run)
+- `--trusted-peer` the node from [node_passive_run](#passive-node-run)
 
 It shows the usage of:
 
 - [jcli](https://godoc.org/github.com/rinor/jorcli/jcli)
 - [jnode](https://godoc.org/github.com/rinor/jorcli/jnode)
 
-### Info
+### Info StakePool Node
+
 At this point the StakePool is configured and running,
 but the node behaves like a passive one since:
 

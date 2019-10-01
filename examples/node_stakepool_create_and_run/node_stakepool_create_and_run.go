@@ -4,7 +4,7 @@ package main
 
 import (
 	"encoding/hex"
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -31,6 +31,15 @@ func fatalOn(err error, str ...string) {
 	}
 }
 
+func fatalStop(node *jnode.Jnode, err error, str ...string) {
+	if err != nil {
+		_ = node.Stop()
+		node.Wait()
+		_, fn, line, _ := runtime.Caller(1)
+		log.Fatalf("%s:%d %s -> %s", fn, line, str, err.Error())
+	}
+}
+
 // seed generated from an int. For the same int the same seed is returned.
 // Useful for reproducible batch key generation,
 // for example the index of a slice/array can be a param.
@@ -48,33 +57,6 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
-// buildAccountAddr returns a new account address
-func buildAccountAddr(seed string, addressPrefix string, discrimination string) (string, error) {
-	var (
-		err error
-
-		faucetSK   []byte
-		faucetPK   []byte
-		faucetAddr []byte
-	)
-	// private key
-	faucetSK, err = jcli.KeyGenerate(seed, "Ed25519Extended", "")
-	if err != nil {
-		return "", fmt.Errorf("KeyGenerate: %s - %s", err, faucetSK)
-	}
-	// public key
-	faucetPK, err = jcli.KeyToPublic(faucetSK, "", "")
-	if err != nil {
-		return "", fmt.Errorf("KeyToPublic: %s - %s", err, faucetPK)
-	}
-	// account address
-	faucetAddr, err = jcli.AddressAccount(b2s(faucetPK), addressPrefix, discrimination)
-	if err != nil {
-		return "", fmt.Errorf("AddressAccount: %s - %s", err, faucetAddr)
-	}
-	return b2s(faucetAddr), err
-}
-
 /* seeds used [0-1,10-11] */
 func main() {
 	var (
@@ -84,15 +66,26 @@ func main() {
 		restAddr       = "127.0.0.1" // rest ip
 		restPort       = 8003        // rest port
 		restAddress    = restAddr + ":" + strconv.Itoa(restPort)
-		restApiAddress = "http://" + restAddr + ":" + strconv.Itoa(restPort) + "/api" // self
+		restAddressAPI = "http://" + restAddr + ":" + strconv.Itoa(restPort) + "/api" // self
+		// Rest trusted nodes
+		restLeaderAPI  = "http://127.0.0.1:8001/api" // leader node
+		restPassiveAPI = "http://127.0.0.1:8002/api" // passive node
 
 		// P2P
-		p2pIPver         = "ip4"       // ipv4 or ipv6
-		p2pProto         = "tcp"       // tcp
-		p2pPubAddr       = "127.0.0.1" // PublicAddres
-		p2pPort          = 9003        // node P2P Port
-		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPort)
+		p2pIPver = "ip4" // ipv4 or ipv6
+		p2pProto = "tcp" // tcp
 
+		// P2P Public
+		p2pPubAddr       = "127.0.0.1" // PublicAddres
+		p2pPubPort       = 9003        // node P2P Public Port
+		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPubPort)
+
+		// P2P Listen
+		p2pListenAddr    = "127.0.0.1" // ListenAddress
+		p2pListenPort    = 9003        // node P2P Public Port
+		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
+
+		// General
 		discrimination = "testing"  // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
@@ -101,7 +94,7 @@ func main() {
 		trustedPeerPassive = "/ip4/127.0.0.1/tcp/9002" // Passive node
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "1162376908bb94488eb2e2d4cc4572b192034a3eb603a3019a0a471683d10333"
+		block0Hash = "dc47d16e0f5c56db286ec9bf2927dfcc5d493a1307bdb0fa5a66d041ba8256b2"
 	)
 
 	// set binary name/path if not default,
@@ -174,7 +167,7 @@ func main() {
 		b2s(faucetPK),
 		b2s(fixedPK),
 	}
-	stakePoolManagementThreshold := uint16(len(stakePoolOwners)) // uint16(2) -  (since we have 2 owners)
+	stakePoolManagementThreshold := uint16(len(stakePoolOwners))
 	stakePoolSerial := uint64(2020202020)
 	stakePoolStartValidity := uint64(0)
 
@@ -225,13 +218,18 @@ func main() {
 
 	nodeCfg := jnode.NewNodeConfig()
 
-	nodeCfg.Storage = ""                         // memory storage ("jnode_storage" default)
-	nodeCfg.Rest.Listen = restAddress            // 127.0.0.1:8443 is default value
-	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.Log.Level = "debug"                  // default is "trace"
+	nodeCfg.Storage = "jnode_storage"
 
-	// needed for testing on private ip addresses
-	nodeCfg.P2P.AllowPrivateAddresses = true // default false
+	nodeCfg.Rest.Enabled = true       // default is "false" (rest disabled)
+	nodeCfg.Rest.Listen = restAddress // 127.0.0.1:8443 is default value
+
+	nodeCfg.Explorer.Enabled = false // default is "false" (explorer disabled)
+
+	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+
+	nodeCfg.Log.Level = "trace" // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
@@ -275,10 +273,46 @@ func main() {
 
 		At this point the StakePool is configured and running,
 		but the node behaves like a passive one since:
-		1) the StakePool is not yet registered on the network
+		1) the StakePool is not yet registered on the network.
 		2) Even if it was registered the StakePool has no stake yet.
 
 	*******************************************************************/
+	//
+	/////////////////////////////
+	// STAKE POOL Registration //
+	/////////////////////////////
+	//
+
+	// give some time for the rest interface to come online
+	time.Sleep(1 * time.Second)
+
+	// FIXME: The correct behaviour is to wait for the node to sync.
+	// We could check the tip from some trusted nodes,
+	// but only from those having rest available,
+	// until a new api is available to check for averall netwok status.
+	//
+	// In the networked testnet we can check if rest server has come online
+	//
+	leaderTip, err := jcli.RestTip(restLeaderAPI)
+	log.Printf("LeaderTip: %s - %v\n", b2s(leaderTip), err)
+	passiveTip, err := jcli.RestTip(restPassiveAPI)
+	log.Printf("PassiveTip: %s - %v\n", b2s(passiveTip), err)
+	selfTip, err := jcli.RestTip(restAddressAPI)
+	log.Printf("SelfTip: %s - %v\n", b2s(selfTip), err)
+
+	var stateData map[string]interface{}
+
+	faucetState, err := jcli.RestAccount(b2s(faucetAddr), restAddressAPI, "json")
+	fatalStop(node, err)
+	err = json.Unmarshal(faucetState, &stateData)
+	fatalStop(node, err)
+	log.Printf("Faucet Counter: %v\n", stateData["counter"].(float64))
+
+	fixedState, err := jcli.RestAccount(b2s(fixedAddr), restAddressAPI, "json")
+	fatalStop(node, err)
+	err = json.Unmarshal(fixedState, &stateData)
+	fatalStop(node, err)
+	log.Printf("Fixed Counter: %v\n", stateData["counter"].(float64))
 
 	log.Printf("Genesis Hash: %s", block0Hash)
 	log.Printf("StakePool ID: %s", stakePoolID)

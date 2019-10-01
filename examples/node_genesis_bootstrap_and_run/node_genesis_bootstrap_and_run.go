@@ -96,12 +96,20 @@ func main() {
 		restAddress = restAddr + ":" + strconv.Itoa(restPort)
 
 		// P2P
-		p2pIPver         = "ip4"       // ipv4 or ipv6
-		p2pProto         = "tcp"       // tcp
-		p2pPubAddr       = "127.0.0.1" // PublicAddres
-		p2pPort          = 9001        // node P2P Port
-		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPort)
+		p2pIPver = "ip4" // ipv4 or ipv6
+		p2pProto = "tcp" // tcp
 
+		// P2P Public
+		p2pPubAddr       = "127.0.0.1" // PublicAddres
+		p2pPubPort       = 9001        // node P2P Public Port
+		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPubPort)
+
+		// P2P Listen
+		p2pListenAddr    = "127.0.0.1" // ListenAddress
+		p2pListenPort    = 9001        // node P2P Public Port
+		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
+
+		// General
 		consensus      = "genesis_praos" // bft or genesis_praos
 		discrimination = "testing"       // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta"      // "" (empty defaults to "ca")
@@ -179,9 +187,9 @@ func main() {
 	fixedAddr, err := jcli.AddressAccount(b2s(fixedPK), addressPrefix, discrimination)
 	fatalOn(err, b2s(fixedAddr))
 
-	////////////
-	// LEADER //
-	////////////
+	////////////////
+	// BFT LEADER //
+	////////////////
 
 	leaderSK, err := jcli.KeyGenerate(seed(2), "Ed25519", "")
 	fatalOn(err, b2s(leaderSK))
@@ -342,13 +350,18 @@ func main() {
 
 	nodeCfg := jnode.NewNodeConfig()
 
-	nodeCfg.Storage = ""                         // memory storage ("jnode_storage" default)
-	nodeCfg.Rest.Listen = restAddress            // 127.0.0.1:8443 is default value
-	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.Log.Level = "debug"                  // default is "trace"
+	nodeCfg.Storage = "jnode_storage"
 
-	// needed for testing on private ip addresses
-	nodeCfg.P2P.AllowPrivateAddresses = true // default false
+	nodeCfg.Rest.Enabled = true       // default is "false" (rest disabled)
+	nodeCfg.Rest.Listen = restAddress // 127.0.0.1:8443 is default value
+
+	nodeCfg.Explorer.Enabled = false // default is "false" (explorer disabled)
+
+	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+
+	nodeCfg.Log.Level = "trace" // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
