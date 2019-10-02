@@ -2,8 +2,11 @@ package jcli
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
+
+const envJormungandrRestApiUrl = "JORMUNGANDR_RESTAPI_URL"
 
 /* ******************** ACCOUNT ******************** */
 
@@ -18,11 +21,14 @@ func RestAccount(
 	if accountID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "accountID")
 	}
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "account", "get", accountID, "--host", host}
+	arg := []string{"rest", "v0", "account", "get", accountID}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -42,11 +48,14 @@ func RestBlock(
 	if blockID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "block", blockID, "get", "--host", host}
+	arg := []string{"rest", "v0", "block", blockID, "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 
 	return jcli(nil, arg...)
 }
@@ -62,7 +71,7 @@ func RestBlockNextID(
 	if blockID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -77,7 +86,9 @@ func RestBlockNextID(
 	arg := []string{
 		"rest", "v0", "block", blockID, "next-id", "get",
 		"--count", strconv.FormatUint(uint64(countIds), 10),
-		"--host", host,
+	}
+	if host != "" {
+		arg = append(arg, "--host", host)
 	}
 
 	return jcli(nil, arg...)
@@ -92,14 +103,16 @@ func RestLeadersDelete(
 	leaderID uint32,
 	host string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
 	arg := []string{
 		"rest", "v0", "leaders", "delete",
 		strconv.FormatUint(uint64(leaderID), 10), // FIXME: leaderID > 0
-		"--host", host,
+	}
+	if host != "" {
+		arg = append(arg, "--host", host)
 	}
 
 	return jcli(nil, arg...)
@@ -112,11 +125,14 @@ func RestLeaders(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "leaders", "get", "--host", host}
+	arg := []string{"rest", "v0", "leaders", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -131,11 +147,14 @@ func RestLeadersLogs(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "leaders", "logs", "get", "--host", host}
+	arg := []string{"rest", "v0", "leaders", "logs", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -154,11 +173,14 @@ func RestLeadersPost(
 	if len(stdinSk) == 0 && inputFileSk == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFileSk")
 	}
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "leaders", "post", "--host", host}
+	arg := []string{"rest", "v0", "leaders", "post"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if inputFileSk != "" {
 		arg = append(arg, "--file", inputFileSk)
 		stdinSk = nil
@@ -178,11 +200,14 @@ func RestMessageLogs(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "message", "logs", "--host", host}
+	arg := []string{"rest", "v0", "message", "logs"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -201,11 +226,14 @@ func RestMessagePost(
 	if len(stdinMsg) == 0 && inputFileMsg == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinMsg", "inputFileMsg")
 	}
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "message", "post", "--host", host}
+	arg := []string{"rest", "v0", "message", "post"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if inputFileMsg != "" {
 		arg = append(arg, "--file", inputFileMsg)
 		stdinMsg = nil
@@ -223,11 +251,14 @@ func RestNodeStats(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "node", "stats", "get", "--host", host}
+	arg := []string{"rest", "v0", "node", "stats", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -244,11 +275,14 @@ func RestSettings(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "settings", "get", "--host", host}
+	arg := []string{"rest", "v0", "settings", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -265,11 +299,14 @@ func RestShutdown(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "shutdown", "get", "--host", host}
+	arg := []string{"rest", "v0", "shutdown", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 
 	return jcli(nil, arg...)
 }
@@ -283,11 +320,14 @@ func RestStake(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "stake", "get", "--host", host}
+	arg := []string{"rest", "v0", "stake", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -304,11 +344,14 @@ func RestStakePools(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "stake-pools", "get", "--host", host}
+	arg := []string{"rest", "v0", "stake-pools", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
@@ -324,11 +367,14 @@ func RestStakePools(
 func RestTip(
 	host string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "tip", "get", "--host", host}
+	arg := []string{"rest", "v0", "tip", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 
 	return jcli(nil, arg...)
 }
@@ -342,11 +388,14 @@ func RestUTxO(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" {
+	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "utxo", "get", "--host", host}
+	arg := []string{"rest", "v0", "utxo", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
 	if outputFormat != "" {
 		arg = append(arg, "--output-format", outputFormat)
 	}
