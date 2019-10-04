@@ -46,6 +46,9 @@ p2p:
     messages: {{ .Messages }}
     blocks: {{ .Blocks }}
   {{- end}}
+  {{- if .MaxConnections}}
+  max_connections: {{ .MaxConnections }}
+  {{- end}}
   {{- if .AllowPrivateAddresses}}
   allow_private_addresses: {{ .AllowPrivateAddresses }}
   {{- end}}
@@ -103,6 +106,7 @@ type ConfigP2P struct {
 	ListenAddress         string                 // `"listen_address"`
 	TrustedPeers          []string               // `"trusted_peers"`
 	TopicsOfInterest      ConfigTopicsOfInterest // `"topics_of_interest"`
+	MaxConnections        uint                   // `"max_connections"`
 	AllowPrivateAddresses bool                   // `"allow_private_addresses"`
 }
 
@@ -179,6 +183,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.ListenAddress = "/ip4/127.0.0.1/tcp/8299"
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
+	nodeCfg.P2P.MaxConnections = 256
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
