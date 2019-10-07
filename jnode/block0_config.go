@@ -111,8 +111,8 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.Discrimination = "test"
 	chainConfig.Block0Consensus = "genesis_praos"
 	chainConfig.Block0Date = time.Now().Unix()
-	chainConfig.SlotDuration = 120
-	chainConfig.SlotsPerEpoch = 720
+	chainConfig.SlotDuration = 2
+	chainConfig.SlotsPerEpoch = 43200
 	chainConfig.EpochStabilityDepth = 10
 	chainConfig.KesUpdateSpeed = 43200
 	chainConfig.BftSlotsRatio = 0.22

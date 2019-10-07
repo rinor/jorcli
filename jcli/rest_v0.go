@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-const envJormungandrRestApiUrl = "JORMUNGANDR_RESTAPI_URL"
+const envJormungandrRestAPIURL = "JORMUNGANDR_RESTAPI_URL"
 
 /* ******************** ACCOUNT ******************** */
 
@@ -21,7 +21,7 @@ func RestAccount(
 	if accountID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "accountID")
 	}
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -48,7 +48,7 @@ func RestBlock(
 	if blockID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -71,7 +71,7 @@ func RestBlockNextID(
 	if blockID == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -103,7 +103,7 @@ func RestLeadersDelete(
 	leaderID uint32,
 	host string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -125,7 +125,7 @@ func RestLeaders(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -147,7 +147,7 @@ func RestLeadersLogs(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -173,7 +173,7 @@ func RestLeadersPost(
 	if len(stdinSk) == 0 && inputFileSk == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFileSk")
 	}
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -200,7 +200,7 @@ func RestMessageLogs(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -226,7 +226,7 @@ func RestMessagePost(
 	if len(stdinMsg) == 0 && inputFileMsg == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinMsg", "inputFileMsg")
 	}
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -251,7 +251,7 @@ func RestNodeStats(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -275,7 +275,7 @@ func RestSettings(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -299,7 +299,7 @@ func RestShutdown(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -320,7 +320,7 @@ func RestStake(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -344,7 +344,7 @@ func RestStakePools(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -367,7 +367,7 @@ func RestStakePools(
 func RestTip(
 	host string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
@@ -388,7 +388,7 @@ func RestUTxO(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if host == "" && os.Getenv(envJormungandrRestApiUrl) == "" {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
