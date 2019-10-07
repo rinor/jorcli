@@ -271,12 +271,16 @@ func main() {
 	}
 
 	// set/change config params
+	block0cfg.BlockchainConfiguration.Block0Date = block0Date()
 	block0cfg.BlockchainConfiguration.Block0Consensus = consensus
 	block0cfg.BlockchainConfiguration.Discrimination = block0Discrimination
-	block0cfg.BlockchainConfiguration.SlotDuration = 10
-	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 60
-	block0cfg.BlockchainConfiguration.LinearFees.Constant = 10
-	block0cfg.BlockchainConfiguration.Block0Date = block0Date()
+
+	block0cfg.BlockchainConfiguration.SlotDuration = 2
+	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 150
+
+	block0cfg.BlockchainConfiguration.LinearFees.Certificate = 10000
+	block0cfg.BlockchainConfiguration.LinearFees.Coefficient = 50
+	block0cfg.BlockchainConfiguration.LinearFees.Constant = 1000
 
 	err = block0cfg.AddConsensusLeader(b2s(leaderPK))
 	fatalOn(err)
@@ -361,7 +365,7 @@ func main() {
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
-	nodeCfg.Log.Level = "trace" // default is "trace"
+	nodeCfg.Log.Level = "info" // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)

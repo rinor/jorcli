@@ -53,8 +53,7 @@ It shows the usage of:
 At this point the StakePool is configured and running,
 but the node behaves like a passive one since:
 
-1. the StakePool is not yet registered on the network
-2. Even if it was registered the StakePool has no stake yet.
+1. StakePool is registered on the network, but has no stake yet.
 
 ## JCLI Rest v0
 

@@ -62,7 +62,7 @@ func main() {
 		trustedPeerLeader = "/ip4/127.0.0.1/tcp/9001"
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "dc47d16e0f5c56db286ec9bf2927dfcc5d493a1307bdb0fa5a66d041ba8256b2"
+		block0Hash = "ea7d7d70182c7c9b3820a509d1e87c9a8ec2ad1acaf09645b5c84bed1a938224"
 	)
 
 	// set binary name/path if not default,
@@ -95,7 +95,7 @@ func main() {
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
-	nodeCfg.Log.Level = "trace" // default is "trace"
+	nodeCfg.Log.Level = "info" // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)

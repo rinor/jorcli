@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -94,7 +95,7 @@ func main() {
 		trustedPeerPassive = "/ip4/127.0.0.1/tcp/9002" // Passive node
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "dc47d16e0f5c56db286ec9bf2927dfcc5d493a1307bdb0fa5a66d041ba8256b2"
+		block0Hash = "ea7d7d70182c7c9b3820a509d1e87c9a8ec2ad1acaf09645b5c84bed1a938224"
 	)
 
 	// set binary name/path if not default,
@@ -229,7 +230,7 @@ func main() {
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
-	nodeCfg.Log.Level = "trace" // default is "trace"
+	nodeCfg.Log.Level = "info" // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
@@ -277,42 +278,221 @@ func main() {
 		2) Even if it was registered the StakePool has no stake yet.
 
 	*******************************************************************/
-	//
+
 	/////////////////////////////
 	// STAKE POOL Registration //
 	/////////////////////////////
-	//
 
 	// give some time for the rest interface to come online
-	time.Sleep(1 * time.Second)
+	// FIXME: check if rest server has come online
+	log.Println("Waiting for rest interface...")
+	time.Sleep(5 * time.Second)
 
 	// FIXME: The correct behaviour is to wait for the node to sync.
+	//
 	// We could check the tip from some trusted nodes,
 	// but only from those having rest available,
-	// until a new api is available to check for averall netwok status.
+	// until a new api is available to check for overall netwok status.
 	//
-	// In the networked testnet we can check if rest server has come online
+	// In the networked testnet we can only check
+	// if the local rest server has come online,
+	// since the public rest interfaces are probably disabled.
 	//
+
+	// Genesis leader node tip
 	leaderTip, err := jcli.RestTip(restLeaderAPI)
 	log.Printf("LeaderTip: %s - %v\n", b2s(leaderTip), err)
+	fatalStop(node, err)
+	time.Sleep(1 * time.Second)
+
+	// passive node tip
 	passiveTip, err := jcli.RestTip(restPassiveAPI)
 	log.Printf("PassiveTip: %s - %v\n", b2s(passiveTip), err)
+	fatalStop(node, err)
+	time.Sleep(1 * time.Second)
+
+	// stake pool (self) node tip
 	selfTip, err := jcli.RestTip(restAddressAPI)
 	log.Printf("SelfTip: %s - %v\n", b2s(selfTip), err)
+	fatalStop(node, err)
+	time.Sleep(1 * time.Second)
 
-	var stateData map[string]interface{}
+	// Since the pool has 2 owners, lets make both of them pay :)
+	//
+	// the total ammount to pay for this transaction is 11100, because:
+	// LinearFees.Certificate = 10000 (and the tx contains a certificate)
+	// LinearFees.Coefficient =    50
+	// LinearFees.Constant    =  1000
+	// -------------------------------
+	// TOTAL (lovelace)       = 11050 + 50 = 11100 (split it in half for each owner)
+	//
+	// In the testnet you can get those values by querying
+	// the settings using Rest API.
+	// TODO: restSettings, err := jcli.RestSettings(restAddrAPI, "json")
+	//
+	var (
+		feeCertificate = uint64(10000)
+		feeCoefficient = uint64(50)
+		feeConstant    = uint64(1000)
 
+		txHalfCost = uint64(5550) // 11100/2
+
+		// spending counter data
+		jsonData      map[string]interface{}
+		faucetCounter uint32
+		fixedCounter  uint32
+	)
+
+	//////////////////////////////
+	// 1 - Create a transaction //
+	//////////////////////////////
+
+	txStaging, err := jcli.TransactionNew(nil, "")
+	fatalStop(node, err, "TransactionNew", b2s(txStaging))
+
+	///////////////////////////////////////////
+	// 2 - add accounts to transaction input //
+	///////////////////////////////////////////
+
+	// 2.a - Add the FAUCET Account address to the transaction
+	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(faucetAddr), txHalfCost)
+	fatalStop(node, err, "TransactionAddAccount FAUCET", b2s(txStaging))
+
+	// 2.b -  Add the FIXED Account address to the transaction
+	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(fixedAddr), txHalfCost)
+	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
+
+	////////////////////////////////////////////////
+	// 3 - Add the certificate to the transaction //
+	////////////////////////////////////////////////
+
+	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCertSigned))
+	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
+
+	// TODO: check if transaction is balanced
+	// otherwise finalize will fail
+
+	//////////////////////////////////
+	// 4 - Finalize the transaction //
+	//////////////////////////////////
+
+	txStaging, err = jcli.TransactionFinalize(txStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(fixedAddr))
+	fatalStop(node, err, "TransactionFinalize", b2s(txStaging))
+
+	////////////////////////////
+	// 5 - Make the witnesses //
+	////////////////////////////
+
+	// 5.a - Get transaction data for witness (right now the same as TransactionID)
+	txDataForWitness, err := jcli.TransactionDataForWitness(txStaging, "")
+	fatalStop(node, err, "TransactionDataForWitness", b2s(txDataForWitness))
+
+	// 5.b - FAUCET witness
+
+	// Get faucet account spending counter
 	faucetState, err := jcli.RestAccount(b2s(faucetAddr), restAddressAPI, "json")
+	fatalStop(node, err, b2s(faucetState))
+	err = json.Unmarshal(faucetState, &jsonData)
 	fatalStop(node, err)
-	err = json.Unmarshal(faucetState, &stateData)
-	fatalStop(node, err)
-	log.Printf("Faucet Counter: %v\n", stateData["counter"].(float64))
+	jsonCounter, ok := jsonData["counter"].(float64)
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "faucetCounter"))
+	}
+	faucetCounter = uint32(jsonCounter)
 
+	// save the witness data to this file
+	faucetWitnessFile := workingDir + string(os.PathSeparator) + "faucet.witness"
+	faucetWitness, err := jcli.TransactionMakeWitness(
+		faucetSK,
+		b2s(txDataForWitness),
+		block0Hash,
+		"account", faucetCounter,
+		faucetWitnessFile,
+		"",
+	)
+	fatalStop(node, err, "TransactionMakeWitness FAUCET", b2s(faucetWitness))
+
+	// 5.c - FIXED witness
+
+	// Get fixed account spending counter
 	fixedState, err := jcli.RestAccount(b2s(fixedAddr), restAddressAPI, "json")
+	fatalStop(node, err, b2s(fixedState))
+	err = json.Unmarshal(fixedState, &jsonData)
 	fatalStop(node, err)
-	err = json.Unmarshal(fixedState, &stateData)
-	fatalStop(node, err)
-	log.Printf("Fixed Counter: %v\n", stateData["counter"].(float64))
+	jsonCounter, ok = jsonData["counter"].(float64)
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fixedCounter"))
+	}
+	fixedCounter = uint32(jsonCounter)
+
+	// save the witness data to this file
+	fixedWitnessFile := workingDir + string(os.PathSeparator) + "fixed.witness"
+	fixedWitness, err := jcli.TransactionMakeWitness(
+		fixedSK,
+		b2s(txDataForWitness),
+		block0Hash,
+		"account", fixedCounter,
+		fixedWitnessFile,
+		"",
+	)
+	fatalStop(node, err, "TransactionMakeWitness FIXED", b2s(fixedWitness))
+
+	//////////////////////////////////////////////
+	// 6 - Add the witnesses to the transaction //
+	//////////////////////////////////////////////
+
+	// 6.a - Add FAUCET witness
+	txStaging, err = jcli.TransactionAddWitness(txStaging, "", faucetWitnessFile)
+	fatalStop(node, err, "TransactionAddWitness FAUCET", b2s(txStaging))
+
+	// 6.b - Add FIXED witness
+	txStaging, err = jcli.TransactionAddWitness(txStaging, "", fixedWitnessFile)
+	fatalStop(node, err, "TransactionAddWitness FIXED", b2s(txStaging))
+
+	/////////////////////////////
+	// 7. Seal the transaction //
+	/////////////////////////////
+
+	txStaging, err = jcli.TransactionSeal(txStaging, "")
+	fatalStop(node, err, "TransactionSeal", b2s(txStaging))
+
+	///////////////////////////////////////////
+	// 8. Convert the transaction to message //
+	///////////////////////////////////////////
+
+	txMessage, err := jcli.TransactionToMessage(txStaging, "")
+	fatalStop(node, err, "TransactionToMessage", b2s(txMessage))
+
+	///////////////////////////////////////////////
+	// 9. Send the transaction to the blockchain //
+	///////////////////////////////////////////////
+
+	fragmentID, err := jcli.RestMessagePost(txMessage, restAddressAPI, "")
+	fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
+
+	// Display transaction info
+	txInfo, err := jcli.TransactionInfo(
+		txStaging, "",
+		feeCertificate,
+		feeCoefficient,
+		feeConstant,
+		addressPrefix,
+		"",
+		"",
+	)
+	log.Printf("TransactionInfo:\n%s : %v\n", b2s(txInfo), err)
+
+	/*****************************************************************
+
+		At this point the StakePool is configured and running,
+		but the node behaves like a passive one since:
+		1) StakePool is registered on the network, but has no stake yet.
+
+	*******************************************************************/
+
+	///////////////////////////
+	// STAKE POOL Delegation //
+	///////////////////////////
 
 	log.Printf("Genesis Hash: %s", block0Hash)
 	log.Printf("StakePool ID: %s", stakePoolID)
