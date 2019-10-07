@@ -412,15 +412,19 @@ func TransactionInfo(
 	feeCertificate uint64,
 	feeCoefficient uint64,
 	feeConstant uint64,
-	outputFile string, //         TODO: UPSTREAM unify with "--output" as other file output commands
-	format string,
-	onlyUTxOs bool, //            TODO: UPSTREAM convert to --only-utxos
-	onlyAccounts bool, //         TODO: UPSTREAM convert to --only-accounts
-	onlyOutputs bool, //          TODO: UPSTREAM convert to --only-outputs
-	formatUTxOInput string, //    TODO: UPSTREAM convert to --format-utxo-input <data>
-	formatAccountInput string, // TODO: UPSTREAM convert to --format-account-input <data>
-	formatOutput string, //       TODO: UPSTREAM convert to --format-output <data>
 	prefix string,
+	outputFile string, // TODO: UPSTREAM unify with "--output" as other file output commands
+	format string,
+	// FIXME: these params are positionals and cause issues if one is missing...
+	// disable for now until upstream fixed
+	/*
+		onlyUTxOs bool, //            TODO: UPSTREAM convert to --only-utxos
+		onlyAccounts bool, //         TODO: UPSTREAM convert to --only-accounts
+		onlyOutputs bool, //          TODO: UPSTREAM convert to --only-outputs
+		formatUTxOInput string, //    TODO: UPSTREAM convert to --format-utxo-input <data>
+		formatAccountInput string, // TODO: UPSTREAM convert to --format-account-input <data>
+		formatOutput string, //       TODO: UPSTREAM convert to --format-output <data>
+	*/
 ) ([]byte, error) {
 	if len(stdinStaging) == 0 && stagingFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
@@ -445,21 +449,22 @@ func TransactionInfo(
 	if outputFile != "" {
 		arg = append(arg, outputFile)
 	}
-	arg = append(arg,
-		strconv.FormatBool(onlyUTxOs),
-		strconv.FormatBool(onlyAccounts),
-		strconv.FormatBool(onlyOutputs),
-	)
-	if formatUTxOInput != "" {
-		arg = append(arg, formatUTxOInput)
-	}
-	if formatAccountInput != "" {
-		arg = append(arg, formatAccountInput)
-	}
-	if formatOutput != "" {
-		arg = append(arg, formatOutput)
-	}
-
+	/*
+		arg = append(arg,
+			strconv.FormatBool(onlyUTxOs),
+			strconv.FormatBool(onlyAccounts),
+			strconv.FormatBool(onlyOutputs),
+		)
+		if formatUTxOInput != "" {
+			arg = append(arg, formatUTxOInput)
+		}
+		if formatAccountInput != "" {
+			arg = append(arg, formatAccountInput)
+		}
+		if formatOutput != "" {
+			arg = append(arg, formatOutput)
+		}
+	*/
 	out, err := jcli(stdinStaging, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
