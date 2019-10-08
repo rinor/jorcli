@@ -412,13 +412,61 @@ func main() {
 	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCertSigned))
 	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
 
-	// TODO: check if transaction is balanced otherwise:
-	// 1) finalize will fail with: not enough input for making transaction
-	// or
-	// 2) transaction will be rejected:
+	////////////////////////////////////////////////////////////////////////////
+	// - Check if transaction is balanced otherwise:
+	//
+	// 1) finalize will fail with (if balance < 0):
+	//    not enough input for making transaction
+	//
+	// OR
+	//
+	// 2) transaction will be rejected ( (if balance > 0)):
 	// status:
 	//   Rejected:
-	//	   reason: "Failed to validate transaction balance: transaction value not balanced, has inputs sum 11101 and outputs sum 11100"
+	//	   reason:
+	// "Failed to validate transaction balance: transaction value not balanced,
+	//  has inputs sum 11101 and outputs sum 11100"
+	////////////////////////////////////////////////////////////////////////////
+
+	// get balance value from transaction info
+	txInfo, err := jcli.TransactionInfo(
+		txStaging, "",
+		feeCertificate,
+		feeCoefficient,
+		feeConstant,
+		addressPrefix,
+		"",
+		"{balance}",
+		"",
+		"",
+		"",
+		false,
+		false,
+		false,
+	)
+	fatalStop(node, err, "TransactionInfo BALANCE", b2s(txInfo))
+
+	// get string value.
+	// when math ops required, convert it to number.
+	txBalance := b2s(txInfo)
+
+	// jic, since shouldn't happen
+	if txBalance == "" {
+		fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", txBalance))
+	}
+
+	// BUG: if balance outside (int) range ...
+	txBalanceAmmount, err := strconv.Atoi(txBalance)
+	fatalStop(node, err, "strconv.Atoi(txBalance)", txBalance)
+
+	switch {
+	case txBalanceAmmount < 0:
+		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail!", txBalance))
+	case txBalanceAmmount > 0:
+		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected!", txBalance))
+	default:
+		// Transaction is balanced :)
+	}
 
 	//////////////////////////////////
 	// 4 - Finalize the transaction //
@@ -519,14 +567,20 @@ func main() {
 	fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
 
 	// Display transaction info
-	txInfo, err := jcli.TransactionInfo(
+	txInfo, err = jcli.TransactionInfo(
 		txStaging, "",
 		feeCertificate,
 		feeCoefficient,
 		feeConstant,
 		addressPrefix,
 		"",
-		"",
+		"default",
+		"default",
+		"default",
+		"default",
+		false,
+		false,
+		false,
 	)
 	log.Printf("TransactionInfo:\n%s : %v\n", b2s(txInfo), err)
 
