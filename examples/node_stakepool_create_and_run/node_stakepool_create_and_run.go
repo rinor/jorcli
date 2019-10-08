@@ -268,7 +268,8 @@ func main() {
 	}
 
 	// _ = node.Stop() // Stop the node now
-	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
+	err = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
+	fatalOn(err)
 
 	/*****************************************************************
 
@@ -301,47 +302,89 @@ func main() {
 
 	// Genesis leader node tip
 	leaderTip, err := jcli.RestTip(restLeaderAPI)
-	log.Printf("LeaderTip: %s - %v\n", b2s(leaderTip), err)
-	fatalStop(node, err)
+	fatalStop(node, err, b2s(leaderTip))
+	log.Printf("LeaderTip: %s\n", b2s(leaderTip))
 	time.Sleep(1 * time.Second)
 
 	// passive node tip
 	passiveTip, err := jcli.RestTip(restPassiveAPI)
-	log.Printf("PassiveTip: %s - %v\n", b2s(passiveTip), err)
-	fatalStop(node, err)
+	fatalStop(node, err, b2s(passiveTip))
+	log.Printf("PassiveTip: %s\n", b2s(passiveTip))
 	time.Sleep(1 * time.Second)
 
 	// stake pool (self) node tip
 	selfTip, err := jcli.RestTip(restAddressAPI)
-	log.Printf("SelfTip: %s - %v\n", b2s(selfTip), err)
-	fatalStop(node, err)
+	fatalStop(node, err, b2s(selfTip))
+	log.Printf("SelfTip: %s\n", b2s(selfTip))
 	time.Sleep(1 * time.Second)
 
 	// Since the pool has 2 owners, lets make both of them pay :)
 	//
 	// the total ammount to pay for this transaction is 11100, because:
-	// LinearFees.Certificate = 10000 (and the tx contains a certificate)
-	// LinearFees.Coefficient =    50
-	// LinearFees.Constant    =  1000
+	// total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
+	//
+	// LinearFees.Certificate = 10_000 (and the tx contains a certificate)
+	// LinearFees.Coefficient =     50 (we have 2 inputs so total is 100)
+	// LinearFees.Constant    =  1_000
 	// -------------------------------
-	// TOTAL (lovelace)       = 11050 + 50 = 11100 (split it in half for each owner)
-	//
-	// In the testnet you can get those values by querying
-	// the settings using Rest API.
-	// TODO: restSettings, err := jcli.RestSettings(restAddrAPI, "json")
-	//
-	var (
-		feeCertificate = uint64(10000)
-		feeCoefficient = uint64(50)
-		feeConstant    = uint64(1000)
+	// TOTAL (lovelace)       =  1_000 + (2 + 0)*50 + 10_000 = 11_100
 
-		txHalfCost = uint64(5550) // 11100/2
+	var (
+		// generic interface used for json data.
+		jsonData map[string]interface{}
 
 		// spending counter data
-		jsonData      map[string]interface{}
 		faucetCounter uint32
 		fixedCounter  uint32
+
+		// fees data
+		feeCertificate uint64
+		feeCoefficient uint64
+		feeConstant    uint64
 	)
+
+	// get blockchain setting from rest
+	blockchainSettings, err := jcli.RestSettings(restAddressAPI, "json")
+	fatalStop(node, err, "RestSettings", b2s(blockchainSettings))
+
+	// will use a generic way to parse json data without using structs,
+	// just to show how is done.
+	// May also build a struct representing the seetings or
+	// only the fees using jnode.LinearFees for example.
+
+	err = json.Unmarshal(blockchainSettings, &jsonData)
+	fatalStop(node, err)
+
+	// fees
+	jsonFees, ok := jsonData["fees"].(map[string]interface{})
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFees"))
+	}
+
+	// fee certificate
+	jsonFeeCertificate, ok := jsonFees["certificate"].(float64)
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCertificate"))
+	}
+	feeCertificate = uint64(jsonFeeCertificate)
+
+	// fee coefficient
+	jsonFeeCoefficient, ok := jsonFees["coefficient"].(float64)
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCoefficient"))
+	}
+	feeCoefficient = uint64(jsonFeeCoefficient)
+
+	// fee constant
+	jsonFeeConstant, ok := jsonFees["constant"].(float64)
+	if !ok {
+		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeConstant"))
+	}
+	feeConstant = uint64(jsonFeeConstant)
+
+	// we will have 2 inputs and 0 outputs.
+	// total fees: constant + (num_inputs + num_outputs) * coefficient + certificate
+	totalFees := feeConstant + 2*feeCoefficient + feeCertificate
 
 	//////////////////////////////
 	// 1 - Create a transaction //
@@ -355,11 +398,11 @@ func main() {
 	///////////////////////////////////////////
 
 	// 2.a - Add the FAUCET Account address to the transaction
-	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(faucetAddr), txHalfCost)
+	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(faucetAddr), totalFees/2)
 	fatalStop(node, err, "TransactionAddAccount FAUCET", b2s(txStaging))
 
 	// 2.b -  Add the FIXED Account address to the transaction
-	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(fixedAddr), txHalfCost)
+	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(fixedAddr), totalFees-(totalFees/2))
 	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
 
 	////////////////////////////////////////////////
@@ -369,8 +412,13 @@ func main() {
 	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCertSigned))
 	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
 
-	// TODO: check if transaction is balanced
-	// otherwise finalize will fail
+	// TODO: check if transaction is balanced otherwise:
+	// 1) finalize will fail with: not enough input for making transaction
+	// or
+	// 2) transaction will be rejected:
+	// status:
+	//   Rejected:
+	//	   reason: "Failed to validate transaction balance: transaction value not balanced, has inputs sum 11101 and outputs sum 11100"
 
 	//////////////////////////////////
 	// 4 - Finalize the transaction //
@@ -486,7 +534,8 @@ func main() {
 
 		At this point the StakePool is configured and running,
 		but the node behaves like a passive one since:
-		1) StakePool is registered on the network, but has no stake yet.
+		1) StakePool is registered on the network,
+		   but has NO STAKE yet.
 
 	*******************************************************************/
 

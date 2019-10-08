@@ -109,7 +109,7 @@ func (jnode *Jnode) Run() error {
 		return err
 	}
 
-	// FIXME: find an affective way to catch errors of stderr
+	// FIXME: find an effective way to catch errors of stderr
 	// since cmd.Start does not care about them.
 	// Ex: config errors will cause Start() to report no errors
 	//     when in fact the node reports errors on stderr and stops.
@@ -121,11 +121,11 @@ func (jnode *Jnode) Run() error {
 }
 
 // cmdWait for the node to terminate,
-// ans close the stop channel.
+// and close the stop channel.
 func (jnode *Jnode) cmdWait() {
 	err := jnode.cmd.Wait()
 	if err != nil {
-		log.Printf("%v", err)
+		log.Printf("cmd.Wait() - %v", err) // FIXME: handle shutdown
 	}
 	select {
 	case <-jnode.done:
