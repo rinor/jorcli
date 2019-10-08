@@ -399,13 +399,13 @@ func TransactionMakeWitness(
 //                                  [--fee-coefficient <coefficient>]
 //                                  [--fee-constant <constant>]
 //                                  [--format <format>]
-//                                  [<output file>]
-//                                  [<only-utxos>]
-//                                  [<only-accounts>]
-//                                  [<only-outputs>]
-//                                  [<format-utxo-input>]
-//                                  [<format-account-input>]
-//                                  [<format-output>]
+//                                  [--output <output file>]
+//                                  [--only-utxos]
+//                                  [--only-accounts]
+//                                  [--only-outputs]
+//                                  [--format-utxo-input <format-utxo-input>]
+//                                  [--format-account-input <format-account-input>]
+//                                  [--format-output <format-output>]
 //                                  [--prefix <address prefix>] | [STDOUT]
 func TransactionInfo(
 	stdinStaging []byte, stagingFile string,
@@ -413,18 +413,14 @@ func TransactionInfo(
 	feeCoefficient uint64,
 	feeConstant uint64,
 	prefix string,
-	outputFile string, // TODO: UPSTREAM unify with "--output" as other file output commands
+	outputFile string,
 	format string,
-	// FIXME: these params are positionals and cause issues if one is missing...
-	// disable for now until upstream fixed
-	/*
-		onlyUTxOs bool, //            TODO: UPSTREAM convert to --only-utxos
-		onlyAccounts bool, //         TODO: UPSTREAM convert to --only-accounts
-		onlyOutputs bool, //          TODO: UPSTREAM convert to --only-outputs
-		formatUTxOInput string, //    TODO: UPSTREAM convert to --format-utxo-input <data>
-		formatAccountInput string, // TODO: UPSTREAM convert to --format-account-input <data>
-		formatOutput string, //       TODO: UPSTREAM convert to --format-output <data>
-	*/
+	formatUTxOInput string,
+	formatAccountInput string,
+	formatOutput string,
+	onlyUTxOs bool,
+	onlyAccounts bool,
+	onlyOutputs bool,
 ) ([]byte, error) {
 	if len(stdinStaging) == 0 && stagingFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
@@ -440,31 +436,38 @@ func TransactionInfo(
 		"--fee-coefficient", strconv.FormatUint(feeCoefficient, 10),
 		"--fee-constant", strconv.FormatUint(feeConstant, 10),
 	)
-	if format != "" {
-		arg = append(arg, "--format", format)
-	}
 	if prefix != "" {
 		arg = append(arg, "--prefix", prefix)
 	}
 	if outputFile != "" {
-		arg = append(arg, outputFile)
+		arg = append(arg, "--output", outputFile)
 	}
-	/*
-		arg = append(arg,
-			strconv.FormatBool(onlyUTxOs),
-			strconv.FormatBool(onlyAccounts),
-			strconv.FormatBool(onlyOutputs),
-		)
-		if formatUTxOInput != "" {
-			arg = append(arg, formatUTxOInput)
-		}
-		if formatAccountInput != "" {
-			arg = append(arg, formatAccountInput)
-		}
-		if formatOutput != "" {
-			arg = append(arg, formatOutput)
-		}
-	*/
+	// NOTE:
+	// workaround since "" empty string has meaning here (disables output),
+	// so need to pass "default" string to use whatever is default format.
+	if format != "default" {
+		arg = append(arg, "--format", format)
+	}
+	if formatUTxOInput != "default" {
+		arg = append(arg, "--format-utxo-input", formatUTxOInput)
+	}
+	if formatAccountInput != "default" {
+		arg = append(arg, "--format-account-input", formatAccountInput)
+	}
+	if formatOutput != "default" {
+		arg = append(arg, "--format-output", formatOutput)
+	}
+
+	if onlyUTxOs {
+		arg = append(arg, "--only-utxos", strconv.FormatBool(onlyUTxOs))
+	}
+	if onlyAccounts {
+		arg = append(arg, "--only-accounts", strconv.FormatBool(onlyAccounts))
+	}
+	if onlyOutputs {
+		arg = append(arg, "--only-outputs", strconv.FormatBool(onlyOutputs))
+	}
+
 	out, err := jcli(stdinStaging, arg...)
 	if err != nil || outputFile == "" {
 		return out, err

@@ -309,3 +309,35 @@ func ExampleTransactionAddCertificate_staging() {
 		fmt.Printf("%v", tx)
 	}
 }
+
+func TestTransactioninfo_staging(t *testing.T) {
+	var (
+		stdinStaging = loadBytes(t, "tx-08_seal_staging.golden")
+		stagingFile  = ""
+		expectedInfo = loadBytes(t, "tx-08_info.golden")
+
+		feeCertificate = uint64(3)
+		feeCoefficient = uint64(2)
+		feeConstant    = uint64(1)
+		prefix         = "ta"
+	)
+
+	txInfo, err := jcli.TransactionInfo(
+		stdinStaging,
+		stagingFile,
+		feeCertificate,
+		feeCoefficient,
+		feeConstant,
+		prefix,
+		"",
+		"default",
+		"default",
+		"default",
+		"default",
+		false,
+		false,
+		false,
+	)
+	ok(t, err)
+	equals(t, expectedInfo, txInfo)
+}
