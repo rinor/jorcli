@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -308,8 +309,8 @@ func main() {
 
 	// passive node tip
 	passiveTip, err := jcli.RestTip(restPassiveAPI)
-	fatalStop(node, err, b2s(passiveTip))
-	log.Printf("PassiveTip: %s\n", b2s(passiveTip))
+	//fatalStop(node, err, b2s(passiveTip))
+	log.Printf("PassiveTip: %s - %v\n", b2s(passiveTip), err)
 	time.Sleep(1 * time.Second)
 
 	// stake pool (self) node tip
@@ -331,7 +332,8 @@ func main() {
 
 	var (
 		// generic interface used for json data.
-		jsonData map[string]interface{}
+		jsonData     map[string]interface{}
+		jsonDataList []map[string]interface{}
 
 		// spending counter data
 		faucetCounter uint32
@@ -349,7 +351,7 @@ func main() {
 
 	// will use a generic way to parse json data without using structs,
 	// just to show how is done.
-	// May also build a struct representing the seetings or
+	// One can also build a struct representing the settings or
 	// only the fees using jnode.LinearFees for example.
 
 	err = json.Unmarshal(blockchainSettings, &jsonData)
@@ -461,9 +463,9 @@ func main() {
 
 	switch {
 	case txBalanceAmmount < 0:
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail!", txBalance))
+		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", txBalance))
 	case txBalanceAmmount > 0:
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected!", txBalance))
+		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected", txBalance))
 	default:
 		// Transaction is balanced :)
 	}
@@ -566,23 +568,133 @@ func main() {
 	fragmentID, err := jcli.RestMessagePost(txMessage, restAddressAPI, "")
 	fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
 
-	// Display transaction info
-	txInfo, err = jcli.TransactionInfo(
-		txStaging, "",
-		feeCertificate,
-		feeCoefficient,
-		feeConstant,
-		addressPrefix,
-		"",
-		"default",
-		"default",
-		"default",
-		"default",
-		false,
-		false,
-		false,
+	//////////////////////////////////////////////
+	// 10. Check certificate transaction status //
+	//////////////////////////////////////////////
+
+	// There are different ways to set a checkpoint when to check for status changes.
+	// One could check for tip changes and then check for status changes,
+	// or use a loop with timeout based on slot_duration.
+	// In this example a loop is used.
+	//
+	// If the node has explorer enabled, one could also use graphql queries to get the status.
+	// TODO: implement this example once jgraph lib available.
+	//
+	// NOTE:
+	// - the tip can change also during sync if the node is behind,
+	//   so it does not guaranties the transaction inclusion
+	//
+	// - slot_duration in genesis_praos is unpredictable
+
+	var (
+		logFragmentID  = b2s(fragmentID)
+		fragmentStatus string
+		fragmentInfo   string
 	)
-	log.Printf("TransactionInfo:\n%s : %v\n", b2s(txInfo), err)
+
+	log.Printf("Wait for certificate transaction [%s] status change...\n", logFragmentID)
+
+	for x, done := 0, false; !done && x < 30; x++ {
+		fragmentLogs, err := jcli.RestMessageLogs(restAddressAPI, "json")
+		fatalStop(node, err, "RestMessageLogs", b2s(fragmentLogs))
+
+		err = json.Unmarshal(fragmentLogs, &jsonDataList)
+		fatalStop(node, err)
+
+		// This may be resourse intensive depending on the number of message logs.
+		for i := range jsonDataList {
+			logID, ok := jsonDataList[i]["fragment_id"].(string)
+			if !ok {
+				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fragment_id"))
+			}
+
+			// we are interested in a specific fragment_id
+			if logFragmentID != logID {
+				continue
+			}
+
+			status, ok := jsonDataList[i]["status"]
+			if !ok {
+				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "status"))
+			}
+
+			switch reflect.TypeOf(status).Kind() {
+			case reflect.String:
+				/**************************************
+				   "status": "Pending"
+				**************************************/
+				fragmentStatus = status.(string)
+
+			case reflect.Map:
+				/**************************************
+				   "status": {
+				     "InABlock": {
+				       "date": "114237.32"
+				     }
+				   }
+				**************************************/
+				date, accepted := status.(map[string]interface{})["InABlock"]
+				if accepted {
+					fragmentStatus = "InABlock"
+					info, ok := date.(map[string]interface{})["date"]
+					if ok {
+						fragmentInfo = info.(string)
+					}
+					done = true
+					break
+				}
+
+				/**************************************
+				   "status": {
+				     "Rejected": {
+				       "reason": "some reason info"
+				     }
+				   }
+				**************************************/
+				reason, rejected := status.(map[string]interface{})["Rejected"]
+				if rejected {
+					fragmentStatus = "Rejected"
+					info, ok := reason.(map[string]interface{})["reason"]
+					if ok {
+						fragmentInfo = info.(string)
+					}
+					done = true
+					break
+				}
+			} /* switch */
+
+		} /* for */
+
+		if !done {
+			time.Sleep(2 * time.Second) // 2 is derived from slot_duration
+		}
+
+	} /* for */
+
+	// TODO: if fragmentStatus == "" -> transaction was not found
+	// TODO: if fragmentStatus != "InABlock" -> transaction still Pending or Recected
+
+	log.Printf("FragmentID: %s - %s [%s]\n", logFragmentID, fragmentStatus, fragmentInfo)
+
+	/*
+		// Display transaction info
+		txInfo, err = jcli.TransactionInfo(
+			txStaging, "",
+			feeCertificate,
+			feeCoefficient,
+			feeConstant,
+			addressPrefix,
+			"",
+			"default",
+			"default",
+			"default",
+			"default",
+			false,
+			false,
+			false,
+		)
+		log.Printf("TransactionInfo:\n%s : %v\n", b2s(txInfo), err)
+	*/
 
 	/*****************************************************************
 
