@@ -53,26 +53,26 @@ func buildAccountAddr(seed string, addressPrefix string, discrimination string) 
 	var (
 		err error
 
-		faucetSK   []byte
-		faucetPK   []byte
-		faucetAddr []byte
+		secretKey   []byte
+		publicKey   []byte
+		accountAddr []byte
 	)
 	// private key
-	faucetSK, err = jcli.KeyGenerate(seed, "Ed25519Extended", "")
+	secretKey, err = jcli.KeyGenerate(seed, "Ed25519Extended", "")
 	if err != nil {
-		return "", fmt.Errorf("KeyGenerate: %s - %s", err, faucetSK)
+		return "", fmt.Errorf("KeyGenerate: %s - %s", err, secretKey)
 	}
 	// public key
-	faucetPK, err = jcli.KeyToPublic(faucetSK, "", "")
+	publicKey, err = jcli.KeyToPublic(secretKey, "", "")
 	if err != nil {
-		return "", fmt.Errorf("KeyToPublic: %s - %s", err, faucetPK)
+		return "", fmt.Errorf("KeyToPublic: %s - %s", err, publicKey)
 	}
 	// account address
-	faucetAddr, err = jcli.AddressAccount(b2s(faucetPK), addressPrefix, discrimination)
+	accountAddr, err = jcli.AddressAccount(b2s(publicKey), addressPrefix, discrimination)
 	if err != nil {
-		return "", fmt.Errorf("AddressAccount: %s - %s", err, faucetAddr)
+		return "", fmt.Errorf("AddressAccount: %s - %s", err, accountAddr)
 	}
-	return b2s(faucetAddr), err
+	return b2s(accountAddr), err
 }
 
 // get a fixed date if possible.
@@ -85,14 +85,22 @@ func block0Date() int64 {
 	return block0Date.Unix()
 }
 
-/* seeds used [0-4] */
+/* seeds used [0-4], [50,60], [100-199] */
 func main() {
+	const (
+		genesisExtraSeed = 50 // seed the owner of an extra pool in genesis block
+		delegatorSeed    = 60 // seed for new stake delegator example (3)
+
+		seedStartBulk  = 100 // seed key generation start
+		totSrcAddrBulk = 100 // total number of account addresses
+	)
+
 	var (
 		err error
 
 		// Rest
-		restAddr    = "127.0.0.1" // rest ip
-		restPort    = 8001        // rest port
+		restAddr    = "127.0.0.11" // rest ip
+		restPort    = 8001         // rest port
 		restAddress = restAddr + ":" + strconv.Itoa(restPort)
 
 		// P2P
@@ -100,19 +108,22 @@ func main() {
 		p2pProto = "tcp" // tcp
 
 		// P2P Public
-		p2pPubAddr       = "127.0.0.1" // PublicAddres
-		p2pPubPort       = 9001        // node P2P Public Port
+		p2pPubAddr       = "127.0.0.11" // PublicAddres
+		p2pPubPort       = 9001         // node P2P Public Port
 		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPubPort)
 
 		// P2P Listen
-		p2pListenAddr    = "127.0.0.1" // ListenAddress
-		p2pListenPort    = 9001        // node P2P Public Port
+		p2pListenAddr    = "127.0.0.11" // ListenAddress
+		p2pListenPort    = 9001         // node P2P Public Port
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// General
 		consensus      = "genesis_praos" // bft or genesis_praos
 		discrimination = "testing"       // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta"      // "" (empty defaults to "ca")
+
+		// Trusted peers
+		// trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // stake pool node (example 2)
 	)
 
 	// set binary name/path if not default,
@@ -120,29 +131,6 @@ func main() {
 	// are also the default values.
 	jcli.BinName("jcli")         // default is "jcli"
 	jnode.BinName("jormungandr") // default is "jormungandr"
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	// START - BULK generate                                                           //
-	//                                                                                 //
-	// this will be used to generate bulk addresses and include them in genesis block0 //
-	// so we can use them as source for bulk transactions from other examples.         //
-	const ( //
-		seedStart  = 101 // seed key generation start
-		totSrcAddr = 100 // total number of account addresses
-	)
-	var srcFaucets [totSrcAddr]string
-	// build bulk addresses
-	for i := 0; i < totSrcAddr; i++ {
-		srcFaucets[i], err = buildAccountAddr(
-			seed(seedStart+i),
-			addressPrefix,
-			discrimination,
-		)
-		fatalOn(err)
-	}
-	//                                                                                //
-	// DONE - BULK generate                                                           //
-	////////////////////////////////////////////////////////////////////////////////////
 
 	// get jcli version
 	jcliVersion, err := jcli.VersionFull()
@@ -157,7 +145,43 @@ func main() {
 	// create a new temporary directory inside your systems temp dir
 	workingDir, err := ioutil.TempDir("", "jnode_")
 	fatalOn(err, "workingDir")
+	log.Println()
 	log.Printf("Working Directory: %s", workingDir)
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	// START - BULK generate                                                           //
+	//                                                                                 //
+	// this will be used to generate bulk addresses and include them in genesis block0 //
+	// so we can use them as source for bulk transactions from other examples.         //
+
+	var (
+		srcFaucets [totSrcAddrBulk]string
+	)
+	// build bulk addresses
+	for i := 0; i < totSrcAddrBulk; i++ {
+		srcFaucets[i], err = buildAccountAddr(
+			seed(seedStartBulk+i),
+			addressPrefix,
+			discrimination,
+		)
+		fatalOn(err)
+	}
+
+	//                                                                                //
+	// DONE - BULK generate                                                           //
+	////////////////////////////////////////////////////////////////////////////////////
+
+	///////////////
+	// DELEGATOR //
+	///////////////
+
+	// generate also an account for delegating in example(3)
+	delegatorAddr, err := buildAccountAddr(
+		seed(delegatorSeed),
+		addressPrefix,
+		discrimination,
+	)
+	fatalOn(err)
 
 	////////////
 	// FAUCET //
@@ -196,9 +220,9 @@ func main() {
 	leaderPK, err := jcli.KeyToPublic(leaderSK, "", "")
 	fatalOn(err, b2s(leaderPK))
 
-	/////////////////////////
-	// STAKE POOL Creation //
-	/////////////////////////
+	//////////////////////////////////////
+	// GENESIS Local STAKE POOL Creation //
+	//////////////////////////////////////
 
 	// VRF
 	poolVrfSK, err := jcli.KeyGenerate(seed(3), "Curve25519_2HashDH", "")
@@ -240,9 +264,9 @@ func main() {
 	stakePoolCertSigned, err = jcli.CertificateSign(stakePoolCertSigned, fixedFileSK, "", "")
 	fatalOn(err, b2s(stakePoolCertSigned))
 
-	///////////////////////////
-	// STAKE POOL Delegation //
-	///////////////////////////
+	/////////////////////////////////
+	// Local STAKE POOL Delegation //
+	/////////////////////////////////
 
 	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCertSigned, "", "")
 	fatalOn(err, b2s(stakePoolID))
@@ -258,6 +282,76 @@ func main() {
 	fatalOn(err, b2s(stakeDelegationFixedCert))
 	stakeDelegationFixedCertSigned, err := jcli.CertificateSign(stakeDelegationFixedCert, fixedFileSK, "", "")
 	fatalOn(err, b2s(stakeDelegationFixedCertSigned))
+
+	/**********************************************************************************************************/
+
+	///////////////////////////////////////
+	// GENESIS Extra STAKE POOL Creation //
+	///////////////////////////////////////
+
+	//////////////////////////////
+	// Genesis Extra Pool Owner //
+	//////////////////////////////
+
+	// will need this one file later for certificate signing
+	gepoFileSK := workingDir + string(os.PathSeparator) + "gepo_key.sk"
+
+	gepoSK, err := jcli.KeyGenerate(seed(genesisExtraSeed), "Ed25519Extended", gepoFileSK)
+	fatalOn(err, b2s(gepoSK))
+	gepoPK, err := jcli.KeyToPublic(gepoSK, "", "")
+	fatalOn(err, b2s(gepoPK))
+	gepoAddr, err := jcli.AddressAccount(b2s(gepoPK), addressPrefix, discrimination)
+	fatalOn(err, b2s(gepoAddr))
+
+	// gep VRF
+	gepPoolVrfSK, err := jcli.KeyGenerate(seed(genesisExtraSeed+1), "Curve25519_2HashDH", "")
+	fatalOn(err, b2s(gepPoolVrfSK))
+	gepPoolVrfPK, err := jcli.KeyToPublic(gepPoolVrfSK, "", "")
+	fatalOn(err, b2s(gepPoolVrfPK))
+
+	// gep KES
+	gepPoolKesSK, err := jcli.KeyGenerate(seed(genesisExtraSeed+2), "SumEd25519_12", "")
+	fatalOn(err, b2s(gepPoolKesSK))
+	gepPoolKesPK, err := jcli.KeyToPublic(gepPoolKesSK, "", "")
+	fatalOn(err, b2s(gepPoolKesPK))
+
+	// Genesis Extra Pool Owner of this pool
+	gepStakePoolOwners := []string{
+		b2s(gepoPK),
+	}
+	gepStakePoolManagementThreshold := uint16(len(gepStakePoolOwners)) // uint16(1) -  (since we have 1 owner)
+	gepStakePoolSerial := uint64(2020202020)
+	gepStakePoolStartValidity := uint64(0)
+
+	gepStakePoolCert, err := jcli.CertificateNewStakePoolRegistration(
+		b2s(gepPoolKesPK),
+		b2s(gepPoolVrfPK),
+		gepStakePoolStartValidity,
+		gepStakePoolManagementThreshold,
+		gepStakePoolSerial,
+		gepStakePoolOwners,
+		"",
+	)
+	fatalOn(err, b2s(gepStakePoolCert))
+
+	// Sign the certificate with Genesis Extra Pool Owner private key
+	gepStakePoolCertSigned, err := jcli.CertificateSign(gepStakePoolCert, gepoFileSK, "", "")
+	fatalOn(err, b2s(gepStakePoolCertSigned))
+
+	/////////////////////////////////
+	// Extra STAKE POOL Delegation //
+	/////////////////////////////////
+
+	gepStakePoolID, err := jcli.CertificateGetStakePoolID(gepStakePoolCertSigned, "", "")
+	fatalOn(err, b2s(gepStakePoolID))
+
+	// Genesis Extra Pool Owner delegation
+	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepStakePoolID), b2s(gepoPK), "")
+	fatalOn(err, b2s(stakeDelegationGepoCert))
+	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, gepoFileSK, "", "")
+	fatalOn(err, b2s(stakeDelegationGepoCertSigned))
+
+	/**********************************************************************************************************/
 
 	/////////////////////
 	//  block0 config  //
@@ -277,26 +371,31 @@ func main() {
 
 	block0cfg.BlockchainConfiguration.SlotDuration = 2
 	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 150
+	block0cfg.BlockchainConfiguration.KesUpdateSpeed = 300
 
 	block0cfg.BlockchainConfiguration.LinearFees.Certificate = 10000
 	block0cfg.BlockchainConfiguration.LinearFees.Coefficient = 50
 	block0cfg.BlockchainConfiguration.LinearFees.Constant = 1000
 
+	// Bft Leader
 	err = block0cfg.AddConsensusLeader(b2s(leaderPK))
 	fatalOn(err)
 
+	// BUG: Right now funds involved in delegation (Faucet, Fixed, Gepo)
+	// need to be added before the stake delegation certificates,
+	// otherwise genesis encode will fail.
+	//
+	// check https://github.com/input-output-hk/jormungandr/issues/917
+
+	// funds
 	err = block0cfg.AddInitialFund(b2s(faucetAddr), 1_000_000_000_000)
 	fatalOn(err)
 	err = block0cfg.AddInitialFund(b2s(fixedAddr), 1_000_000_000_000)
 	fatalOn(err)
-
-	err = block0cfg.AddInitialCertificate(b2s(stakePoolCertSigned))
+	err = block0cfg.AddInitialFund(b2s(gepoAddr), 1_000_000_000_000)
 	fatalOn(err)
-	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFaucetCertSigned))
+	err = block0cfg.AddInitialFund(delegatorAddr, 1_000_000_000_000)
 	fatalOn(err)
-	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFixedCertSigned))
-	fatalOn(err)
-
 	//////////////////////////////////////////////////////////////////
 	// START - Add BULK generated addresses to genesis block0       //
 	for i := range srcFaucets {
@@ -305,6 +404,19 @@ func main() {
 	}
 	// DONE - Add BULK generated addresses to genesis block0        //
 	//////////////////////////////////////////////////////////////////
+
+	// genesis main stake pool data
+	err = block0cfg.AddInitialCertificate(b2s(stakePoolCertSigned))
+	fatalOn(err)
+	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFaucetCertSigned))
+	fatalOn(err)
+	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationFixedCertSigned))
+	fatalOn(err)
+	// genesis extra stake pool data
+	err = block0cfg.AddInitialCertificate(b2s(gepStakePoolCertSigned))
+	fatalOn(err)
+	err = block0cfg.AddInitialCertificate(b2s(stakeDelegationGepoCertSigned))
+	fatalOn(err)
 
 	block0Yaml, err := block0cfg.ToYaml()
 	fatalOn(err)
@@ -334,10 +446,11 @@ func main() {
 
 	secretCfg := jnode.NewSecretConfig()
 
+	//secretCfg.Bft.SigningKey = b2s(leaderSK) // Keep it
+
 	secretCfg.Genesis.SigKey = b2s(poolKesSK)
 	secretCfg.Genesis.VrfKey = b2s(poolVrfSK)
 	secretCfg.Genesis.NodeID = b2s(stakePoolID)
-	secretCfg.Bft.SigningKey = b2s(leaderSK)
 
 	secretCfgYaml, err := secretCfg.ToYaml()
 	fatalOn(err)
@@ -385,6 +498,9 @@ func main() {
 	node.WorkingDir = workingDir
 	node.GenesisBlock = block0BinFile
 	node.ConfigFile = nodeCfgFile
+
+	// node.AddTrustedPeer(trustedPeerGenesisStake)
+
 	node.AddSecretFile(secretCfgFile)
 	// or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
 
@@ -399,12 +515,21 @@ func main() {
 		log.Fatalf("node.Run FAILED: %v", err)
 	}
 
-	// _ = node.Stop() // Stop the node now
-	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
-
+	log.Println()
 	log.Printf("Genesis Hash: %s", block0Hash)
-	log.Printf("StakePool ID: %s", stakePoolID)
-	log.Println("Leader Node - Running...")
-	node.Wait()                          // Wait for the node to stop.
-	log.Println("...Leader Node - Done") // All done. Node has stopped.
+	log.Println()
+	log.Printf("LOCAL StakePool ID       : %s", stakePoolID)
+	log.Printf("LOCAL StakePool Owner    : %s", faucetAddr)
+	log.Printf("LOCAL StakePool Owner    : %s", fixedAddr)
+	log.Printf("LOCAL StakePool Delegator: %s", faucetAddr)
+	log.Printf("LOCAL StakePool Delegator: %s", fixedAddr)
+	log.Println()
+	log.Printf("EXTRA StakePool ID       : %s", gepStakePoolID)
+	log.Printf("EXTRA StakePool Owner    : %s", gepoAddr)
+	log.Printf("EXTRA StakePool Delegator: %s", gepoAddr)
+	log.Println()
+
+	log.Println("Genesis Node - Running...")
+	node.Wait()                           // Wait for the node to stop.
+	log.Println("...Genesis Node - Done") // All done. Node has stopped.
 }

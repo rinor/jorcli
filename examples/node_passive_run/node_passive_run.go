@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/rinor/jorcli/jnode"
 )
@@ -40,8 +39,8 @@ func main() {
 		err error
 
 		// Rest
-		restAddr    = "127.0.0.1" // rest ip
-		restPort    = 8002        // rest port
+		restAddr    = "127.0.0.44" // rest ip
+		restPort    = 8001         // rest port
 		restAddress = restAddr + ":" + strconv.Itoa(restPort)
 
 		// P2P
@@ -49,20 +48,22 @@ func main() {
 		p2pProto = "tcp" // tcp
 
 		// P2P Public
-		p2pPubAddr       = "127.0.0.1" // PublicAddres
-		p2pPubPort       = 9002        // node P2P Public Port
+		p2pPubAddr       = "127.0.0.44" // PublicAddres
+		p2pPubPort       = 9001         // node P2P Public Port
 		p2pPublicAddress = "/" + p2pIPver + "/" + p2pPubAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pPubPort)
 
 		// P2P Listen
-		p2pListenAddr    = "127.0.0.1" // ListenAddress
-		p2pListenPort    = 9002        // node P2P Public Port
+		p2pListenAddr    = "127.0.0.44" // ListenAddress
+		p2pListenPort    = 9001         // node P2P Public Port
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// Trusted peers
-		trustedPeerLeader = "/ip4/127.0.0.1/tcp/9001"
+		trustedPeerLeader       = "/ip4/127.0.0.11/tcp/9001" // Leader (genesis) node (example 1)
+		trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // stake pool node (example 2)
+		trustedPeerStake        = "/ip4/127.0.0.33/tcp/9001" // stake pool node (example 3)
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "ea7d7d70182c7c9b3820a509d1e87c9a8ec2ad1acaf09645b5c84bed1a938224"
+		block0Hash = "9a0245551cded1536defeb494a979624656b33bebeac9a95130a92fad347ade6"
 	)
 
 	// set binary name/path if not default,
@@ -76,6 +77,7 @@ func main() {
 	// create a new temporary directory inside your systems temp dir
 	workingDir, err := ioutil.TempDir("", "jnode_")
 	fatalOn(err, "workingDir")
+	log.Println()
 	log.Printf("Working Directory: %s", workingDir)
 
 	///////////////////
@@ -114,8 +116,11 @@ func main() {
 
 	node.WorkingDir = workingDir
 	node.ConfigFile = nodeCfgFile
-	node.GenesisBlockHash = block0Hash     // add block0 hash
+	node.GenesisBlockHash = block0Hash // add block0 hash
+
 	node.AddTrustedPeer(trustedPeerLeader) // add leader from example (1) as trusted
+	node.AddTrustedPeer(trustedPeerGenesisStake)
+	node.AddTrustedPeer(trustedPeerStake)
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
 	fatalOn(err)
@@ -128,12 +133,11 @@ func main() {
 		log.Fatalf("node.Run FAILED: %v", err)
 	}
 
-	// _ = node.Stop() // Stop the node now
-	_ = node.StopAfter(60 * time.Minute) // Stop the node after time.Duration
-
+	log.Println()
 	log.Printf("Genesis Hash: %s", block0Hash)
+	log.Println()
+
 	log.Println("Passive Node - Running...")
 	node.Wait()                           // Wait for the node to stop.
 	log.Println("...Passive Node - Done") // All done. Node has stopped.
-
 }

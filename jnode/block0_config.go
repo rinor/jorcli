@@ -115,11 +115,13 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.SlotsPerEpoch = 43200
 	chainConfig.EpochStabilityDepth = 10
 	chainConfig.KesUpdateSpeed = 43200
-	chainConfig.BftSlotsRatio = 0.22
+	chainConfig.BftSlotsRatio = 0 // 0.22
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
 	chainConfig.MaxNumberOfTransactionsPerBlock = 255
+
 	chainConfig.Treasury = 0
 	chainConfig.Rewards = 0
+
 	chainConfig.LinearFees.Certificate = 10000
 	chainConfig.LinearFees.Coefficient = 50
 	chainConfig.LinearFees.Constant = 1000
