@@ -25,6 +25,7 @@ type Jnode struct {
 	Storage          string   // --storage <storage>
 	SecretFiles      []string // --secret <secret>...
 	TrustedPeers     []string // --trusted-peer <trusted_peer>...
+	RestListen       string   // --rest-listen
 	EnableExplorer   bool     // --enable-explorer
 	// Log
 	LogFormat string // --log-format <log_format>
@@ -90,9 +91,14 @@ func (jnode *Jnode) buildCmdArg() []string {
 		arg = append(arg, "--log-output", jnode.LogOutput)
 	}
 
+	if jnode.RestListen != "" {
+		arg = append(arg, "--rest-listen", jnode.RestListen)
+	}
+
 	if jnode.EnableExplorer {
 		arg = append(arg, "--enable-explorer")
 	}
+
 	return arg
 }
 
