@@ -37,7 +37,9 @@ rest:
 
 {{- with .P2P}}
 p2p:
+  {{- if .PublicAddress}}
   public_address: {{ .PublicAddress }}
+  {{- end}}
   {{- if .ListenAddress}}
   listen_address: {{ .ListenAddress }}
   {{- end}}
@@ -55,8 +57,12 @@ p2p:
   {{- if .TrustedPeers}}
   trusted_peers:
     {{- range .TrustedPeers}}
-    - {{ . }}
+    - address: {{ .Address }}
+      id: {{ .ID }}
     {{- end}}
+  {{- end}}
+  {{- if .PrivateID}}
+  private_id: {{ .PrivateID }}
   {{- end}}
 {{end}}
 
@@ -104,10 +110,17 @@ type NodeConfig struct {
 type ConfigP2P struct {
 	PublicAddress         string                 // `"public_address"`
 	ListenAddress         string                 // `"listen_address"`
-	TrustedPeers          []string               // `"trusted_peers"`
+	PrivateID             string                 // `"private_id"`
+	TrustedPeers          []TrustedPeer          // `"trusted_peers"`
 	TopicsOfInterest      ConfigTopicsOfInterest // `"topics_of_interest"`
 	MaxConnections        uint                   // `"max_connections"`
 	AllowPrivateAddresses bool                   // `"allow_private_addresses"`
+}
+
+// TrustedPeer ...
+type TrustedPeer struct {
+	Address string // `"address"`
+	ID      string // `"id"`
 }
 
 // ConfigTopicsOfInterest ...
@@ -219,4 +232,9 @@ func (nodeCfg *NodeConfig) ToYaml() ([]byte, error) {
 // AddSecretFile to node config
 func (nodeCfg *NodeConfig) AddSecretFile(secretFile string) {
 	nodeCfg.SecretFiles = append(nodeCfg.SecretFiles, secretFile)
+}
+
+// AddTrustedPeer to node config
+func (nodeCfg *NodeConfig) AddTrustedPeer(address string, id string) {
+	nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, TrustedPeer{address, id})
 }
