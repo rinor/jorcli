@@ -29,15 +29,6 @@ func fatalOn(err error, str ...string) {
 	}
 }
 
-func fatalStop(node *jnode.Jnode, err error, str ...string) {
-	if err != nil {
-		_ = node.Stop()
-		node.Wait()
-		_, fn, line, _ := runtime.Caller(1)
-		log.Fatalf("%s:%d %s -> %s", fn, line, str, err.Error())
-	}
-}
-
 // seed generated from an int. For the same int the same seed is returned.
 // Useful for reproducible batch key generation,
 // for example the index of a slice/array can be a param.
@@ -54,6 +45,15 @@ func seed(i int) string {
 func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
+
+/* seeds used [10], [50-52] */
+const (
+	seedPrivateID = 10 // seed for p2p private_id
+
+	gepSeed    = 50 // seed the owner of an extra pool in genesis block
+	gepVrfSeed = 51 // seed for extra pool VRF
+	gepKesSeed = 52 // seed for extra pool KES
+)
 
 func main() {
 
@@ -84,13 +84,11 @@ func main() {
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
 		// Trusted peers
-		trustedPeerLeader = "/ip4/127.0.0.11/tcp/9001" // Leader (genesis) node (example 1)
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
+		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "9a0245551cded1536defeb494a979624656b33bebeac9a95130a92fad347ade6"
-
-		// genesis accounts data
-		genesisExtraSeed = 50 // seed the owner of an extra pool in genesis block
+		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
 	)
 
 	// set binary name/path if not default,
@@ -120,7 +118,7 @@ func main() {
 	// will need this one file later for certificate signing
 	gepoFileSK := workingDir + string(os.PathSeparator) + "gepo_key.sk"
 
-	gepoSK, err := jcli.KeyGenerate(seed(genesisExtraSeed), "Ed25519Extended", gepoFileSK)
+	gepoSK, err := jcli.KeyGenerate(seed(gepSeed), "Ed25519Extended", gepoFileSK)
 	fatalOn(err, b2s(gepoSK))
 	gepoPK, err := jcli.KeyToPublic(gepoSK, "", "")
 	fatalOn(err, b2s(gepoPK))
@@ -128,13 +126,13 @@ func main() {
 	fatalOn(err, b2s(gepoAddr))
 
 	// gep VRF
-	gepPoolVrfSK, err := jcli.KeyGenerate(seed(genesisExtraSeed+1), "Curve25519_2HashDH", "")
+	gepPoolVrfSK, err := jcli.KeyGenerate(seed(gepVrfSeed), "Curve25519_2HashDH", "")
 	fatalOn(err, b2s(gepPoolVrfSK))
 	gepPoolVrfPK, err := jcli.KeyToPublic(gepPoolVrfSK, "", "")
 	fatalOn(err, b2s(gepPoolVrfPK))
 
 	// gep KES
-	gepPoolKesSK, err := jcli.KeyGenerate(seed(genesisExtraSeed+2), "SumEd25519_12", "")
+	gepPoolKesSK, err := jcli.KeyGenerate(seed(gepKesSeed), "SumEd25519_12", "")
 	fatalOn(err, b2s(gepPoolKesSK))
 	gepPoolKesPK, err := jcli.KeyToPublic(gepPoolKesSK, "", "")
 	fatalOn(err, b2s(gepPoolKesPK))
@@ -200,6 +198,13 @@ func main() {
 	//  node config  //
 	///////////////////
 
+	// p2p node private_id
+	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
+	fatalOn(err, b2s(nodePrivateID))
+	// node's unique identifier on the network
+	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
+	fatalOn(err, b2s(nodePublicID))
+
 	nodeCfg := jnode.NewNodeConfig()
 
 	nodeCfg.Storage = "jnode_storage"
@@ -211,7 +216,11 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+
+	// add trusted peer to config file
+	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
 
 	nodeCfg.Log.Level = "info" // default is "trace"
 
@@ -234,7 +243,8 @@ func main() {
 	node.ConfigFile = nodeCfgFile
 	node.GenesisBlockHash = block0Hash // add block0 hash
 
-	node.AddTrustedPeer(trustedPeerLeader) // add leader from example (1) as trusted
+	// add trusted peer cmd args (not needed if using config)
+	node.AddTrustedPeer(leaderAddr, leaderID) // genesis leader from (example 1)
 
 	node.AddSecretFile(secretCfgFile)
 	// or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
@@ -256,6 +266,8 @@ func main() {
 	log.Printf("StakePool ID       : %s", gepStakePoolID)
 	log.Printf("StakePool Owner    : %s", gepoAddr)
 	log.Printf("StakePool Delegator: %s", gepoAddr)
+	log.Println()
+	log.Printf("NodeID: %s", nodePublicID)
 	log.Println()
 
 	log.Println("Genesis StakePool Node - Running...")

@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rinor/jorcli/jcli"
 	"github.com/rinor/jorcli/jnode"
 )
 
@@ -27,11 +29,27 @@ func fatalOn(err error, str ...string) {
 	}
 }
 
+// seed generated from an int. For the same int the same seed is returned.
+// Useful for reproducible batch key generation,
+// for example the index of a slice/array can be a param.
+func seed(i int) string {
+	in := []byte(strconv.Itoa(i))
+	out := make([]byte, 32-len(in), 32)
+	out = append(out, in...)
+
+	return hex.EncodeToString(out)
+}
+
 // b2s converts []byte to string with all leading
 // and trailing white space removed, as defined by Unicode.
 func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
+
+/* seeds used [30] */
+const (
+	seedPrivateID = 30 // seed for p2p private_id
+)
 
 func main() {
 
@@ -58,12 +76,18 @@ func main() {
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// Trusted peers
-		trustedPeerLeader       = "/ip4/127.0.0.11/tcp/9001" // Leader (genesis) node (example 1)
-		trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // stake pool node (example 2)
-		trustedPeerStake        = "/ip4/127.0.0.33/tcp/9001" // stake pool node (example 3)
+		// Trusted peers
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
+		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
+
+		gepAddr = "/ip4/127.0.0.22/tcp/9001"                                              // Genesis stake pool node (example 2)
+		gepID   = "ed25519_pk1z5u62jwftwrepu53nj655cdzjrhv4dlry9d7c602j6dagfpwp34q5gjcmr" // Genesis stake pool public_id
+
+		delegatorAddr = "/ip4/127.0.0.33/tcp/9001"                                              // stake pool node (example 3)
+		delegatorID   = "ed25519_pk19qzyd6xxed7rc3nxj0qgnsuyxkpqvlcue44l7l3f5kkr9dj378ss2wnm22" // delegator pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "9a0245551cded1536defeb494a979624656b33bebeac9a95130a92fad347ade6"
+		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
 	)
 
 	// set binary name/path if not default,
@@ -84,6 +108,13 @@ func main() {
 	//  node config  //
 	///////////////////
 
+	// p2p node private_id
+	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
+	fatalOn(err, b2s(nodePrivateID))
+	// node's unique identifier on the network
+	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
+	fatalOn(err, b2s(nodePublicID))
+
 	nodeCfg := jnode.NewNodeConfig()
 
 	nodeCfg.Storage = "jnode_storage"
@@ -95,7 +126,13 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+
+	// add trusted peer to config file
+	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
+	nodeCfg.AddTrustedPeer(gepAddr, gepID)
+	nodeCfg.AddTrustedPeer(delegatorAddr, delegatorID)
 
 	nodeCfg.Log.Level = "info" // default is "trace"
 
@@ -118,9 +155,10 @@ func main() {
 	node.ConfigFile = nodeCfgFile
 	node.GenesisBlockHash = block0Hash // add block0 hash
 
-	node.AddTrustedPeer(trustedPeerLeader) // add leader from example (1) as trusted
-	node.AddTrustedPeer(trustedPeerGenesisStake)
-	node.AddTrustedPeer(trustedPeerStake)
+	// add trusted peer cmd args (not needed if using config)
+	node.AddTrustedPeer(leaderAddr, leaderID)       // add leader from example (1) as trusted
+	node.AddTrustedPeer(gepAddr, gepID)             // add genesis stake pool from example (2) as trusted
+	node.AddTrustedPeer(delegatorAddr, delegatorID) // add delegator stake pool from example (3) as trusted
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
 	fatalOn(err)
@@ -135,6 +173,8 @@ func main() {
 
 	log.Println()
 	log.Printf("Genesis Hash: %s", block0Hash)
+	log.Println()
+	log.Printf("NodeID: %s", nodePublicID)
 	log.Println()
 
 	log.Println("Passive Node - Running...")

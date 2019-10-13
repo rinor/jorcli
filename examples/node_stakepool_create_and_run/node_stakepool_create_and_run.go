@@ -59,6 +59,21 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
+/* seeds used [1-2,6-7], [20], [60] */
+const (
+	seedPrivateID = 20 // seed for p2p private_id
+
+	// genesis accounts data
+	faucetSeed = 1 // seed for faucet
+	fixedSeed  = 2 // seed for fixed
+	// pool secrets seed
+	vrfSeed = 6
+	kesSeed = 7
+
+	delegatorSeed = 60 // seed for delegator
+
+)
+
 /* seeds used [0-1,10-11] */
 func main() {
 	var (
@@ -89,16 +104,14 @@ func main() {
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
 		// Trusted peers
-		trustedPeerLeader       = "/ip4/127.0.0.11/tcp/9001" // Leader (genesis) node  (example 1)
-		trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // Genesis stake pool node (example 2)
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
+		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
+
+		gepAddr = "/ip4/127.0.0.22/tcp/9001"                                              // Genesis stake pool node (example 2)
+		gepID   = "ed25519_pk1z5u62jwftwrepu53nj655cdzjrhv4dlry9d7c602j6dagfpwp34q5gjcmr" // Genesis stake pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "9a0245551cded1536defeb494a979624656b33bebeac9a95130a92fad347ade6"
-
-		// genesis accounts data
-		faucetSeed    = 0  // seed for faucet
-		fixedSeed     = 1  // seed for fixed
-		delegatorSeed = 60 // seed for delegator
+		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
 	)
 
 	// set binary name/path if not default,
@@ -171,13 +184,13 @@ func main() {
 	/////////////////////////
 
 	// VRF
-	poolVrfSK, err := jcli.KeyGenerate(seed(10), "Curve25519_2HashDH", "")
+	poolVrfSK, err := jcli.KeyGenerate(seed(vrfSeed), "Curve25519_2HashDH", "")
 	fatalOn(err, b2s(poolVrfSK))
 	poolVrfPK, err := jcli.KeyToPublic(poolVrfSK, "", "")
 	fatalOn(err, b2s(poolVrfPK))
 
 	// KES
-	poolKesSK, err := jcli.KeyGenerate(seed(11), "SumEd25519_12", "")
+	poolKesSK, err := jcli.KeyGenerate(seed(kesSeed), "SumEd25519_12", "")
 	fatalOn(err, b2s(poolKesSK))
 	poolKesPK, err := jcli.KeyToPublic(poolKesSK, "", "")
 	fatalOn(err, b2s(poolKesPK))
@@ -188,7 +201,7 @@ func main() {
 		b2s(fixedPK),
 	}
 	stakePoolManagementThreshold := uint16(len(stakePoolOwners))
-	stakePoolSerial := uint64(2020202020)
+	stakePoolSerial := uint64(3030303030)
 	stakePoolStartValidity := uint64(0)
 
 	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(
@@ -236,6 +249,13 @@ func main() {
 	//  node config  //
 	///////////////////
 
+	// p2p node private_id
+	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
+	fatalOn(err, b2s(nodePrivateID))
+	// node's unique identifier on the network
+	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
+	fatalOn(err, b2s(nodePublicID))
+
 	nodeCfg := jnode.NewNodeConfig()
 
 	nodeCfg.Storage = "jnode_storage"
@@ -247,7 +267,12 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
+	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+
+	// add trusted peer to config file
+	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
+	nodeCfg.AddTrustedPeer(gepAddr, gepID)
 
 	nodeCfg.Log.Level = "info" // default is "trace"
 
@@ -270,8 +295,9 @@ func main() {
 	node.ConfigFile = nodeCfgFile
 	node.GenesisBlockHash = block0Hash // add block0 hash
 
-	node.AddTrustedPeer(trustedPeerLeader)       // add leader from example (1) as trusted
-	node.AddTrustedPeer(trustedPeerGenesisStake) // add gensis stake pool from example (2) as trusted
+	// add trusted peer cmd args (not needed if using config)
+	node.AddTrustedPeer(leaderAddr, leaderID) // add leader from example (1) as trusted
+	node.AddTrustedPeer(gepAddr, gepID)       // add genesis stake pool from example (2) as trusted
 
 	node.AddSecretFile(secretCfgFile)
 	// or node.SecretFiles = append(node.SecretFiles, secretCfgFile)
@@ -990,6 +1016,8 @@ func main() {
 	log.Printf("StakePool Owner    : %s", faucetAddr)
 	log.Printf("StakePool Owner    : %s", fixedAddr)
 	log.Printf("StakePool Delegator: %s", delegatorAddr)
+	log.Println()
+	log.Printf("NodeID: %s", nodePublicID)
 	log.Println()
 
 	log.Println("StakePool Node - Running...")
