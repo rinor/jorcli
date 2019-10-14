@@ -136,6 +136,10 @@ func main() {
 		// trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // stake pool node (example 2)
 	)
 
+	// Set RUST_BACKTRACE=full env
+	err = os.Setenv("RUST_BACKTRACE", "full")
+	fatalOn(err, "Failed to set env (RUST_BACKTRACE=full)")
+
 	// set binary name/path if not default,
 	// provided as example since the ones set here,
 	// are also the default values.
@@ -484,6 +488,9 @@ func main() {
 	// node's unique identifier on the network
 	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
 	fatalOn(err, b2s(nodePublicID))
+	// node's unique identifier on the network as displayed in logs
+	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
+	fatalOn(err, b2s(nodePublicIDBytes))
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -549,7 +556,8 @@ func main() {
 	log.Printf("EXTRA StakePool Owner    : %s", gepoAddr)
 	log.Printf("EXTRA StakePool Delegator: %s", gepoAddr)
 	log.Println()
-	log.Printf("NodeID: %s", nodePublicID)
+	log.Printf("NodePublicID for trusted: %s", nodePublicID)
+	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Genesis Node - Running...")

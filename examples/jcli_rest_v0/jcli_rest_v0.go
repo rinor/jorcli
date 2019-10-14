@@ -17,14 +17,15 @@ func b2s(b []byte) string {
 
 func main() {
 	var (
-		restAddrAPI = "http://127.0.0.1:8001/api" // leader node
-		// restAddrAPI = "http://127.0.0.1:8002/api" // passive node
-		// restAddrAPI = "http://127.0.0.1:8003/api" // stakepool node
+		restAddrAPI = "http://127.0.0.11:8001/api" // genesis node
+		// restAddrAPI = "http://127.0.0.22:8001/api" // extra genesis pool node
+		// restAddrAPI = "http://127.0.0.33:8001/api" // stakepool node
+		// restAddrAPI = "http://127.0.0.44:8001/api" // passive/explorer node node
 
 		// addresses generated from "node_bootstrap_and_run" example
 		// we are using seed option, hence we know those values here
-		faucetAddr = "jnode_ta1skep7gv070w5hj43jk8uplca76cct09rmv4phgdvqv0e2386qh65jguztau"
-		fixedAddr  = "jnode_ta1shz8a85d3xhu76n0k9s99ss8v69nf8dnqagly4ljndzr9pqyg6ktu9syl8c"
+		faucetAddr = "jnode_ta1shz8a85d3xhu76n0k9s99ss8v69nf8dnqagly4ljndzr9pqyg6ktu9syl8c"
+		fixedAddr  = "jnode_ta1sk6pmqy3lfrr7kq4afmywn5hl9prurwy7xfqejjgazlg9r5nnmk26vjfs3z"
 	)
 
 	//////////////////////
@@ -33,6 +34,9 @@ func main() {
 
 	restSettings, err := jcli.RestSettings(restAddrAPI, "json")
 	log.Printf("RestSettings: %s - %v\n", b2s(restSettings), err)
+
+	restNetworkStats, err := jcli.RestNetworkStats(restAddrAPI, "json")
+	log.Printf("RestNetworkStats: %s - %v\n", b2s(restNetworkStats), err)
 
 	restNodeStats, err := jcli.RestNodeStats(restAddrAPI, "json")
 	log.Printf("RestNodeStats: %s - %v\n", b2s(restNodeStats), err)

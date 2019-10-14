@@ -114,6 +114,10 @@ func main() {
 		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
 	)
 
+	// Set RUST_BACKTRACE=full env
+	err = os.Setenv("RUST_BACKTRACE", "full")
+	fatalOn(err, "Failed to set env (RUST_BACKTRACE=full)")
+
 	// set binary name/path if not default,
 	// provided as example since the ones set here,
 	// are also the default values.
@@ -255,6 +259,9 @@ func main() {
 	// node's unique identifier on the network
 	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
 	fatalOn(err, b2s(nodePublicID))
+	// node's unique identifier on the network as displayed in logs
+	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
+	fatalOn(err, b2s(nodePublicIDBytes))
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -662,16 +669,21 @@ func main() {
 				/**************************************
 				   "status": {
 				     "InABlock": {
+					   "block": "3aa748dd766dbe0bc1c77ab5200c85cda8743464ba07fdf98944bfa63339e571",
 				       "date": "114237.32"
 				     }
 				   }
 				**************************************/
-				date, accepted := status.(map[string]interface{})["InABlock"]
+				blockDate, accepted := status.(map[string]interface{})["InABlock"]
 				if accepted {
 					fragmentStatus = "InABlock"
-					info, ok := date.(map[string]interface{})["date"]
+					info, ok := blockDate.(map[string]interface{})["date"]
 					if ok {
 						fragmentInfo = info.(string)
+					}
+					info, ok = blockDate.(map[string]interface{})["block"]
+					if ok {
+						fragmentInfo = fragmentInfo + " (" + info.(string) + ")"
 					}
 					done = true
 					break
@@ -915,12 +927,16 @@ func main() {
 			case reflect.String:
 				dfragmentStatus = status.(string)
 			case reflect.Map:
-				date, accepted := status.(map[string]interface{})["InABlock"]
+				blockDate, accepted := status.(map[string]interface{})["InABlock"]
 				if accepted {
 					dfragmentStatus = "InABlock"
-					info, ok := date.(map[string]interface{})["date"]
+					info, ok := blockDate.(map[string]interface{})["date"]
 					if ok {
 						dfragmentInfo = info.(string)
+					}
+					info, ok = blockDate.(map[string]interface{})["block"]
+					if ok {
+						dfragmentInfo = dfragmentInfo + " (" + info.(string) + ")"
 					}
 					done = true
 					break
@@ -1017,10 +1033,11 @@ func main() {
 	log.Printf("StakePool Owner    : %s", fixedAddr)
 	log.Printf("StakePool Delegator: %s", delegatorAddr)
 	log.Println()
-	log.Printf("NodeID: %s", nodePublicID)
+	log.Printf("NodePublicID for trusted: %s", nodePublicID)
+	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
-	log.Println("StakePool Node - Running...")
-	node.Wait()                             // Wait for the node to stop.
-	log.Println("...StakePool Node - Done") // All done. Node has stopped.
+	log.Println("Delegator StakePool Node - Running...")
+	node.Wait()                                       // Wait for the node to stop.
+	log.Println("...Delegator StakePool Node - Done") // All done. Node has stopped.
 }

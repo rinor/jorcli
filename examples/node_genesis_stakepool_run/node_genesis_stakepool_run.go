@@ -91,8 +91,20 @@ func main() {
 		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
 	)
 
+	// Set RUST_BACKTRACE=full env
+	err = os.Setenv("RUST_BACKTRACE", "full")
+	fatalOn(err, "Failed to set env (RUST_BACKTRACE=full)")
+
 	// set binary name/path if not default,
+	// provided as example since the ones set here,
+	// are also the default values.
+	jcli.BinName("jcli")         // default is "jcli"
 	jnode.BinName("jormungandr") // default is "jormungandr"
+
+	// get jcli version
+	jcliVersion, err := jcli.VersionFull()
+	fatalOn(err, b2s(jcliVersion))
+	log.Printf("Using: %s", jcliVersion)
 
 	// get jormungandr version
 	jormungandrVersion, err := jnode.VersionFull()
@@ -204,6 +216,9 @@ func main() {
 	// node's unique identifier on the network
 	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
 	fatalOn(err, b2s(nodePublicID))
+	// node's unique identifier on the network as displayed in logs
+	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
+	fatalOn(err, b2s(nodePublicIDBytes))
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -267,7 +282,8 @@ func main() {
 	log.Printf("StakePool Owner    : %s", gepoAddr)
 	log.Printf("StakePool Delegator: %s", gepoAddr)
 	log.Println()
-	log.Printf("NodeID: %s", nodePublicID)
+	log.Printf("NodePublicID for trusted: %s", nodePublicID)
+	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Genesis StakePool Node - Running...")
