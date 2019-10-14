@@ -49,6 +49,7 @@ Check also [examples](examples) folder in this repo.
   - [x] **block** - Block operations
   - [x] **leaders** - Node leaders operations
   - [x] **message** - Message sending
+  - [x] **network** - Network information
   - [x] **node** - Node information
   - [x] **settings** - Node settings
   - [x] **shutdown** - Shutdown node

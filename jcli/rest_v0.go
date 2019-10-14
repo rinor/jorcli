@@ -402,3 +402,27 @@ func RestUTxO(
 
 	return jcli(nil, arg...)
 }
+
+/* ******************** NETWORK ******************** */
+
+// RestNetworkStats - Get network information.
+//
+//  jcli rest v0 network stats get --host <host> --output-format <format> | STDOUT
+func RestNetworkStats(
+	host string,
+	outputFormat string,
+) ([]byte, error) {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "network", "stats", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
+	}
+
+	return jcli(nil, arg...)
+}
