@@ -17,16 +17,22 @@ func b2s(b []byte) string {
 
 func main() {
 	var (
-		restAddrAPI = "http://127.0.0.11:8001/api" // genesis node
-		// restAddrAPI = "http://127.0.0.22:8001/api" // extra genesis pool node
-		// restAddrAPI = "http://127.0.0.33:8001/api" // stakepool node
-		// restAddrAPI = "http://127.0.0.44:8001/api" // passive/explorer node node
+		restAddresses = map[string]string{
+			"block":   "http://127.0.0.11:8001/api",
+			"extra":   "http://127.0.0.22:8001/api",
+			"stake":   "http://127.0.0.33:8001/api",
+			"passive": "http://127.0.0.44:8001/api",
+		}
 
 		// addresses generated from "node_bootstrap_and_run" example
 		// we are using seed option, hence we know those values here
-		faucetAddr = "jnode_ta1shz8a85d3xhu76n0k9s99ss8v69nf8dnqagly4ljndzr9pqyg6ktu9syl8c"
-		fixedAddr  = "jnode_ta1sk6pmqy3lfrr7kq4afmywn5hl9prurwy7xfqejjgazlg9r5nnmk26vjfs3z"
+		faucetAddr    = "jnode_ta1shz8a85d3xhu76n0k9s99ss8v69nf8dnqagly4ljndzr9pqyg6ktu9syl8c"
+		fixedAddr     = "jnode_ta1sk6pmqy3lfrr7kq4afmywn5hl9prurwy7xfqejjgazlg9r5nnmk26vjfs3z"
+		gepoAddr      = "jnode_ta1s5rkmsfsra5chatzcjmdmh5nsu8rpar6x2ly3gr85q332ckr4quqvy8sthh"
+		delegatorAddr = "jnode_ta1s5a8e4qye5rwttc9qrek0e30htttmpvvuf967mdp35pcx80t6e2psskthdh"
 	)
+
+	restAddrAPI := restAddresses["block"]
 
 	//////////////////////
 	//  jcli rest usage //
@@ -49,6 +55,12 @@ func main() {
 
 	restAccFx, err := jcli.RestAccount(fixedAddr, restAddrAPI, "json")
 	log.Printf("RestAccount Fixed: %s - %v\n", b2s(restAccFx), err)
+
+	restAccGepo, err := jcli.RestAccount(gepoAddr, restAddrAPI, "json")
+	log.Printf("RestAccount Gepo: %s - %v\n", b2s(restAccGepo), err)
+
+	restAccDelegator, err := jcli.RestAccount(delegatorAddr, restAddrAPI, "json")
+	log.Printf("RestAccount Delegator: %s - %v\n", b2s(restAccDelegator), err)
 
 	restStakePools, err := jcli.RestStakePools(restAddrAPI, "json")
 	log.Printf("RestStakePools: %s - %v\n", b2s(restStakePools), err)

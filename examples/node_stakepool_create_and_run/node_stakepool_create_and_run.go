@@ -112,6 +112,9 @@ func main() {
 
 		// Genesis Block0 Hash retrieved from example (1)
 		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
+
+		// Node config log
+		nodeCfgLogLevel = "info"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -281,7 +284,7 @@ func main() {
 	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
 	nodeCfg.AddTrustedPeer(gepAddr, gepID)
 
-	nodeCfg.Log.Level = "info" // default is "trace"
+	nodeCfg.Log.Level = nodeCfgLogLevel // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)

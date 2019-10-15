@@ -132,8 +132,8 @@ func main() {
 		discrimination = "testing"       // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta"      // "" (empty defaults to "ca")
 
-		// Trusted peers
-		// trustedPeerGenesisStake = "/ip4/127.0.0.22/tcp/9001" // stake pool node (example 2)
+		// Node config log
+		nodeCfgLogLevel = "info"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -506,7 +506,7 @@ func main() {
 	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
-	nodeCfg.Log.Level = "info" // default is "trace"
+	nodeCfg.Log.Level = nodeCfgLogLevel // default is "trace"
 
 	nodeCfgYaml, err := nodeCfg.ToYaml()
 	fatalOn(err)
