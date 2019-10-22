@@ -157,7 +157,6 @@ It shows the usage of:
 
 - [jcli](https://godoc.org/github.com/rinor/jorcli/jcli)
 
-
 ## JCLI Bulk send
 
 Bulk send 100 transaction to 1 address (delegator address).

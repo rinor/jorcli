@@ -336,39 +336,6 @@ func main() {
 	// STAKE POOL Registration //
 	/////////////////////////////
 
-	// give some time for the rest interface to come online
-	// FIXME: check if rest server has come online
-	log.Println("Waiting for rest interface...")
-	time.Sleep(5 * time.Second)
-
-	// FIXME: The correct behaviour is to wait for the node to sync.
-	//
-	// We could check the tip from some trusted nodes,
-	// but only from those having rest available,
-	// until a new api is available to check for overall netwok status.
-	//
-	// In the networked testnet we can only check
-	// if the local rest server has come online,
-	// since the public rest interfaces are probably disabled.
-	//
-
-	// stake pool (self) node tip
-	selfTip, err := jcli.RestTip(restAddressAPI)
-	fatalStop(node, err, b2s(selfTip))
-	log.Printf("SelfTip: %s\n", b2s(selfTip))
-	time.Sleep(1 * time.Second)
-
-	// Since the pool has 2 owners, lets make both of them pay :)
-	//
-	// the total ammount to pay for this transaction is 11100, because:
-	// total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
-	//
-	// LinearFees.Certificate = 10_000 (and the tx contains a certificate)
-	// LinearFees.Coefficient =     50 (we have 2 inputs so total is 100)
-	// LinearFees.Constant    =  1_000
-	// -------------------------------
-	// TOTAL (lovelace)       =  1_000 + (2 + 0)*50 + 10_000 = 11_100
-
 	var (
 		// generic interface used for json data.
 		jsonData map[string]interface{}
@@ -381,7 +348,67 @@ func main() {
 		feeCertificate uint64
 		feeCoefficient uint64
 		feeConstant    uint64
+
+		nodeReady bool
+		nodeState string
 	)
+
+	// give some time for the rest interface to come online
+	log.Println("Waiting for rest interface...")
+	stateCheckFreq := 1 // seconds
+	for !nodeReady {
+		time.Sleep(time.Duration(stateCheckFreq) * time.Second)
+
+		nodeStats, err := jcli.RestNodeStats(restAddressAPI, "json")
+		fatalStop(node, err, b2s(nodeStats))
+
+		err = json.Unmarshal(nodeStats, &jsonData)
+		fatalStop(node, err)
+
+		// StartingRestServer, PreparingStorage, PreparingBlock0, Bootstrapping, StartingWorkers, Running
+		// {
+		//   "state": "PreparingBlock0"
+		// }
+
+		ok := false // one of those things (prevent shadowing of "nodeState")
+		nodeState, ok = jsonData["state"].(string)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonNodeState"))
+		}
+
+		// unnecessary, but keep it
+		switch nodeState {
+		case "StartingRestServer":
+			stateCheckFreq = 1
+		case "PreparingStorage":
+			stateCheckFreq = 1
+		case "PreparingBlock0":
+			stateCheckFreq = 1
+		case "Bootstrapping":
+			stateCheckFreq = 5
+		case "StartingWorkers":
+			stateCheckFreq = 1
+		case "Running":
+			nodeReady = !nodeReady
+		}
+	}
+	log.Printf("...Node state [%s]\n", nodeState)
+
+	// stake pool (self) node tip
+	selfTip, err := jcli.RestTip(restAddressAPI)
+	fatalStop(node, err, b2s(selfTip))
+	log.Printf("SelfTip: %s\n", b2s(selfTip))
+
+	// Since the pool has 2 owners, lets make both of them pay :)
+	//
+	// the total ammount to pay for this transaction is 11100, because:
+	// total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
+	//
+	// LinearFees.Certificate = 10_000 (and the tx contains a certificate)
+	// LinearFees.Coefficient =     50 (we have 2 inputs so total is 100)
+	// LinearFees.Constant    =  1_000
+	// -------------------------------
+	// TOTAL (lovelace)       =  1_000 + (2 + 0)*50 + 10_000 = 11_100
 
 	// get blockchain setting from rest
 	blockchainSettings, err := jcli.RestSettings(restAddressAPI, "json")
