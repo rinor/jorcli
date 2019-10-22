@@ -21,5 +21,10 @@ blockchain_configuration:
   rewards: ~
 initial:
   - fund:
-      - address: ca1svs0mwkfky9htpam576mc93mee5709khre8dgnqslj6y3p5f77s5gpgv02w
-        value: 10000
+      - address: ca1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ugqz89h
+        value: 100000000000
+  - cert: cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqsqqtcdvvzk9zydamdhc3dkhtn39ymr8kyannx5qj8fn8w9vhruk6htcqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqp8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4s2rqhmv
+  - cert: cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4avcr3ddk0l5urs5ykyjfg94ly6357p3m7kvx8ccdnktpppt3vyvjf7mukw
+  - legacy_fund:
+      - address: DdzFFzCqrht5TM5GznWhJ3GTpKawtJuA295F8igwXQXyt2ih1TL1XKnZqRBQBoLpyYVKfNKgCXPBUYruUneC83KjGK6QNAoBSqRJovbG
+        value: 100000000000
