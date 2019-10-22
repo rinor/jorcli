@@ -192,7 +192,13 @@ func main() {
 	}
 
 	var (
-		restAddrAPI = "http://127.0.0.11:8001/api" // genesis node
+		restAddresses = map[string]string{
+			"genesis": "http://127.0.0.11:8001/api",
+			"extra":   "http://127.0.0.22:8001/api",
+			"stake":   "http://127.0.0.33:8001/api",
+			"passive": "http://127.0.0.44:8001/api",
+		}
+		restAddrAPI = restAddresses["genesis"]
 
 		discrimination = "testing"  // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
@@ -205,7 +211,7 @@ func main() {
 	fatalOn(err)
 	err = delegator.buildAccount(addressPrefix, discrimination)
 	fatalOn(err)
-	err = writeJsonFile(delegator, "delegator_"+delegator.Account+".json")
+	err = writeFileJSON(delegator, "delegator_"+delegator.Account+".json")
 	fatalOn(err)
 
 	// get blockchain settings
@@ -235,7 +241,7 @@ func main() {
 		fatalOn(err)
 		err = keys.buildAccount(addressPrefix, discrimination)
 		fatalOn(err)
-		err = writeJsonFile(keys, keys.Account+".json")
+		err = writeFileJSON(keys, keys.Account+".json")
 		fatalOn(err)
 
 		bulkData[i].faucet = keys
@@ -348,18 +354,18 @@ func main() {
 
 /* KIT */
 
-// writeJsonFile to accounts/filename after marshalling data to json
-func writeJsonFile(v interface{}, fileName string) error {
+// writeFileJSON to accounts/filename after marshalling data
+func writeFileJSON(v interface{}, fileName string) error {
 	finalFile := "accounts" + pathSep + fileName
-	addrJson, err := json.MarshalIndent(v, "", "  ")
+	addrJSON, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
 	}
 	if fileName == "" {
-		fmt.Printf("%s\n", addrJson)
+		fmt.Printf("%s\n", addrJSON)
 		return nil
 	}
-	return ioutil.WriteFile(finalFile, addrJson, 0644)
+	return ioutil.WriteFile(finalFile, addrJSON, 0644)
 }
 
 // b2s converts []byte to string with all leading
