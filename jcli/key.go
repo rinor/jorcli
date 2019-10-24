@@ -149,3 +149,68 @@ func KeyFromBytes(
 
 	return ioutil.ReadFile(outputFileSk)
 }
+
+// KeySign - sign data with private key.
+//
+//  [STDIN] | jcli key sign --secret-key=<secret_key file> [--data=<INPUT_FILE>] [--output=<SIGNATURE_FILE>] | [STDOUT]
+func KeySign(
+	stdinData []byte,
+	inputFileSk string,
+	inputFileData string,
+	outputFileSig string,
+) ([]byte, error) {
+	if inputFileSk == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "inputFileSk")
+	}
+	if len(stdinData) == 0 && inputFileData == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinData", "inputFileData")
+	}
+
+	arg := []string{"key", "sign", "--secret-key", inputFileSk}
+	if inputFileData != "" {
+		arg = append(arg, "--data", inputFileData)
+		stdinData = nil
+	}
+	if outputFileSig != "" {
+		arg = append(arg, "--output", outputFileSig)
+	}
+
+	out, err := jcli(stdinData, arg...)
+	if err != nil || outputFileSig == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFileSig)
+}
+
+// KeyVerify - verify signed data with public key.
+//
+//  [STDIN] | jcli key verify --public-key=<public_key file> --signature=<SIGNATURE_FILE> [--data=<INPUT_FILE>] | STDOUT
+func KeyVerify(
+	stdinData []byte,
+	inputFilePk string,
+	inputFileSig string,
+	inputFileData string,
+) ([]byte, error) {
+	if inputFilePk == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "inputFilePk")
+	}
+	if inputFileSig == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "inputFileSig")
+	}
+	if len(stdinData) == 0 && inputFileData == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinData", "inputFileData")
+	}
+
+	arg := []string{
+		"key", "verify",
+		"--public-key", inputFilePk,
+		"--signature", inputFileSig,
+	}
+	if inputFileData != "" {
+		arg = append(arg, "--data", inputFileData)
+		stdinData = nil
+	}
+
+	return jcli(stdinData, arg...)
+}
