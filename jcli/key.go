@@ -152,7 +152,7 @@ func KeyFromBytes(
 
 // KeySign - sign data with private key.
 //
-//  [STDIN] | jcli key sign --secret-key=<secret_key file> [--data=<INPUT_FILE>] [--output=<SIGNATURE_FILE>] | [STDOUT]
+//  [STDIN] | jcli key sign --secret-key=<secret_key file> [DATA_INPUT_FILE] [--output=<SIGNATURE_FILE>] | [STDOUT]
 func KeySign(
 	stdinData []byte,
 	inputFileSk string,
@@ -166,9 +166,12 @@ func KeySign(
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinData", "inputFileData")
 	}
 
-	arg := []string{"key", "sign", "--secret-key", inputFileSk}
+	arg := []string{
+		"key", "sign",
+		"--secret-key", inputFileSk,
+	}
 	if inputFileData != "" {
-		arg = append(arg, "--data", inputFileData)
+		arg = append(arg, inputFileData)
 		stdinData = nil
 	}
 	if outputFileSig != "" {
@@ -185,7 +188,7 @@ func KeySign(
 
 // KeyVerify - verify signed data with public key.
 //
-//  [STDIN] | jcli key verify --public-key=<public_key file> --signature=<SIGNATURE_FILE> [--data=<INPUT_FILE>] | STDOUT
+//  [STDIN] | jcli key verify --public-key=<public_key file> --signature=<SIGNATURE_FILE> [DATA_INPUT_FILE] | STDOUT
 func KeyVerify(
 	stdinData []byte,
 	inputFilePk string,
@@ -208,7 +211,7 @@ func KeyVerify(
 		"--signature", inputFileSig,
 	}
 	if inputFileData != "" {
-		arg = append(arg, "--data", inputFileData)
+		arg = append(arg, inputFileData)
 		stdinData = nil
 	}
 

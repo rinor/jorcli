@@ -85,7 +85,7 @@ func TestKeyToBytes_file(t *testing.T) {
 
 	privateKeyBytes, err := jcli.KeyToBytes(stdinSk, outputFile, inputFileSk)
 	ok(t, err)
-	equals(t, expectedPrivateKeyBytes, privateKeyBytes) // Prod: bytes.Equal(expectedPublicKey, actualPublicKey)
+	equals(t, expectedPrivateKeyBytes, privateKeyBytes) // Prod: bytes.Equal(expectedPrivateKeyBytes, privateKeyBytes)
 }
 
 func ExampleKeyToBytes_stdin() {
@@ -118,7 +118,7 @@ func TestKeyFromBytes_file(t *testing.T) {
 
 	privateKey, err := jcli.KeyFromBytes(stdinSk, keyType, inputFile, outputFileSk)
 	ok(t, err)
-	equals(t, expectedPrivateKey, privateKey) // Prod: bytes.Equal(expectedPublicKey, privateKey)
+	equals(t, expectedPrivateKey, privateKey) // Prod: bytes.Equal(expectedPrivateKey, privateKey)
 }
 
 func ExampleKeyFromBytes_stdin() {
@@ -139,4 +139,60 @@ func ExampleKeyFromBytes_stdin() {
 	// Output:
 	//
 	// ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4
+}
+
+func TestKeySign_file(t *testing.T) {
+	var (
+		stdinData     []byte
+		inputFileSk   = filePath(t, "private_key_txt.golden")
+		inputFileData = filePath(t, "key_sign_txt.golden")
+		outputFileSig = ""
+		expectedSig   = loadBytes(t, "key_sign_signature.golden")
+	)
+
+	sig, err := jcli.KeySign(stdinData, inputFileSk, inputFileData, outputFileSig)
+	ok(t, err)
+	equals(t, expectedSig, sig) // Prod: bytes.Equal(expectedSig, sig)
+}
+
+func TestKeySign_stdin(t *testing.T) {
+	var (
+		stdinData     = loadBytes(t, "key_sign_txt.golden")
+		inputFileSk   = filePath(t, "private_key_txt.golden")
+		inputFileData = ""
+		outputFileSig = ""
+		expectedSig   = loadBytes(t, "key_sign_signature.golden")
+	)
+
+	sig, err := jcli.KeySign(stdinData, inputFileSk, inputFileData, outputFileSig)
+	ok(t, err)
+	equals(t, expectedSig, sig) // Prod: bytes.Equal(expectedSig, sig)
+}
+
+func TestKeyVerify_file(t *testing.T) {
+	var (
+		stdinData      []byte
+		inputFilePk    = filePath(t, "public_key_txt.golden")
+		inputFileData  = filePath(t, "key_sign_txt.golden")
+		inputFileSig   = filePath(t, "key_sign_signature.golden")
+		expectedVerify = []byte("Success\n")
+	)
+
+	verify, err := jcli.KeyVerify(stdinData, inputFilePk, inputFileSig, inputFileData)
+	ok(t, err)
+	equals(t, expectedVerify, verify) // Prod: bytes.Equal(expectedVerify, verify)
+}
+
+func TestKeyVerify_stdin(t *testing.T) {
+	var (
+		stdinData      = loadBytes(t, "key_sign_txt.golden")
+		inputFilePk    = filePath(t, "public_key_txt.golden")
+		inputFileData  = ""
+		inputFileSig   = filePath(t, "key_sign_signature.golden")
+		expectedVerify = []byte("Success\n")
+	)
+
+	verify, err := jcli.KeyVerify(stdinData, inputFilePk, inputFileSig, inputFileData)
+	ok(t, err)
+	equals(t, expectedVerify, verify) // Prod: bytes.Equal(expectedVerify, verify)
 }
