@@ -141,44 +141,35 @@ func CertificateNewStakePoolRegistration(
 // CertificateSign - Sign certificate,
 // you can call this command multiple time to add multiple signatures if this is required.
 //
-//  [STDIN] | jcli certificate sign <signing-key file> [<input file>] [<output file>] | [STDOUT]
+//  [STDIN] | jcli certificate sign --key=<signing-key file>... [--certificate=<input file>] [--output=<output file>] | [STDOUT]
 func CertificateSign(
 	stdinCert []byte,
-	signingKeyFile string,
+	signingKeyFile []string,
 	inputFile string,
 	outputFile string,
 ) ([]byte, error) {
 	if len(stdinCert) == 0 && inputFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
 	}
-	if signingKeyFile == "" {
+	if len(signingKeyFile) == 0 {
 		return nil, fmt.Errorf("parameter missing : %s", "signingKeyFile")
 	}
 
-	arg := []string{"certificate", "sign", signingKeyFile}
+	arg := []string{"certificate", "sign"}
+	for _, signKeyFile := range signingKeyFile {
+		arg = append(arg, "--key", signKeyFile) // FIXME: should check data validity!
+	}
 	if inputFile != "" {
-		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		arg = append(arg, "--certificate", inputFile)
 		stdinCert = nil
 	}
-	if outputFile != "" && inputFile != "" {
-		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
 	}
 
 	out, err := jcli(stdinCert, arg...)
-	if err != nil /* || outputFile == "" */ {
+	if err != nil || outputFile == "" {
 		return out, err
-	}
-
-	// TODO: Remove this once UPSTREAM fixed (--input and --output)
-	//
-	// convert stdout to outputFile
-	if outputFile != "" && inputFile == "" {
-		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
-			return nil, err
-		}
-	}
-	if outputFile == "" {
-		return out, nil
 	}
 
 	return ioutil.ReadFile(outputFile)
