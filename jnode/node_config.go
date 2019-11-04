@@ -61,8 +61,8 @@ p2p:
       id: {{ .ID }}
     {{- end}}
   {{- end}}
-  {{- if .PrivateID}}
-  private_id: {{ .PrivateID }}
+  {{- if .PublicID}}
+  public_id: {{ .PublicID }}
   {{- end}}
 {{end}}
 
@@ -110,7 +110,7 @@ type NodeConfig struct {
 type ConfigP2P struct {
 	PublicAddress         string                 // `"public_address"`
 	ListenAddress         string                 // `"listen_address"`
-	PrivateID             string                 // `"private_id"`
+	PublicID              string                 // `"public_id"`
 	TrustedPeers          []TrustedPeer          // `"trusted_peers"`
 	TopicsOfInterest      ConfigTopicsOfInterest // `"topics_of_interest"`
 	MaxConnections        uint                   // `"max_connections"`
