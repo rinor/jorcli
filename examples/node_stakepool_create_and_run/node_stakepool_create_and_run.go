@@ -59,9 +59,19 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
+// nodePID builds a node public_id from a seed int
+// For the same int the same value is returned.
+func nodePID(i int) string {
+	in := []byte(strconv.Itoa(i))
+	out := make([]byte, 24-len(in), 24)
+	out = append(out, in...)
+
+	return hex.EncodeToString(out)
+}
+
 /* seeds used [1-2,6-7], [20], [60] */
 const (
-	seedPrivateID = 20 // seed for p2p private_id
+	seedPublicID = 20 // seed for p2p private_id
 
 	// genesis accounts data
 	faucetSeed = 1 // seed for faucet
@@ -104,17 +114,17 @@ func main() {
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
 		// Trusted peers
-		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
-		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
+		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
 
-		gepAddr = "/ip4/127.0.0.22/tcp/9001"                                              // Genesis stake pool node (example 2)
-		gepID   = "ed25519_pk1z5u62jwftwrepu53nj655cdzjrhv4dlry9d7c602j6dagfpwp34q5gjcmr" // Genesis stake pool public_id
+		gepAddr = "/ip4/127.0.0.22/tcp/9001"                         // Genesis stake pool node (example 2)
+		gepID   = "000000000000000000000000000000000000000000003130" // Genesis stake pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
+		block0Hash = "d4bdd1935717d3f5bce4f3c13777858d3a904e0d3fd194052e1a3476f6e4b9a8"
 
 		// Node config log
-		nodeCfgLogLevel = "info"
+		nodeCfgLogLevel = "debug"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -148,7 +158,8 @@ func main() {
 	// DELEGATOR //
 	///////////////
 
-	// will need this one file later for delegation certificate signing
+	// will need this one file later for delegation certificate `transaction auth`
+	// since delegator is not the pool owner
 	delegatorFileSK := workingDir + string(os.PathSeparator) + "delegator_key.sk"
 
 	delegatorSK, err := jcli.KeyGenerate(seed(delegatorSeed), "Ed25519Extended", delegatorFileSK)
@@ -162,7 +173,7 @@ func main() {
 	// FAUCET //
 	////////////
 
-	// will need this one file later for pool certificate signing
+	// will need this one file later for pool certificate `transaction auth`
 	faucetFileSK := workingDir + string(os.PathSeparator) + "faucet_key.sk"
 
 	faucetSK, err := jcli.KeyGenerate(seed(faucetSeed), "Ed25519Extended", faucetFileSK)
@@ -176,7 +187,7 @@ func main() {
 	// FIXED //
 	///////////
 
-	// will need this one file later for pool certificate signing
+	// will need this one file later for pool certificate `transaction auth`
 	fixedFileSK := workingDir + string(os.PathSeparator) + "fixed_key.sk"
 
 	fixedSK, err := jcli.KeyGenerate(seed(fixedSeed), "Ed25519Extended", fixedFileSK)
@@ -222,16 +233,29 @@ func main() {
 	)
 	fatalOn(err, b2s(stakePoolCert))
 
-	// Sign the certificate with FAUCET private key
-	stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, faucetFileSK, "", "")
-	fatalOn(err, b2s(stakePoolCertSigned))
-
-	// Sign the certificate also with FIXED private key
-	stakePoolCertSigned, err = jcli.CertificateSign(stakePoolCertSigned, fixedFileSK, "", "")
-	fatalOn(err, b2s(stakePoolCertSigned))
-
-	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCertSigned, "", "")
+	// We can get poolID from signed or unsigned certificate
+	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCert, "", "")
 	fatalOn(err, b2s(stakePoolID))
+
+	// We do not need to sign the certificate anymore since:
+	//
+	// certificate sign - is now only used for the block0 creation certificates,
+	// as for certificates using the transaction system, we now need - `transaction auth`.
+	//
+	// jcli transaction auth - used after sealing
+	// similar to `jcli certificate sign` but apply to an almost built transaction.
+	// Needed for:
+	//     StakeDelegation      - YES (jcli certificate new stake-delegation)
+	//     PoolRegistration     - YES (jcli certificate new stake-pool-registration)
+	//     PoolRetirement       - YES (N/A)
+	//     PoolUpdate           - YES (N/A)
+	//     OwnerStakeDelegation - NO  (N/A - jcli certificate new stake-delegation)
+	//
+	/*
+		// Sign the certificate with FAUCET private key and also with FIXED private key
+		stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, []string{faucetFileSK, fixedFileSK}, "", "")
+		fatalOn(err, b2s(stakePoolCertSigned))
+	*/
 
 	//////////////////////
 	//  secrets config  //
@@ -256,15 +280,8 @@ func main() {
 	//  node config  //
 	///////////////////
 
-	// p2p node private_id
-	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
-	fatalOn(err, b2s(nodePrivateID))
-	// node's unique identifier on the network
-	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
-	fatalOn(err, b2s(nodePublicID))
-	// node's unique identifier on the network as displayed in logs
-	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
-	fatalOn(err, b2s(nodePublicIDBytes))
+	// p2p node public_id
+	nodePublicID := nodePID(seedPublicID)
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -277,7 +294,7 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
+	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
 	// add trusted peer to config file
@@ -476,24 +493,12 @@ func main() {
 	// 3 - Add the certificate to the transaction //
 	////////////////////////////////////////////////
 
-	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCertSigned))
-	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
+	// This needs an unsigned certificate now, otherwise will fail
+	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCert))
+	fatalStop(node, err, "TransactionAddCertificate", b2s(txStaging))
 
-	////////////////////////////////////////////////////////////////////////////
-	// - Check if transaction is balanced otherwise:
-	//
-	// 1) finalize will fail with (if balance < 0):
-	//    not enough input for making transaction
-	//
-	// OR
-	//
-	// 2) transaction will be rejected ( (if balance > 0)):
-	// status:
-	//   Rejected:
-	//	   reason:
-	// "Failed to validate transaction balance: transaction value not balanced,
-	//  has inputs sum 11101 and outputs sum 11100"
-	////////////////////////////////////////////////////////////////////////////
+	// Check if transaction is balanced otherwise
+	// finalize will fail (if balance != 0)
 
 	// get balance value from transaction info
 	txInfo, err := jcli.TransactionInfo(
@@ -517,7 +522,7 @@ func main() {
 	// when math ops required, convert it to number.
 	txBalance := b2s(txInfo)
 
-	// jic, since shouldn't happen
+	// jic, since shouldn't happen (unless jcli cmd changed)
 	if txBalance == "" {
 		fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", txBalance))
 	}
@@ -525,19 +530,13 @@ func main() {
 	// BUG: if balance outside (int) range ...
 	txBalanceAmmount, err := strconv.Atoi(txBalance)
 	fatalStop(node, err, "strconv.Atoi(txBalance)", txBalance)
-
-	switch {
-	case txBalanceAmmount < 0:
+	if txBalanceAmmount != 0 {
 		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", txBalance))
-	case txBalanceAmmount > 0:
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected", txBalance))
-	default:
-		// Transaction is balanced :)
 	}
 
-	//////////////////////////////////
-	// 4 - Finalize the transaction //
-	//////////////////////////////////
+	//////////////////////////////
+	// 4 - Lock the transaction //
+	//////////////////////////////
 
 	txStaging, err = jcli.TransactionFinalize(txStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(fixedAddr))
 	fatalStop(node, err, "TransactionFinalize", b2s(txStaging))
@@ -619,22 +618,31 @@ func main() {
 	txStaging, err = jcli.TransactionSeal(txStaging, "")
 	fatalStop(node, err, "TransactionSeal", b2s(txStaging))
 
+	//////////////////////////////
+	// 8 - Auth the transaction //
+	//////////////////////////////
+
+	// Since the transaction contains a stake pool registration certificate
+	// we need to auth it with owners secret keys FAUCET and FIXED
+	txStaging, err = jcli.TransactionAuth(txStaging, "", []string{faucetFileSK, fixedFileSK})
+	fatalStop(node, err, "TransactionAuth", b2s(txStaging))
+
 	////////////////////////////////////////////
-	// 8 - Convert the transaction to message //
+	// 9 - Convert the transaction to message //
 	////////////////////////////////////////////
 
 	txMessage, err := jcli.TransactionToMessage(txStaging, "")
 	fatalStop(node, err, "TransactionToMessage", b2s(txMessage))
 
-	////////////////////////////////////////////////
-	// 9 - Send the transaction to the blockchain //
-	////////////////////////////////////////////////
+	/////////////////////////////////////////////////
+	// 10 - Send the transaction to the blockchain //
+	/////////////////////////////////////////////////
 
 	fragmentID, err := jcli.RestMessagePost(txMessage, restAddressAPI, "")
 	fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
 
 	///////////////////////////////////////////////
-	// 10 - Check certificate transaction status //
+	// 11 - Check certificate transaction status //
 	///////////////////////////////////////////////
 
 	// There are different ways to set a checkpoint when to check for status changes.
@@ -649,7 +657,7 @@ func main() {
 	// - the tip can change also during sync if the node is behind,
 	//   so it does not guaranties the transaction inclusion
 	//
-	// - slot_duration in genesis_praos is unpredictable
+	// - slot leader election in genesis_praos is unpredictable
 
 	var (
 		logFragmentID  = b2s(fragmentID)
@@ -761,7 +769,7 @@ func main() {
 	}
 
 	/////////////////////////////////////////
-	// 11 - Check the stake pool is listed //
+	// 12 - Check the stake pool is listed //
 	/////////////////////////////////////////
 
 	var (
@@ -804,6 +812,8 @@ func main() {
 	///////////////////////////
 
 	// DELEGATOR account will stake to this new pool
+	// FAUCET and FIXED are the owners of this pool
+	// so we still need to auth the transaction.
 
 	/////////////////////////////////////////////////
 	// 1 - Create the stake delegation certificate //
@@ -812,15 +822,18 @@ func main() {
 	delegationCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(delegatorPK), "")
 	fatalStop(node, err, "CertificateNewStakeDelegation", b2s(delegationCert))
 
-	///////////////////////////////////////////////
-	// 2 - Sign the stake delegation certificate //
-	///////////////////////////////////////////////
+	// This is transaction based certificate, no need to sign
+	/*
+		///////////////////////////////////////////////
+		// 2 - Sign the stake delegation certificate //
+		///////////////////////////////////////////////
 
-	delegationCertSigned, err := jcli.CertificateSign(delegationCert, delegatorFileSK, "", "")
-	fatalStop(node, err, "CertificateSign", b2s(delegationCertSigned))
+		delegationCertSigned, err := jcli.CertificateSign(delegationCert, []string{delegatorFileSK}, "", "")
+		fatalStop(node, err, "CertificateSign", b2s(delegationCertSigned))
+	*/
 
 	///////////////////////////////////////
-	// 3 - Create a transaction and send //
+	// 2 - Create a transaction and send //
 	///////////////////////////////////////
 
 	// The flow is almost the same as the
@@ -839,7 +852,7 @@ func main() {
 	dtxStaging, err = jcli.TransactionAddAccount(dtxStaging, "", b2s(delegatorAddr), totalDelegationFees)
 	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
 
-	dtxStaging, err = jcli.TransactionAddCertificate(dtxStaging, "", b2s(delegationCertSigned))
+	dtxStaging, err = jcli.TransactionAddCertificate(dtxStaging, "", b2s(delegationCert))
 	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
 
 	dtxInfo, err := jcli.TransactionInfo(
@@ -866,14 +879,8 @@ func main() {
 
 	dtxBalanceAmmount, err := strconv.Atoi(dtxBalance)
 	fatalStop(node, err, "strconv.Atoi(dtxBalance)", dtxBalance)
-
-	switch {
-	case dtxBalanceAmmount < 0:
+	if dtxBalanceAmmount != 0 {
 		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", dtxBalance))
-	case dtxBalanceAmmount > 0:
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected", dtxBalance))
-	default:
-		// Transaction is balanced :)
 	}
 
 	dtxStaging, err = jcli.TransactionFinalize(dtxStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(delegatorAddr))
@@ -912,6 +919,12 @@ func main() {
 
 	dtxStaging, err = jcli.TransactionSeal(dtxStaging, "")
 	fatalStop(node, err, "TransactionSeal", b2s(dtxStaging))
+
+	// The transaction contains a stake pool delegation certificate,
+	// but since the delegator is NOT one of the pools owners
+	// we need to auth it with delegator secret keys.
+	dtxStaging, err = jcli.TransactionAuth(dtxStaging, "", []string{delegatorFileSK})
+	fatalStop(node, err, "TransactionAuth", b2s(dtxStaging))
 
 	dtxMessage, err := jcli.TransactionToMessage(dtxStaging, "")
 	fatalStop(node, err, "TransactionToMessage", b2s(dtxMessage))
@@ -1064,7 +1077,6 @@ func main() {
 	log.Printf("StakePool Delegator: %s", delegatorAddr)
 	log.Println()
 	log.Printf("NodePublicID for trusted: %s", nodePublicID)
-	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Delegator StakePool Node - Running...")

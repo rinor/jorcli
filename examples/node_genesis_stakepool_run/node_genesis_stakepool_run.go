@@ -46,9 +46,19 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
+// nodePID builds a node public_id from a seed int
+// For the same int the same value is returned.
+func nodePID(i int) string {
+	in := []byte(strconv.Itoa(i))
+	out := make([]byte, 24-len(in), 24)
+	out = append(out, in...)
+
+	return hex.EncodeToString(out)
+}
+
 /* seeds used [10], [50-52] */
 const (
-	seedPrivateID = 10 // seed for p2p private_id
+	seedPublicID = 10 // seed for p2p public_id
 
 	gepSeed    = 50 // seed the owner of an extra pool in genesis block
 	gepVrfSeed = 51 // seed for extra pool VRF
@@ -84,14 +94,14 @@ func main() {
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
 		// Trusted peers
-		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
-		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
+		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
+		block0Hash = "d4bdd1935717d3f5bce4f3c13777858d3a904e0d3fd194052e1a3476f6e4b9a8"
 
 		// Node config log
-		nodeCfgLogLevel = "info"
+		nodeCfgLogLevel = "debug"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -172,20 +182,21 @@ func main() {
 	fatalOn(err, b2s(gepStakePoolCert))
 
 	// Sign the certificate with Genesis Extra Pool Owner private key
-	gepStakePoolCertSigned, err := jcli.CertificateSign(gepStakePoolCert, gepoFileSK, "", "")
+	gepStakePoolCertSigned, err := jcli.CertificateSign(gepStakePoolCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(gepStakePoolCertSigned))
 
 	/////////////////////////////////
 	// Extra STAKE POOL Delegation //
 	/////////////////////////////////
 
-	gepStakePoolID, err := jcli.CertificateGetStakePoolID(gepStakePoolCertSigned, "", "")
+	// We can get poolID from signed or unsigned certificate
+	gepStakePoolID, err := jcli.CertificateGetStakePoolID(gepStakePoolCert, "", "")
 	fatalOn(err, b2s(gepStakePoolID))
 
 	// Genesis Extra Pool Owner delegation
 	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepStakePoolID), b2s(gepoPK), "")
 	fatalOn(err, b2s(stakeDelegationGepoCert))
-	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, gepoFileSK, "", "")
+	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationGepoCertSigned))
 
 	/**********************************************************************************************************/
@@ -213,15 +224,8 @@ func main() {
 	//  node config  //
 	///////////////////
 
-	// p2p node private_id
-	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
-	fatalOn(err, b2s(nodePrivateID))
-	// node's unique identifier on the network
-	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
-	fatalOn(err, b2s(nodePublicID))
-	// node's unique identifier on the network as displayed in logs
-	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
-	fatalOn(err, b2s(nodePublicIDBytes))
+	// p2p node public_id
+	nodePublicID := nodePID(seedPublicID)
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -234,7 +238,7 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
+	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
 	// add trusted peer to config file
@@ -286,7 +290,6 @@ func main() {
 	log.Printf("StakePool Delegator: %s", gepoAddr)
 	log.Println()
 	log.Printf("NodePublicID for trusted: %s", nodePublicID)
-	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Genesis StakePool Node - Running...")

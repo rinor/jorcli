@@ -48,6 +48,16 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
+// nodePID builds a node public_id from a seed int
+// For the same int the same value is returned.
+func nodePID(i int) string {
+	in := []byte(strconv.Itoa(i))
+	out := make([]byte, 24-len(in), 24)
+	out = append(out, in...)
+
+	return hex.EncodeToString(out)
+}
+
 // buildAccountAddr returns a new account address
 func buildAccountAddr(seed string, addressPrefix string, discrimination string) (string, error) {
 	var (
@@ -85,14 +95,14 @@ func block0Date() int64 {
 	return block0Date.Unix()
 }
 
-/* seeds used [0-5], [50-52] ,[60], [100-199] */
+/* seeds used [0-5], [50-52] ,[60], [100-1099] */
 const (
-	seedPrivateID = 0 // seed for p2p private_id
-	faucetSeed    = 1 // seed for faucet
-	fixedSeed     = 2 // seed for fixed
-	leaderSeed    = 3 // seed for bft leader
-	localVrfSeed  = 4 // seed for local pool VRF
-	localKesSeed  = 5 // seed for local pool KES
+	seedPublicID = 0 // seed for p2p public_id
+	faucetSeed   = 1 // seed for faucet
+	fixedSeed    = 2 // seed for fixed
+	leaderSeed   = 3 // seed for bft leader
+	localVrfSeed = 4 // seed for local pool VRF
+	localKesSeed = 5 // seed for local pool KES
 
 	gepSeed    = 50 // seed the owner of an extra pool in genesis block
 	gepVrfSeed = 51 // seed for extra pool VRF
@@ -100,8 +110,8 @@ const (
 
 	delegatorSeed = 60 // seed for new stake delegator example (3)
 
-	seedStartBulk  = 100 // seed key generation start
-	totSrcAddrBulk = 100 // total number of account addresses
+	seedStartBulk  = 100  // seed key generation start
+	totSrcAddrBulk = 1000 // total number of account addresses
 )
 
 func main() {
@@ -133,7 +143,7 @@ func main() {
 		addressPrefix  = "jnode_ta"      // "" (empty defaults to "ca")
 
 		// Node config log
-		nodeCfgLogLevel = "info"
+		nodeCfgLogLevel = "debug"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -270,31 +280,28 @@ func main() {
 	)
 	fatalOn(err, b2s(stakePoolCert))
 
-	// Sign the certificate with FAUCET private key
-	stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, faucetFileSK, "", "")
-	fatalOn(err, b2s(stakePoolCertSigned))
-
-	// Sign the certificate also with FIXED private key
-	stakePoolCertSigned, err = jcli.CertificateSign(stakePoolCertSigned, fixedFileSK, "", "")
+	// Sign the certificate with FAUCET private key and also with FIXED private key
+	stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, []string{faucetFileSK, fixedFileSK}, "", "")
 	fatalOn(err, b2s(stakePoolCertSigned))
 
 	/////////////////////////////////
 	// Local STAKE POOL Delegation //
 	/////////////////////////////////
 
-	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCertSigned, "", "")
+	// We can get poolID from signed or unsigned certificate
+	stakePoolID, err := jcli.CertificateGetStakePoolID(stakePoolCert, "", "")
 	fatalOn(err, b2s(stakePoolID))
 
 	// FAUCET delegation (is also one the pool owners)
 	stakeDelegationFaucetCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(faucetPK), "")
 	fatalOn(err, b2s(stakeDelegationFaucetCert))
-	stakeDelegationFaucetCertSigned, err := jcli.CertificateSign(stakeDelegationFaucetCert, faucetFileSK, "", "")
+	stakeDelegationFaucetCertSigned, err := jcli.CertificateSign(stakeDelegationFaucetCert, []string{faucetFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationFaucetCertSigned))
 
 	// FIXED delegation (is also one the pool owners)
 	stakeDelegationFixedCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(fixedPK), "")
 	fatalOn(err, b2s(stakeDelegationFixedCert))
-	stakeDelegationFixedCertSigned, err := jcli.CertificateSign(stakeDelegationFixedCert, fixedFileSK, "", "")
+	stakeDelegationFixedCertSigned, err := jcli.CertificateSign(stakeDelegationFixedCert, []string{fixedFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationFixedCertSigned))
 
 	/**********************************************************************************************************/
@@ -349,7 +356,7 @@ func main() {
 	fatalOn(err, b2s(gepStakePoolCert))
 
 	// Sign the certificate with Genesis Extra Pool Owner private key
-	gepStakePoolCertSigned, err := jcli.CertificateSign(gepStakePoolCert, gepoFileSK, "", "")
+	gepStakePoolCertSigned, err := jcli.CertificateSign(gepStakePoolCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(gepStakePoolCertSigned))
 
 	/////////////////////////////////
@@ -362,7 +369,7 @@ func main() {
 	// Genesis Extra Pool Owner delegation
 	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepStakePoolID), b2s(gepoPK), "")
 	fatalOn(err, b2s(stakeDelegationGepoCert))
-	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, gepoFileSK, "", "")
+	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationGepoCertSigned))
 
 	/**********************************************************************************************************/
@@ -384,7 +391,7 @@ func main() {
 	block0cfg.BlockchainConfiguration.Discrimination = block0Discrimination
 
 	block0cfg.BlockchainConfiguration.SlotDuration = 2
-	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 150
+	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 450
 	// block0cfg.BlockchainConfiguration.KesUpdateSpeed = 300
 
 	block0cfg.BlockchainConfiguration.LinearFees.Certificate = 10000
@@ -416,7 +423,7 @@ func main() {
 	//////////////////////////////////////////////////////////////////
 	// START - Add BULK generated addresses to genesis block0       //
 	for i := range srcFaucets {
-		err = block0cfg.AddInitialFund(srcFaucets[i], 50_000_000_000_000)
+		err = block0cfg.AddInitialFund(srcFaucets[i], 5_000_000_000_000)
 		fatalOn(err)
 	}
 	// DONE - Add BULK generated addresses to genesis block0        //
@@ -482,15 +489,8 @@ func main() {
 	//  node config  //
 	///////////////////
 
-	// p2p node private_id
-	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
-	fatalOn(err, b2s(nodePrivateID))
-	// node's unique identifier on the network
-	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
-	fatalOn(err, b2s(nodePublicID))
-	// node's unique identifier on the network as displayed in logs
-	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
-	fatalOn(err, b2s(nodePublicIDBytes))
+	// p2p node public_id
+	nodePublicID := nodePID(seedPublicID)
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -503,7 +503,7 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
+	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
 	nodeCfg.Log.Level = nodeCfgLogLevel // default is "trace"
@@ -557,7 +557,6 @@ func main() {
 	log.Printf("EXTRA StakePool Delegator: %s", gepoAddr)
 	log.Println()
 	log.Printf("NodePublicID for trusted: %s", nodePublicID)
-	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Genesis Node - Running...")

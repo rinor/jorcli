@@ -164,15 +164,15 @@ func seed(i int) string {
 	return hex.EncodeToString(out)
 }
 
-/* seeds used [1-2], [50] ,[60], [100-199] */
+/* seeds used [1-2], [50] ,[60], [100-1099] */
 const (
 	// faucetSeed    = 1  // seed for faucet
 	// fixedSeed     = 2  // seed for fixed
 	// gepSeed       = 50 // seed the owner of an extra pool in genesis block
 	delegatorSeed = 60 // seed for new stake delegator example (3)
 
-	seedStartBulk  = 100 // seed key generation start
-	totSrcAddrBulk = 100 // total number of account addresses
+	seedStartBulk  = 100  // seed key generation start
+	totSrcAddrBulk = 1000 // total number of account addresses
 
 	pathSep = string(os.PathSeparator)
 )
@@ -293,13 +293,9 @@ func main() {
 		}
 		txBalanceAmmount, err := strconv.Atoi(txBalance) // BUG: if balance outside (int) range ...
 		fatalOn(err, txBalance)
-		switch {
-		case txBalanceAmmount < 0:
+
+		if txBalanceAmmount != 0 {
 			fatalOn(fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", txBalance))
-		case txBalanceAmmount > 0:
-			fatalOn(fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Will be rejected", txBalance))
-		default:
-			// Transaction is balanced :)
 		}
 
 		txStaging, err = jcli.TransactionFinalize(

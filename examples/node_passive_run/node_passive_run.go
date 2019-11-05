@@ -29,26 +29,25 @@ func fatalOn(err error, str ...string) {
 	}
 }
 
-// seed generated from an int. For the same int the same seed is returned.
-// Useful for reproducible batch key generation,
-// for example the index of a slice/array can be a param.
-func seed(i int) string {
-	in := []byte(strconv.Itoa(i))
-	out := make([]byte, 32-len(in), 32)
-	out = append(out, in...)
-
-	return hex.EncodeToString(out)
-}
-
 // b2s converts []byte to string with all leading
 // and trailing white space removed, as defined by Unicode.
 func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
+// nodePID builds a node public_id from a seed int
+// For the same int the same value is returned.
+func nodePID(i int) string {
+	in := []byte(strconv.Itoa(i))
+	out := make([]byte, 24-len(in), 24)
+	out = append(out, in...)
+
+	return hex.EncodeToString(out)
+}
+
 /* seeds used [30] */
 const (
-	seedPrivateID = 30 // seed for p2p private_id
+	seedPublicID = 30 // seed for p2p private_id
 )
 
 func main() {
@@ -76,20 +75,20 @@ func main() {
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// Trusted peers
-		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                                              // Leader (genesis) node (example 1)
-		leaderID   = "ed25519_pk1thawa4wxfhn9hh9xll04npw9pv0djgnvcun90nw9szupfw95lvns94qgpu" // Leader public_id
+		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
+		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
 
-		gepAddr = "/ip4/127.0.0.22/tcp/9001"                                              // Genesis stake pool node (example 2)
-		gepID   = "ed25519_pk1z5u62jwftwrepu53nj655cdzjrhv4dlry9d7c602j6dagfpwp34q5gjcmr" // Genesis stake pool public_id
+		gepAddr = "/ip4/127.0.0.22/tcp/9001"                         // Genesis stake pool node (example 2)
+		gepID   = "000000000000000000000000000000000000000000003130" // Genesis stake pool public_id
 
-		delegatorAddr = "/ip4/127.0.0.33/tcp/9001"                                              // stake pool node (example 3)
-		delegatorID   = "ed25519_pk19qzyd6xxed7rc3nxj0qgnsuyxkpqvlcue44l7l3f5kkr9dj378ss2wnm22" // delegator pool public_id
+		delegatorAddr = "/ip4/127.0.0.33/tcp/9001"                         // stake pool node (example 3)
+		delegatorID   = "000000000000000000000000000000000000000000003230" // delegator pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "999772edda51c486687218bd00a94e09659becf09db5257b03487157a08dac4d"
+		block0Hash = "d4bdd1935717d3f5bce4f3c13777858d3a904e0d3fd194052e1a3476f6e4b9a8"
 
 		// Node config log
-		nodeCfgLogLevel = "info"
+		nodeCfgLogLevel = "debug"
 	)
 
 	// Set RUST_BACKTRACE=full env
@@ -122,15 +121,8 @@ func main() {
 	//  node config  //
 	///////////////////
 
-	// p2p node private_id
-	nodePrivateID, err := jcli.KeyGenerate(seed(seedPrivateID), "Ed25519", "")
-	fatalOn(err, b2s(nodePrivateID))
-	// node's unique identifier on the network
-	nodePublicID, err := jcli.KeyToPublic(nodePrivateID, "", "")
-	fatalOn(err, b2s(nodePublicID))
-	// node's unique identifier on the network as displayed in logs
-	nodePublicIDBytes, err := jcli.KeyToBytes(nodePublicID, "", "")
-	fatalOn(err, b2s(nodePublicIDBytes))
+	// p2p node public_id
+	nodePublicID := nodePID(seedPublicID)
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -143,7 +135,7 @@ func main() {
 
 	nodeCfg.P2P.PublicAddress = p2pPublicAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
-	nodeCfg.P2P.PrivateID = b2s(nodePrivateID)   // jörmungandr will generate a random key, if not set
+	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
 	// add trusted peer to config file
@@ -192,10 +184,9 @@ func main() {
 	log.Printf("Genesis Hash: %s", block0Hash)
 	log.Println()
 	log.Printf("NodePublicID for trusted: %s", nodePublicID)
-	log.Printf("NodePublicID in logs    : %s", b2s(nodePublicIDBytes))
 	log.Println()
 
 	log.Println("Passive/Explorer Node - Running...")
-	node.Wait()                                   // Wait for the node to stop.
-	log.Println("...Passive/Explore Node - Done") // All done. Node has stopped.
+	node.Wait()                                    // Wait for the node to stop.
+	log.Println("...Passive/Explorer Node - Done") // All done. Node has stopped.
 }
