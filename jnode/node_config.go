@@ -64,6 +64,10 @@ p2p:
   {{- if .PublicID}}
   public_id: {{ .PublicID }}
   {{- end}}
+  {{- with .Policy}}
+  policy:
+    quarantine_duration: {{ .QuarantineDuration }}
+  {{- end}}
 {{end}}
 
 {{- with .Log}}
@@ -115,6 +119,7 @@ type ConfigP2P struct {
 	TopicsOfInterest      ConfigTopicsOfInterest // `"topics_of_interest"`
 	MaxConnections        uint                   // `"max_connections"`
 	AllowPrivateAddresses bool                   // `"allow_private_addresses"`
+	Policy                PolicyConfig           // `"policy"`
 }
 
 // TrustedPeer ...
@@ -127,6 +132,11 @@ type TrustedPeer struct {
 type ConfigTopicsOfInterest struct {
 	Messages string // `"messages"`
 	Blocks   string // `"blocks"`
+}
+
+// PolicyConfig ...
+type PolicyConfig struct {
+	QuarantineDuration string // `"quarantine_duration"`
 }
 
 // ConfigRest ...
@@ -197,6 +207,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
 	nodeCfg.P2P.MaxConnections = 256
+	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
