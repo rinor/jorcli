@@ -261,29 +261,6 @@ func TransactionSeal(
 	return ioutil.ReadFile(stagingFile)
 }
 
-// TODO: TransactionID tests and examples
-
-// TransactionID - get the Transaction ID from the given transaction
-// (if the transaction is edited, the returned value will change).
-//
-//  [STDIN] | jcli transaction id [--staging <staging-file>] | [STDOUT]
-func TransactionID(
-	stdinStaging []byte,
-	stagingFile string,
-) ([]byte, error) {
-	if len(stdinStaging) == 0 && stagingFile == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
-	}
-
-	arg := []string{"transaction", "id"}
-	if stagingFile != "" {
-		arg = append(arg, "--staging", stagingFile)
-		stdinStaging = nil
-	}
-
-	return jcli(stdinStaging, arg...)
-}
-
 // TransactionToMessage - get the message format out of a sealed transaction.
 //
 //  [STDIN] | jcli transaction to-message [--staging <staging-file>] | [STDOUT]
@@ -476,10 +453,40 @@ func TransactionInfo(
 	return ioutil.ReadFile(outputFile)
 }
 
-/////////////////////////////////////////////////////////////////////
-// This is not yet implemented in jcli                             //
-// Check https://github.com/input-output-hk/jormungandr/issues/674 //
-/////////////////////////////////////////////////////////////////////
+// TODO: tests and examples
+
+// TransactionAuth - make auth
+//
+//  [STDIN] | jcli transaction auth --key <signing-keys>... [--staging <staging-file>] | [STDOUT]
+func TransactionAuth(
+	stdinStaging []byte,
+	stagingFile string,
+	signingKeyFile []string,
+) ([]byte, error) {
+
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
+	}
+	if len(signingKeyFile) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "key")
+	}
+
+	arg := []string{"transaction", "auth"}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil
+	}
+	for _, authKeyFile := range signingKeyFile {
+		arg = append(arg, "--key", authKeyFile) // FIXME: should check data validity!
+	}
+
+	out, err := jcli(stdinStaging, arg...)
+	if err != nil || stagingFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(stagingFile)
+}
 
 // TransactionDataForWitness - Sign data hash
 //
@@ -495,6 +502,28 @@ func TransactionDataForWitness(
 		arg := []string{"transaction", "data-for-witness"}
 	*/
 	arg := []string{"transaction", "id"} // FIXME: restore data-for-witness once implemented
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil
+	}
+
+	return jcli(stdinStaging, arg...)
+}
+
+// TODO: TransactionFragmentID tests and examples (once implemented upstream)
+
+// TransactionFragmentID - get the Fragment ID from the given SEALED transaction
+//
+//  [STDIN] | jcli transaction fragment-id [--staging <staging-file>] | [STDOUT]
+func TransactionFragmentID(
+	stdinStaging []byte,
+	stagingFile string,
+) ([]byte, error) {
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
+	}
+
+	arg := []string{"transaction", "fragment-id"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
 		stdinStaging = nil
