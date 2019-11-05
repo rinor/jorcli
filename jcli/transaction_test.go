@@ -37,7 +37,7 @@ func ExampleTransactionNew_stdout() {
 	}
 	// Output:
 	//
-	// [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+	// [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
 }
 
 func TestTransactionNew(t *testing.T) {
