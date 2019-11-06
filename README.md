@@ -13,8 +13,8 @@ Right now this is just a *Proof Of Concept* and may or may not become a *Prototy
 
 The idea is to build:
 
-- [x] a simple and small wrapper around *jcli* binary. (*alpha*)
-- [x] a simple and small wrapper around *Jörmungandr node* binary. (*alpha*)
+- [x] a simple and small wrapper around *jcli* binary. (*beta*)
+- [x] a simple and small wrapper around *Jörmungandr node* binary. (*beta*)
 - [ ] *Jörmungandr rest* API. (*wip*)
 - [ ] *Jörmungandr explorer node* graphql API. (*wip*)
 - [ ] *Jörmungandr* grpc client. (*maybe*)
@@ -42,7 +42,6 @@ Check also [examples](examples) folder in this repo.
 - [x] **genesis** - Block tooling and helper
 - [x] **key** - Key Generation
 - [x] **transaction** - Build and view offline transaction
-  - [ ] **data-for-witness** - Sign data hash [(not yet available on jcli)](https://github.com/input-output-hk/jormungandr/issues/674)
 - [x] **utils** - Utilities that perform specialized tasks
 - [x] **rest** - Send request to node REST API
   - [x] **account** - Account operations

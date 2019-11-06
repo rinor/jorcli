@@ -498,10 +498,8 @@ func TransactionDataForWitness(
 	if len(stdinStaging) == 0 && stagingFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
 	}
-	/*
-		arg := []string{"transaction", "data-for-witness"}
-	*/
-	arg := []string{"transaction", "id"} // FIXME: restore data-for-witness once implemented
+
+	arg := []string{"transaction", "data-for-witness"}
 	if stagingFile != "" {
 		arg = append(arg, "--staging", stagingFile)
 		stdinStaging = nil
@@ -509,8 +507,6 @@ func TransactionDataForWitness(
 
 	return jcli(stdinStaging, arg...)
 }
-
-// TODO: TransactionFragmentID tests and examples (once implemented upstream)
 
 // TransactionFragmentID - get the Fragment ID from the given SEALED transaction
 //

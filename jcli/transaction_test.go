@@ -341,3 +341,14 @@ func TestTransactioninfo_staging(t *testing.T) {
 	ok(t, err)
 	equals(t, expectedInfo, txInfo)
 }
+
+func TestTransactionFragmentID(t *testing.T) {
+	var (
+		stdinStaging         = loadBytes(t, "tx-08_seal_staging.golden")
+		stagingFile          = ""
+		expectedTxFragmentID = []byte("624ba99d9e84dedeb7b6cf53080d3659add12b03f5cacd8c0aef472e4863c1fa\n")
+	)
+	txFragmentID, err := jcli.TransactionFragmentID(stdinStaging, stagingFile)
+	ok(t, err)
+	equals(t, expectedTxFragmentID, txFragmentID)
+}

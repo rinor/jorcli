@@ -381,18 +381,27 @@ func RestTip(
 
 /* ******************** UTXO ******************** */
 
-// RestUTxO - Get all UTXOs.
+// RestUTxO - UTXO information.
 //
-//  jcli rest v0 utxo get --host <host> --output-format <format> | STDOUT
+//  jcli rest v0 utxo <fragment-id> <output-index> get --host <host> --output-format <format> | STDOUT
 func RestUTxO(
+	fragmentID string,
+	outputIndex uint8,
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
+	if fragmentID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "fragmentID")
+	}
 
-	arg := []string{"rest", "v0", "utxo", "get"}
+	arg := []string{
+		"rest", "v0",
+		"utxo", "fragmentID", strconv.FormatUint(uint64(outputIndex), 10),
+		"get",
+	}
 	if host != "" {
 		arg = append(arg, "--host", host)
 	}
