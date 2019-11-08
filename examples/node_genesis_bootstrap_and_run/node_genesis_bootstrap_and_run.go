@@ -167,7 +167,7 @@ func main() {
 	log.Printf("Using: %s", jormungandrVersion)
 
 	// create a new temporary directory inside your systems temp dir
-	workingDir, err := ioutil.TempDir("", "jnode_")
+	workingDir, err := ioutil.TempDir("", "jnode_genesis_")
 	fatalOn(err, "workingDir")
 	log.Println()
 	log.Printf("Working Directory: %s", workingDir)

@@ -98,7 +98,7 @@ func main() {
 		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "d4bdd1935717d3f5bce4f3c13777858d3a904e0d3fd194052e1a3476f6e4b9a8"
+		block0Hash = "5c59c13e4574d8d10967bda273b4f8b9a96f94b15526001544a0b5adf7872968"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
@@ -125,7 +125,7 @@ func main() {
 	log.Printf("Using: %s", jormungandrVersion)
 
 	// create a new temporary directory inside your systems temp dir
-	workingDir, err := ioutil.TempDir("", "jnode_")
+	workingDir, err := ioutil.TempDir("", "jnode_gepstake_")
 	fatalOn(err, "workingDir")
 	log.Println()
 	log.Printf("Working Directory: %s", workingDir)
