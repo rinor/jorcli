@@ -89,15 +89,19 @@ func CertificateNewStakeDelegation(
 //                                              --start-validity <SECONDS-SINCE-START>
 //                                              --management-threshold <THRESHOLD>
 //                                              --serial <SERIAL>
-//                                              [--owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...]
+//                                              --owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...
+//                                              --operators <PUBLIC_KEY> --operators <PUBLIC_KEY> ...
 //                                              [output] | STDOUT
 func CertificateNewStakePoolRegistration(
 	kesKey string,
 	vrfKey string,
 	startValidity uint64,
-	managementThreshold uint16,
+	managementThreshold uint8,
 	serial uint64,
 	owner []string,
+	/*
+		operators []string, // TODO: Enable once merged upstream
+	*/
 	outputFile string,
 ) ([]byte, error) {
 	if kesKey == "" {
@@ -109,7 +113,12 @@ func CertificateNewStakePoolRegistration(
 	if len(owner) == 0 {
 		return nil, fmt.Errorf("parameter missing : %s", "owner")
 	}
-
+	// TODO: Enable once merged upstream
+	/*
+		if len(operators) == 0 {
+			return nil, fmt.Errorf("parameter missing : %s", "operators")
+		}
+	*/
 	// managementThreshold <= #owners and > 0
 	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
 		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
@@ -126,6 +135,12 @@ func CertificateNewStakePoolRegistration(
 	for _, ownerPublicKey := range owner {
 		arg = append(arg, "--owner", ownerPublicKey) // FIXME: should check data validity!
 	}
+	// TODO: Enable once merged upstream
+	/*
+		for _, operatorPublicKey := range operators {
+			arg = append(arg, "--operators", operatorPublicKey) // FIXME: should check data validity!
+		}
+	*/
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}

@@ -12,7 +12,7 @@ func ExampleCertificateNewStakePoolRegistration() {
 		kesKey              string
 		vrfKey              string
 		startValidity       = uint64(0)
-		managementThreshold = uint16(1)
+		managementThreshold = uint8(1)
 		serial              = uint64(1020304050)
 		owner               = []string{"ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"}
 		outputFile          = "" // "" - output to STDOUT only, "stakePool.cert" - will also save output to that file
