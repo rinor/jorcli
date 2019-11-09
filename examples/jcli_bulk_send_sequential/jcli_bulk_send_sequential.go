@@ -171,8 +171,8 @@ const (
 	// gepSeed       = 50 // seed the owner of an extra pool in genesis block
 	delegatorSeed = 60 // seed for new stake delegator example (3)
 
-	seedStartBulk  = 100  // seed key generation start
-	totSrcAddrBulk = 1000 // total number of account addresses
+	seedStartBulk  = 100 // seed key generation start
+	totSrcAddrBulk = 100 // total number of account addresses
 
 	pathSep = string(os.PathSeparator)
 )
@@ -198,12 +198,14 @@ func main() {
 			"stake":   "http://127.0.0.33:8001/api",
 			"passive": "http://127.0.0.44:8001/api",
 		}
-		restAddrAPI = restAddresses["genesis"]
+		restAddrAPI = restAddresses["passive"]
 
 		discrimination = "testing"  // "" (empty defaults to "production")
 		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
 
 		keyType = "Ed25519Extended"
+
+		createAccFile = false // set it to true to dump json detailed files
 	)
 
 	// rebuild DELEGATOR data, since will send lovelaces to  that address
@@ -211,8 +213,11 @@ func main() {
 	fatalOn(err)
 	err = delegator.buildAccount(addressPrefix, discrimination)
 	fatalOn(err)
-	err = writeFileJSON(delegator, "delegator_"+delegator.Account+".json")
-	fatalOn(err)
+
+	if createAccFile {
+		err = writeJSON(delegator, "delegator_"+delegator.Account+".json")
+		fatalOn(err)
+	}
 
 	// get blockchain settings
 	restSettings, err := jcli.RestSettings(restAddrAPI, "json")
@@ -241,8 +246,11 @@ func main() {
 		fatalOn(err)
 		err = keys.buildAccount(addressPrefix, discrimination)
 		fatalOn(err)
-		err = writeFileJSON(keys, keys.Account+".json")
-		fatalOn(err)
+
+		if createAccFile {
+			err = writeJSON(keys, keys.Account+".json")
+			fatalOn(err)
+		}
 
 		bulkData[i].faucet = keys
 	}
@@ -307,7 +315,7 @@ func main() {
 		)
 		fatalOn(err, b2s(txStaging))
 
-		// Get transaction data for witness (right now the same as TransactionID)
+		// Get transaction data for witness
 		txDataForWitness, err := jcli.TransactionDataForWitness(txStaging, "")
 		fatalOn(err, b2s(txDataForWitness))
 
@@ -330,9 +338,12 @@ func main() {
 		txStaging, err = jcli.TransactionSeal(txStaging, "")
 		fatalOn(err, b2s(txStaging))
 
+		txFragmentID, err := jcli.TransactionFragmentID(txStaging, "")
+		fatalOn(err, b2s(txFragmentID))
+		bulkData[i].fragment = txFragmentID
+
 		txMessage, err := jcli.TransactionToMessage(txStaging, "")
 		fatalOn(err, b2s(txMessage))
-
 		bulkData[i].message = txMessage
 	}
 
@@ -341,7 +352,10 @@ func main() {
 		fragmentID, err := jcli.RestMessagePost(bulkData[i].message, restAddrAPI, "")
 		fatalOn(err, b2s(fragmentID))
 
-		bulkData[i].fragment = fragmentID
+		// check if fragment_id returned from rest matches the one calculated from msealed tx
+		if b2s(bulkData[i].fragment) != b2s(fragmentID) {
+			log.Printf("ERROR:[%s] - Got:[%s] Expected:[%s]\n", bulkData[i].faucet.Account, b2s(fragmentID), b2s(bulkData[i].fragment))
+		}
 
 		log.Printf("%s - %s\n", bulkData[i].faucet.Account, b2s(fragmentID))
 	}
@@ -350,8 +364,8 @@ func main() {
 
 /* KIT */
 
-// writeFileJSON to accounts/filename after marshalling data
-func writeFileJSON(v interface{}, fileName string) error {
+// writeJSON to accounts/filename after marshalling data
+func writeJSON(v interface{}, fileName string) error {
 	finalFile := "accounts" + pathSep + fileName
 	addrJSON, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {

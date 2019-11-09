@@ -48,16 +48,6 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
-// nodePID builds a node public_id from a seed int
-// For the same int the same value is returned.
-func nodePID(i int) string {
-	in := []byte(strconv.Itoa(i))
-	out := make([]byte, 24-len(in), 24)
-	out = append(out, in...)
-
-	return hex.EncodeToString(out)
-}
-
 // buildAccountAddr returns a new account address
 func buildAccountAddr(seed string, addressPrefix string, discrimination string) (string, error) {
 	var (
@@ -95,9 +85,8 @@ func block0Date() int64 {
 	return block0Date.Unix()
 }
 
-/* seeds used [0-5], [50-52] ,[60], [100-1099] */
+/* seeds used [1-5], [50-52] ,[60], [70], [100-199] */
 const (
-	seedPublicID = 0 // seed for p2p public_id
 	faucetSeed   = 1 // seed for faucet
 	fixedSeed    = 2 // seed for fixed
 	leaderSeed   = 3 // seed for bft leader
@@ -109,9 +98,10 @@ const (
 	gepKesSeed = 52 // seed for extra pool KES
 
 	delegatorSeed = 60 // seed for new stake delegator example (3)
+	// ownerDelegatorSeed = 70 // seed for new stake delegator example (4)
 
-	seedStartBulk  = 100  // seed key generation start
-	totSrcAddrBulk = 1000 // total number of account addresses
+	seedStartBulk  = 100 // seed key generation start
+	totSrcAddrBulk = 100 // total number of account addresses
 )
 
 func main() {
@@ -265,7 +255,7 @@ func main() {
 		b2s(faucetPK),
 		b2s(fixedPK),
 	}
-	stakePoolManagementThreshold := uint16(len(stakePoolOwners)) // uint16(2) -  (since we have 2 owners)
+	stakePoolManagementThreshold := uint8(len(stakePoolOwners)) // uint8(2) -  (since we have 2 owners)
 	stakePoolSerial := uint64(1010101010)
 	stakePoolStartValidity := uint64(0)
 
@@ -340,7 +330,7 @@ func main() {
 	gepStakePoolOwners := []string{
 		b2s(gepoPK),
 	}
-	gepStakePoolManagementThreshold := uint16(len(gepStakePoolOwners)) // uint16(1) -  (since we have 1 owner)
+	gepStakePoolManagementThreshold := uint8(len(gepStakePoolOwners)) // uint8(1) -  (since we have 1 owner)
 	gepStakePoolSerial := uint64(2020202020)
 	gepStakePoolStartValidity := uint64(0)
 
@@ -391,14 +381,14 @@ func main() {
 	block0cfg.BlockchainConfiguration.Discrimination = block0Discrimination
 
 	block0cfg.BlockchainConfiguration.SlotDuration = 2
-	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 450
+	block0cfg.BlockchainConfiguration.SlotsPerEpoch = 150
 	// block0cfg.BlockchainConfiguration.KesUpdateSpeed = 300
 
 	block0cfg.BlockchainConfiguration.LinearFees.Certificate = 10000
 	block0cfg.BlockchainConfiguration.LinearFees.Coefficient = 50
 	block0cfg.BlockchainConfiguration.LinearFees.Constant = 1000
 
-	// Bft Leader not used, just to satisfy config
+	// Bft Leader not used, just to satisfy config needs
 	err = block0cfg.AddConsensusLeader(b2s(leaderPK))
 	fatalOn(err)
 
@@ -423,7 +413,7 @@ func main() {
 	//////////////////////////////////////////////////////////////////
 	// START - Add BULK generated addresses to genesis block0       //
 	for i := range srcFaucets {
-		err = block0cfg.AddInitialFund(srcFaucets[i], 5_000_000_000_000)
+		err = block0cfg.AddInitialFund(srcFaucets[i], 50_000_000_000_000)
 		fatalOn(err)
 	}
 	// DONE - Add BULK generated addresses to genesis block0        //
@@ -490,7 +480,7 @@ func main() {
 	///////////////////
 
 	// p2p node public_id
-	nodePublicID := nodePID(seedPublicID)
+	nodePublicID := "111111111111111111111111111111111111111111111111"
 
 	nodeCfg := jnode.NewNodeConfig()
 

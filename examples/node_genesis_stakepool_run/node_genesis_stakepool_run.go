@@ -46,20 +46,8 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
-// nodePID builds a node public_id from a seed int
-// For the same int the same value is returned.
-func nodePID(i int) string {
-	in := []byte(strconv.Itoa(i))
-	out := make([]byte, 24-len(in), 24)
-	out = append(out, in...)
-
-	return hex.EncodeToString(out)
-}
-
-/* seeds used [10], [50-52] */
+/* seeds used [50-52] */
 const (
-	seedPublicID = 10 // seed for p2p public_id
-
 	gepSeed    = 50 // seed the owner of an extra pool in genesis block
 	gepVrfSeed = 51 // seed for extra pool VRF
 	gepKesSeed = 52 // seed for extra pool KES
@@ -95,10 +83,10 @@ func main() {
 
 		// Trusted peers
 		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
-		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
+		leaderID   = "111111111111111111111111111111111111111111111111" // Leader public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "5c59c13e4574d8d10967bda273b4f8b9a96f94b15526001544a0b5adf7872968"
+		block0Hash = "116f3e765a825a68dc1ac0a3f8993447dccef5641b0450e31dbe0a2cf1c79cad"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
@@ -166,7 +154,7 @@ func main() {
 	gepStakePoolOwners := []string{
 		b2s(gepoPK),
 	}
-	gepStakePoolManagementThreshold := uint16(len(gepStakePoolOwners)) // uint16(1) -  (since we have 1 owner)
+	gepStakePoolManagementThreshold := uint8(len(gepStakePoolOwners)) // uint8(1) -  (since we have 1 owner)
 	gepStakePoolSerial := uint64(2020202020)
 	gepStakePoolStartValidity := uint64(0)
 
@@ -225,7 +213,7 @@ func main() {
 	///////////////////
 
 	// p2p node public_id
-	nodePublicID := nodePID(seedPublicID)
+	nodePublicID := "222222222222222222222222222222222222222222222222"
 
 	nodeCfg := jnode.NewNodeConfig()
 

@@ -3,7 +3,6 @@
 package main
 
 import (
-	"encoding/hex"
 	"io/ioutil"
 	"log"
 	"os"
@@ -35,21 +34,6 @@ func b2s(b []byte) string {
 	return strings.TrimSpace(string(b))
 }
 
-// nodePID builds a node public_id from a seed int
-// For the same int the same value is returned.
-func nodePID(i int) string {
-	in := []byte(strconv.Itoa(i))
-	out := make([]byte, 24-len(in), 24)
-	out = append(out, in...)
-
-	return hex.EncodeToString(out)
-}
-
-/* seeds used [30] */
-const (
-	seedPublicID = 30 // seed for p2p private_id
-)
-
 func main() {
 
 	var (
@@ -75,17 +59,18 @@ func main() {
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// Trusted peers
-		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
-		leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
+		/*
+			leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
+			leaderID   = "000000000000000000000000000000000000000000000030" // Leader public_id
 
-		gepAddr = "/ip4/127.0.0.22/tcp/9001"                         // Genesis stake pool node (example 2)
-		gepID   = "000000000000000000000000000000000000000000003130" // Genesis stake pool public_id
-
+			gepAddr = "/ip4/127.0.0.22/tcp/9001"                         // Genesis stake pool node (example 2)
+			gepID   = "000000000000000000000000000000000000000000003130" // Genesis stake pool public_id
+		*/
 		delegatorAddr = "/ip4/127.0.0.33/tcp/9001"                         // stake pool node (example 3)
-		delegatorID   = "000000000000000000000000000000000000000000003230" // delegator pool public_id
+		delegatorID   = "333333333333333333333333333333333333333333333333" // delegator pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "5c59c13e4574d8d10967bda273b4f8b9a96f94b15526001544a0b5adf7872968"
+		block0Hash = "116f3e765a825a68dc1ac0a3f8993447dccef5641b0450e31dbe0a2cf1c79cad"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
@@ -122,7 +107,7 @@ func main() {
 	///////////////////
 
 	// p2p node public_id
-	nodePublicID := nodePID(seedPublicID)
+	nodePublicID := "444444444444444444444444444444444444444444444444"
 
 	nodeCfg := jnode.NewNodeConfig()
 
@@ -139,8 +124,8 @@ func main() {
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
 
 	// add trusted peer to config file
-	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
-	nodeCfg.AddTrustedPeer(gepAddr, gepID)
+	// nodeCfg.AddTrustedPeer(leaderAddr, leaderID)
+	// nodeCfg.AddTrustedPeer(gepAddr, gepID)
 	nodeCfg.AddTrustedPeer(delegatorAddr, delegatorID)
 
 	nodeCfg.Log.Level = nodeCfgLogLevel // default is "trace"
@@ -165,8 +150,8 @@ func main() {
 	node.GenesisBlockHash = block0Hash // add block0 hash
 
 	// add trusted peer cmd args (not needed if using config)
-	node.AddTrustedPeer(leaderAddr, leaderID)       // add leader from example (1) as trusted
-	node.AddTrustedPeer(gepAddr, gepID)             // add genesis stake pool from example (2) as trusted
+	// node.AddTrustedPeer(leaderAddr, leaderID)       // add leader from example (1) as trusted
+	// node.AddTrustedPeer(gepAddr, gepID)             // add genesis stake pool from example (2) as trusted
 	node.AddTrustedPeer(delegatorAddr, delegatorID) // add delegator stake pool from example (3) as trusted
 
 	node.Stdout, err = os.Create(filepath.Join(workingDir, "stdout.log"))
