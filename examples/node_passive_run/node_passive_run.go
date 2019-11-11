@@ -122,6 +122,7 @@ func main() {
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+	nodeCfg.P2P.Policy.QuarantineDuration = "5m" // default to "30m"
 
 	// add trusted peer to config file
 	// nodeCfg.AddTrustedPeer(leaderAddr, leaderID)

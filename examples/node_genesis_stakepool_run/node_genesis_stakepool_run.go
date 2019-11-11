@@ -78,8 +78,8 @@ func main() {
 		p2pListenAddress = "/" + p2pIPver + "/" + p2pListenAddr + "/" + p2pProto + "/" + strconv.Itoa(p2pListenPort)
 
 		// General
-		discrimination = "testing"  // "" (empty defaults to "production")
-		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
+		discrimination = "testing" // "" (empty defaults to "production")
+		addressPrefix  = ""        // "" (empty defaults to "ca")
 
 		// Trusted peers
 		leaderAddr = "/ip4/127.0.0.11/tcp/9001"                         // Leader (genesis) node (example 1)
@@ -228,6 +228,7 @@ func main() {
 	nodeCfg.P2P.ListenAddress = p2pListenAddress // /ip4/127.0.0.1/tcp/8299 is default value
 	nodeCfg.P2P.PublicID = nodePublicID          // jörmungandr will generate a random key, if not set
 	nodeCfg.P2P.AllowPrivateAddresses = true     // for private addresses
+	nodeCfg.P2P.Policy.QuarantineDuration = "5m" // default to "30m"
 
 	// add trusted peer to config file
 	nodeCfg.AddTrustedPeer(leaderAddr, leaderID)

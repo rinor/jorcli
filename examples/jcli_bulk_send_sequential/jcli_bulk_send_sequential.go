@@ -20,7 +20,10 @@ import (
 
 type extendedKey struct {
 	Discrimination string `json:"Discrimination,omitempty"`
-	AddressPrefix  string `json:"AddressPrefix,omitempty"`
+
+	AccountPrefix string `json:"AccountPrefix,omitempty"`
+	SinglePrefix  string `json:"SinglePrefix,omitempty"`
+	GroupPrefix   string `json:"GroupPrefix,omitempty"`
 
 	KeySeed string `json:"KeySeed,omitempty"`
 	KeyType string `json:"KeyType"`
@@ -29,10 +32,14 @@ type extendedKey struct {
 	PublicKey  string `json:"PublicKey"`
 
 	Account string `json:"Account,omitempty"`
-	UTxO    string `json:"UTxO,omitempty"`
+	// UTxO
+	Single string `json:"Single,omitempty"`
+	Group  string `json:"Group,omitempty"`
+
+	GroupWith string `json:"GroupWith,omitempty"`
 }
 
-func newKey(seed string, keyType string) (*extendedKey, error) {
+func newKey(seed string, keyType string, discrimination string) (*extendedKey, error) {
 	var (
 		err error
 		sk  []byte
@@ -50,26 +57,49 @@ func newKey(seed string, keyType string) (*extendedKey, error) {
 	}
 
 	return &extendedKey{
-		KeySeed:    seed,
-		KeyType:    keyType,
-		PrivateKey: b2s(sk),
-		PublicKey:  b2s(pk),
+		Discrimination: discrimination,
+		KeySeed:        seed,
+		KeyType:        keyType,
+		PrivateKey:     b2s(sk),
+		PublicKey:      b2s(pk),
 	}, nil
 }
 
-func (ea *extendedKey) buildAccount(prefix string, discrimination string) error {
+func (ea *extendedKey) account(prefix string) error {
 	var (
 		err error
 		acc []byte
 	)
 	// account address
-	acc, err = jcli.AddressAccount(ea.PublicKey, prefix, discrimination)
+	acc, err = jcli.AddressAccount(ea.PublicKey, prefix, ea.Discrimination)
 	if err != nil {
 		return fmt.Errorf("AddressAccount: %s - %s", err, acc)
 	}
 	ea.Account = b2s(acc)
-	ea.Discrimination = discrimination
-	ea.AddressPrefix = prefix
+	ea.AccountPrefix = prefix
+
+	return nil
+}
+
+func (ea *extendedKey) utxo(prefix string, groupPublicKey string) error {
+	var (
+		err  error
+		utxo []byte
+	)
+	// UTxO
+	utxo, err = jcli.AddressSingle(ea.PublicKey, groupPublicKey, prefix, ea.Discrimination)
+	if err != nil {
+		return fmt.Errorf("AddressSingle: %s - %s", err, utxo)
+	}
+
+	if groupPublicKey == "" {
+		ea.Single = b2s(utxo)
+		ea.SinglePrefix = prefix
+	} else {
+		ea.Group = b2s(utxo)
+		ea.GroupPrefix = prefix
+		ea.GroupWith = groupPublicKey
+	}
 
 	return nil
 }
@@ -200,18 +230,23 @@ func main() {
 		}
 		restAddrAPI = restAddresses["passive"]
 
-		discrimination = "testing"  // "" (empty defaults to "production")
-		addressPrefix  = "jnode_ta" // "" (empty defaults to "ca")
+		discrimination = "testing" // "" (empty defaults to "production")
+		addressPrefix  = ""        // "" (empty defaults to "ca")
 
-		keyType = "Ed25519Extended"
+		keyType     = "Ed25519Extended"
+		witnessType = "account"
 
-		createAccFile = false // set it to true to dump json detailed files
+		createAccFile = true // set it to true to dump json detailed files
 	)
 
-	// rebuild DELEGATOR data, since will send lovelaces to  that address
-	delegator, err := newKey(seed(delegatorSeed), keyType)
+	// rebuild DELEGATOR data, since we will send lovelaces to that address
+	delegator, err := newKey(seed(delegatorSeed), keyType, discrimination)
 	fatalOn(err)
-	err = delegator.buildAccount(addressPrefix, discrimination)
+	err = delegator.account(addressPrefix) // account address
+	fatalOn(err)
+	err = delegator.utxo(addressPrefix, "") // utxo single address
+	fatalOn(err)
+	err = delegator.utxo(addressPrefix, delegator.PublicKey) // utxo group address
 	fatalOn(err)
 
 	if createAccFile {
@@ -242,9 +277,11 @@ func main() {
 
 	// rebuild bulk addresses (already present in genesis block)
 	for i := 0; i < totSrcAddrBulk; i++ {
-		keys, err := newKey(seed(seedStartBulk+i), keyType)
+		keys, err := newKey(seed(seedStartBulk+i), keyType, discrimination)
 		fatalOn(err)
-		err = keys.buildAccount(addressPrefix, discrimination)
+		err = keys.account(addressPrefix)
+		fatalOn(err)
+		err = keys.utxo(addressPrefix, "")
 		fatalOn(err)
 
 		if createAccFile {
@@ -261,6 +298,10 @@ func main() {
 		srcAccount := bulkData[i].faucet.Account
 		srcPrivateKey := bulkData[i].faucet.PrivateKey
 
+		destination := delegator.Account
+		// destination := delegator.Single
+		// destination := delegator.Group
+
 		restAccFc, err := jcli.RestAccount(srcAccount, restAddrAPI, "json")
 		fatalOn(err, b2s(restAccFc))
 		newAccountRest := accountRest{}
@@ -275,7 +316,7 @@ func main() {
 		txStaging, err = jcli.TransactionAddAccount(txStaging, "", srcAccount, ammount+feesTotal)
 		fatalOn(err, b2s(txStaging))
 
-		txStaging, err = jcli.TransactionAddOutput(txStaging, "", delegator.Account, ammount)
+		txStaging, err = jcli.TransactionAddOutput(txStaging, "", destination, ammount)
 		fatalOn(err, b2s(txStaging))
 
 		// get balance value from transaction info
@@ -325,7 +366,7 @@ func main() {
 			[]byte(srcPrivateKey),
 			b2s(txDataForWitness),
 			settings.Block0Hash,
-			"account", newAccountRest.Counter,
+			witnessType, newAccountRest.Counter,
 			witnessFile,
 			"",
 		)
