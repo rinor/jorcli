@@ -31,7 +31,7 @@ func TransactionNew(
 
 // TransactionAddInput - add UTxO input to the transaction.
 //
-//  [STDIN] | jcli transaction add-input <transaction-id> <index> <value> [--staging <staging-file>] | [STDOUT]
+//  [STDIN] | jcli transaction add-input <fragment-id> <index> <value> [--staging <staging-file>] | [STDOUT]
 func TransactionAddInput(
 	stdinStaging []byte,
 	stagingFile string,
