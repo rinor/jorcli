@@ -49,24 +49,34 @@ func CertificateGetStakePoolID(
 
 // CertificateNewStakeDelegation - build a stake delegation certificate.
 //
-//  jcli certificate new stake-delegation <STAKE_POOL_ID> <STAKE_KEY> [output] | [STDOUT]
+//  jcli certificate new stake-delegation <STAKE_KEY> <STAKE_POOL_ID:weight>... [output] | [STDOUT]
 func CertificateNewStakeDelegation(
-	stakePoolID string,
 	stakeKey string,
+	weightedPoolId []string,
 	outputFile string,
 ) ([]byte, error) {
-	if stakePoolID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "stakePoolID")
-	}
 	if stakeKey == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "stakeKey")
 	}
+	if len(weightedPoolId) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "weightedPoolId")
+	}
+	// TODO: Confirm/Fix the limits
+	/*
+		maxPools := 8 // The maximum number of pools
+		if len(weightedPoolId) > maxPools {
+			return nil, fmt.Errorf("%s expected between %d - %d, got %d", "weightedPoolId", 1, maxPools, len(weightedPoolId))
+		}
+	*/
 
 	arg := []string{
 		"certificate", "new", "stake-delegation",
-		stakePoolID,
 		stakeKey,
 	}
+	arg = append(arg, weightedPoolId...)
+	// for _, pool := range weightedPoolId {
+	// 	arg = append(arg, pool) // FIXME: should check data validity!
+	// }
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
@@ -89,8 +99,8 @@ func CertificateNewStakeDelegation(
 //                                              --start-validity <SECONDS-SINCE-START>
 //                                              --management-threshold <THRESHOLD>
 //                                              --serial <SERIAL>
-//                                              --owner <PUBLIC_KEY> --owner <PUBLIC_KEY> ...
-//                                              --operators <PUBLIC_KEY> --operators <PUBLIC_KEY> ...
+//                                              --owner <OWNER_PUBLIC_KEY> --owner... (max owners TBD)
+//                                              [--operator <OPERATOR_PUBLIC_KEY> --operator... (max operators TBD)]
 //                                              [output] | STDOUT
 func CertificateNewStakePoolRegistration(
 	kesKey string,
@@ -99,9 +109,7 @@ func CertificateNewStakePoolRegistration(
 	managementThreshold uint8,
 	serial uint64,
 	owner []string,
-	/*
-		operators []string, // TODO: Enable once merged upstream
-	*/
+	operator []string,
 	outputFile string,
 ) ([]byte, error) {
 	if kesKey == "" {
@@ -113,17 +121,23 @@ func CertificateNewStakePoolRegistration(
 	if len(owner) == 0 {
 		return nil, fmt.Errorf("parameter missing : %s", "owner")
 	}
-	// TODO: Enable once merged upstream
+	// TODO: Confirm/Fix the limits
 	/*
-		if len(operators) == 0 {
-			return nil, fmt.Errorf("parameter missing : %s", "operators")
+
+		maxOwners := 31   // 5 bits for the owners for a maximum of 31 elements
+		maxOperators := 3 // 2 bits for the operators for a maximum of 3 elements
+		if len(owner) > maxOwners {
+			return nil, fmt.Errorf("%s expected between %d - %d, got %d", "owner", 1, maxOwners, len(owner))
+		}
+		if len(operator) > maxOperators {
+			return nil, fmt.Errorf("%s expected between %d - %d, got %d", "operator", 0, maxOperators, len(operator))
+		}
+
+		// managementThreshold <= #owners and > 0
+		if managementThreshold < 1 || int(managementThreshold) > len(owner) {
+			return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
 		}
 	*/
-	// managementThreshold <= #owners and > 0
-	if managementThreshold < 1 || int(managementThreshold) > len(owner) {
-		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "managementThreshold", 1, len(owner), managementThreshold)
-	}
-
 	arg := []string{
 		"certificate", "new", "stake-pool-registration",
 		"--kes-key", kesKey,
@@ -135,12 +149,9 @@ func CertificateNewStakePoolRegistration(
 	for _, ownerPublicKey := range owner {
 		arg = append(arg, "--owner", ownerPublicKey) // FIXME: should check data validity!
 	}
-	// TODO: Enable once merged upstream
-	/*
-		for _, operatorPublicKey := range operators {
-			arg = append(arg, "--operators", operatorPublicKey) // FIXME: should check data validity!
-		}
-	*/
+	for _, operatorPublicKey := range operator {
+		arg = append(arg, "--operator", operatorPublicKey) // FIXME: should check data validity!
+	}
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
