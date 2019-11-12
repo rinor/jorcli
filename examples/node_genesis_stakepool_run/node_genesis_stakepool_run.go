@@ -86,7 +86,7 @@ func main() {
 		leaderID   = "111111111111111111111111111111111111111111111111" // Leader public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "116f3e765a825a68dc1ac0a3f8993447dccef5641b0450e31dbe0a2cf1c79cad"
+		block0Hash = "4fc09867e8e377811b86f5b940eef8dfe3e7388bbb9dacce0cb95d5105de6562"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
@@ -165,6 +165,7 @@ func main() {
 		gepStakePoolManagementThreshold,
 		gepStakePoolSerial,
 		gepStakePoolOwners,
+		nil,
 		"",
 	)
 	fatalOn(err, b2s(gepStakePoolCert))
@@ -182,7 +183,7 @@ func main() {
 	fatalOn(err, b2s(gepStakePoolID))
 
 	// Genesis Extra Pool Owner delegation
-	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepStakePoolID), b2s(gepoPK), "")
+	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepoPK), []string{b2s(gepStakePoolID)}, "")
 	fatalOn(err, b2s(stakeDelegationGepoCert))
 	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationGepoCertSigned))

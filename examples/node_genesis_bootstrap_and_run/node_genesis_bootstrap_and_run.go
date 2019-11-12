@@ -266,6 +266,7 @@ func main() {
 		stakePoolManagementThreshold,
 		stakePoolSerial,
 		stakePoolOwners,
+		nil,
 		"",
 	)
 	fatalOn(err, b2s(stakePoolCert))
@@ -283,13 +284,13 @@ func main() {
 	fatalOn(err, b2s(stakePoolID))
 
 	// FAUCET delegation (is also one the pool owners)
-	stakeDelegationFaucetCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(faucetPK), "")
+	stakeDelegationFaucetCert, err := jcli.CertificateNewStakeDelegation(b2s(faucetPK), []string{b2s(stakePoolID)}, "")
 	fatalOn(err, b2s(stakeDelegationFaucetCert))
 	stakeDelegationFaucetCertSigned, err := jcli.CertificateSign(stakeDelegationFaucetCert, []string{faucetFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationFaucetCertSigned))
 
 	// FIXED delegation (is also one the pool owners)
-	stakeDelegationFixedCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(fixedPK), "")
+	stakeDelegationFixedCert, err := jcli.CertificateNewStakeDelegation(b2s(fixedPK), []string{b2s(stakePoolID)}, "")
 	fatalOn(err, b2s(stakeDelegationFixedCert))
 	stakeDelegationFixedCertSigned, err := jcli.CertificateSign(stakeDelegationFixedCert, []string{fixedFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationFixedCertSigned))
@@ -341,6 +342,7 @@ func main() {
 		gepStakePoolManagementThreshold,
 		gepStakePoolSerial,
 		gepStakePoolOwners,
+		nil,
 		"",
 	)
 	fatalOn(err, b2s(gepStakePoolCert))
@@ -357,7 +359,7 @@ func main() {
 	fatalOn(err, b2s(gepStakePoolID))
 
 	// Genesis Extra Pool Owner delegation
-	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepStakePoolID), b2s(gepoPK), "")
+	stakeDelegationGepoCert, err := jcli.CertificateNewStakeDelegation(b2s(gepoPK), []string{b2s(gepStakePoolID)}, "")
 	fatalOn(err, b2s(stakeDelegationGepoCert))
 	stakeDelegationGepoCertSigned, err := jcli.CertificateSign(stakeDelegationGepoCert, []string{gepoFileSK}, "", "")
 	fatalOn(err, b2s(stakeDelegationGepoCertSigned))

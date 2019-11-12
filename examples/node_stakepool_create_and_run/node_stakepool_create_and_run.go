@@ -110,7 +110,7 @@ func main() {
 		gepID   = "222222222222222222222222222222222222222222222222" // Genesis stake pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "116f3e765a825a68dc1ac0a3f8993447dccef5641b0450e31dbe0a2cf1c79cad"
+		block0Hash = "4fc09867e8e377811b86f5b940eef8dfe3e7388bbb9dacce0cb95d5105de6562"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
@@ -218,6 +218,7 @@ func main() {
 		stakePoolManagementThreshold,
 		stakePoolSerial,
 		stakePoolOwners,
+		nil,
 		"",
 	)
 	fatalOn(err, b2s(stakePoolCert))
@@ -732,7 +733,7 @@ func main() {
 						fragmentInfo = info.(string)
 					}
 					done = true
-					break
+					// break
 				}
 			} /* switch */
 
@@ -755,7 +756,7 @@ func main() {
 	case "InABlock":
 		// transaction included in a block
 	default:
-		fatalStop(node, fmt.Errorf("Unknown status for %s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
+		fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
 	}
 
 	/////////////////////////////////////////
@@ -809,7 +810,7 @@ func main() {
 	// 1 - Create the stake delegation certificate //
 	/////////////////////////////////////////////////
 
-	delegationCert, err := jcli.CertificateNewStakeDelegation(b2s(stakePoolID), b2s(delegatorPK), "")
+	delegationCert, err := jcli.CertificateNewStakeDelegation(b2s(delegatorPK), []string{b2s(stakePoolID)}, "")
 	fatalStop(node, err, "CertificateNewStakeDelegation", b2s(delegationCert))
 
 	// This is transaction based certificate, no need to sign
@@ -982,7 +983,7 @@ func main() {
 						dfragmentInfo = info.(string)
 					}
 					done = true
-					break
+					// break
 				}
 			} /* switch */
 
@@ -1005,7 +1006,7 @@ func main() {
 	case "InABlock":
 		// transaction included in a block
 	default:
-		fatalStop(node, fmt.Errorf("Unknown status for %s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
+		fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
 	}
 
 	/////////////////////////////////

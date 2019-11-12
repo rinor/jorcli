@@ -70,7 +70,7 @@ func main() {
 		delegatorID   = "333333333333333333333333333333333333333333333333" // delegator pool public_id
 
 		// Genesis Block0 Hash retrieved from example (1)
-		block0Hash = "116f3e765a825a68dc1ac0a3f8993447dccef5641b0450e31dbe0a2cf1c79cad"
+		block0Hash = "4fc09867e8e377811b86f5b940eef8dfe3e7388bbb9dacce0cb95d5105de6562"
 
 		// Node config log
 		nodeCfgLogLevel = "debug"
