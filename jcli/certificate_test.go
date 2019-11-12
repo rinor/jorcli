@@ -63,12 +63,12 @@ func ExampleCertificateNewStakePoolRegistration() {
 	}
 	// Output:
 	//
-	// cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4whsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqzwxdgeeeq6yly30cvsxedw6aq22t9xqza7axg6uy4xecsy6vkuq3928nrp5gp9a9pfgulzzgxk3ccucnk43jycwqfudsjcxngg3zn3tss53hg
+	// cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqa8dlhx
 }
 
 func ExampleCertificateSign_registration_stdin() {
 	var (
-		stdinCert      = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4whsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqzwxdgeeeq6yly30cvsxedw6aq22t9xqza7axg6uy4xecsy6vkuq3928nrp5gp9a9pfgulzzgxk3ccucnk43jycwqfudsjcxngg3zn3tss53hg")
+		stdinCert      = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqa8dlhx")
 		signingKeyFile = []string{"testdata/private_key_txt.golden"} // ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4
 		inputFile      = ""                                          // "" - input from STDIN (stdinCert []byte), "stakePool.cert" - will load the certificate from that file
 		outputFile     = ""                                          // "" - output to STDOUT ([]byte) only, "stakePool.signed_cert" - will also save output to that file
@@ -83,12 +83,12 @@ func ExampleCertificateSign_registration_stdin() {
 	}
 	// Output:
 	//
-	// signedcert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4whsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqzwxdgeeeq6yly30cvsxedw6aq22t9xqza7axg6uy4xecsy6vkuq3928nrp5gp9a9pfgulzzgxk3ccucnk43jycwqfudsjcxngg3zn3tqyqy36t92j4m2c9uqppztzf8e6ntddn2uqg9thhfst8xvzxrch7jnagp0jd0zsya8vp7zfdusg7lnkt6cqphj6dh37nl4ff2u3e8gu43psfnkp55
+	// signedcert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqpqp74fv2vt93cvctyjp6fnsmhnxt732g3tvsxk0pdrym34ecwhwu2ua9hpjqggntpv7fyw3k4ynf0epc04v7aut0flpn6yddvfy343qgqyzh80g
 }
 
 func ExampleCertificateGetStakePoolID_stdin() {
 	var (
-		stdinCertSigned = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4whsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqzwxdgeeeq6yly30cvsxedw6aq22t9xqza7axg6uy4xecsy6vkuq3928nrp5gp9a9pfgulzzgxk3ccucnk43jycwqfudsjcxngg3zn3tss53hg")
+		stdinCertSigned = []byte("cert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqa8dlhx")
 		inputFile       = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
 		outputFile      = "" // "" - output to STDOUT ([]byte) only, "stakePool.id" - will also save output to that file
 	)
@@ -102,12 +102,12 @@ func ExampleCertificateGetStakePoolID_stdin() {
 	}
 	// Output:
 	//
-	// 830537b0a051e7fb3ede373147181279b5b16c8402923db487d303a8ced86555
+	// 205b0d6d0ddf3a5cc9f716cc7915a43dea3b2647a8b4efca5cbbd3489c0708c5
 }
 
 func ExampleCertificateNewStakeDelegation() {
 	var (
-		stakePoolID = "b3038b5b67fe9c1c284b1249416bf26a34f063bf59863e30d9d9610857161192"
+		stakePoolID = "205b0d6d0ddf3a5cc9f716cc7915a43dea3b2647a8b4efca5cbbd3489c0708c5"
 		stakeKey    = "ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v" // Public Key
 		outputFile  = ""                                                                      // "" - output to STDOUT ([]byte) only, "stakePoolDelegation.new" - will also save output to that file
 	)
@@ -121,12 +121,12 @@ func ExampleCertificateNewStakeDelegation() {
 	}
 	// Output:
 	//
-	// cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqdnqw94kel7nswzsjcjf9qkhun2xncx806esclrpkwevyy9w9s3jgv9lpya
+	// cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqfqtvxk6rwl8fwvnacke3u3tfpaagajv3agknhu5h9m6dyfcpcgc5r6uzuv
 }
 
 func ExampleCertificateSign_delegation_stdin() {
 	var (
-		stdinCert      = []byte("cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqdnqw94kel7nswzsjcjf9qkhun2xncx806esclrpkwevyy9w9s3jgv9lpya")
+		stdinCert      = []byte("cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqfqtvxk6rwl8fwvnacke3u3tfpaagajv3agknhu5h9m6dyfcpcgc5r6uzuv")
 		signingKeyFile = []string{"testdata/private_key_txt.golden"} // ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4
 		inputFile      = ""                                          // "" - input from STDIN (stdinCert []byte), "stakePool.cert" - will load the certificate from that file
 		outputFile     = ""                                          // "" - output to STDOUT ([]byte) only, "stakePool.signed_cert" - will also save output to that file
@@ -141,12 +141,12 @@ func ExampleCertificateSign_delegation_stdin() {
 	}
 	// Output:
 	//
-	// signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqdnqw94kel7nswzsjcjf9qkhun2xncx806esclrpkwevyy9w9s3jf6tg83rdzeallukxlk0dkdfsgyeav87mes4gdut4tw8r06zqxk4qcqx43wsqcfzuktm23x66n3pmz6tfzdgutya73styk22fwsl2rgp5e6asx
+	// signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqfqtvxk6rwl8fwvnacke3u3tfpaagajv3agknhu5h9m6dyfcpcgc5q4qy45fktgfrt26atr4raujxqmztdnsfg0rkl6fgyecr8xg8820l9caa62j9yzq4skppm8y5ly8n8gkckems0xda8t69q2cvv4j2z2qu7764rq
 }
 
 func ExampleCertificatePrint_registrationSigned_stdin() {
 	var (
-		stdinCert = []byte("signedcert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqhs6cc9v2ygmmkm03zmdwh8z2fkx0vfm8xdgpywnxwu2ew8ed4whsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqzwxdgeeeq6yly30cvsxedw6aq22t9xqza7axg6uy4xecsy6vkuq3928nrp5gp9a9pfgulzzgxk3ccucnk43jycwqfudsjcxngg3zn3tqyqy36t92j4m2c9uqppztzf8e6ntddn2uqg9thhfst8xvzxrch7jnagp0jd0zsya8vp7zfdusg7lnkt6cqphj6dh37nl4ff2u3e8gu43psfnkp55")
+		stdinCert = []byte("signedcert1qvqqqqqqqqqqqqqqqqqqq0xsn2eqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqpqp74fv2vt93cvctyjp6fnsmhnxt732g3tvsxk0pdrym34ecwhwu2ua9hpjqggntpv7fyw3k4ynf0epc04v7aut0flpn6yddvfy343qgqyzh80g")
 		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePool.signed_cert" - will load the certificate from that file
 	)
 
@@ -159,12 +159,12 @@ func ExampleCertificatePrint_registrationSigned_stdin() {
 	}
 	// Output:
 	//
-	// Certificate(PoolRegistration(PoolRegistration { serial: 1020304050, start_validity: TimeOffsetSeconds(DurationSeconds(0)), permissions: PoolPermissions(1), owners: [786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e], operators: [], rewards: TaxType { fixed: Value(0), ratio: Ratio { numerator: 0, denominator: 1 }, max_limit: None }, keys: GenesisPraosLeader { kes_public_key: 954798c34404bd28528e7c4241ad1c63989dab19130e0278d84b069a11114e2b, vrf_public_key: 9c66a339c8344f922fc3206cb5dae814a594c0177dd3235c254d9c409a65b808 } }))
+	// Certificate(PoolRegistration(PoolRegistration { serial: 1020304050, start_validity: TimeOffsetSeconds(DurationSeconds(0)), permissions: PoolPermissions(1), owners: [786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e], operators: [], rewards: TaxType { fixed: Value(0), ratio: Ratio { numerator: 0, denominator: 1 }, max_limit: None }, reward_account: None, keys: GenesisPraosLeader { kes_public_key: 954798c34404bd28528e7c4241ad1c63989dab19130e0278d84b069a11114e2b, vrf_public_key: 9c66a339c8344f922fc3206cb5dae814a594c0177dd3235c254d9c409a65b808 } }))
 }
 
 func ExampleCertificatePrint_delegationSigned_stdin() {
 	var (
-		stdinCert = []byte("signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqdnqw94kel7nswzsjcjf9qkhun2xncx806esclrpkwevyy9w9s3jf6tg83rdzeallukxlk0dkdfsgyeav87mes4gdut4tw8r06zqxk4qcqx43wsqcfzuktm23x66n3pmz6tfzdgutya73styk22fwsl2rgp5e6asx")
+		stdinCert = []byte("signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqfqtvxk6rwl8fwvnacke3u3tfpaagajv3agknhu5h9m6dyfcpcgc5q4qy45fktgfrt26atr4raujxqmztdnsfg0rkl6fgyecr8xg8820l9caa62j9yzq4skppm8y5ly8n8gkckems0xda8t69q2cvv4j2z2qu7764rq")
 		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePoolDelegation.new" - will load the certificate from that file
 	)
 
@@ -177,5 +177,5 @@ func ExampleCertificatePrint_delegationSigned_stdin() {
 	}
 	// Output:
 	//
-	// Certificate(StakeDelegation(StakeDelegation { account_id: AccountIdentifier([120, 107, 24, 43, 20, 68, 111, 118, 219, 226, 45, 181, 215, 56, 148, 155, 25, 236, 78, 206, 102, 160, 36, 116, 204, 238, 43, 46, 62, 91, 87, 94]), delegation: Full($ hash_ty(0xb3038b5b67fe9c1c284b1249416bf26a34f063bf59863e30d9d9610857161192)) }))
+	// Certificate(StakeDelegation(StakeDelegation { account_id: UnspecifiedAccountIdentifier([120, 107, 24, 43, 20, 68, 111, 118, 219, 226, 45, 181, 215, 56, 148, 155, 25, 236, 78, 206, 102, 160, 36, 116, 204, 238, 43, 46, 62, 91, 87, 94]), delegation: Full($ hash_ty(0x205b0d6d0ddf3a5cc9f716cc7915a43dea3b2647a8b4efca5cbbd3489c0708c5)) }))
 }
