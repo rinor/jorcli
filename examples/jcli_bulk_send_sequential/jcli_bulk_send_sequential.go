@@ -326,14 +326,8 @@ func main() {
 			settings.Fees.Coefficient,
 			settings.Fees.Constant,
 			addressPrefix,
+			"{{.balance}}",
 			"",
-			"{balance}",
-			"",
-			"",
-			"",
-			false,
-			false,
-			false,
 		)
 		fatalOn(err, b2s(txInfo))
 		txBalance := b2s(txInfo)

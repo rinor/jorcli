@@ -498,14 +498,8 @@ func main() {
 		feeCoefficient,
 		feeConstant,
 		addressPrefix,
+		"{{.balance}}",
 		"",
-		"{balance}",
-		"",
-		"",
-		"",
-		false,
-		false,
-		false,
 	)
 	fatalStop(node, err, "TransactionInfo BALANCE", b2s(txInfo))
 
@@ -852,14 +846,8 @@ func main() {
 		feeCoefficient,
 		feeConstant,
 		addressPrefix,
+		"{{.balance}}",
 		"",
-		"{balance}",
-		"",
-		"",
-		"",
-		false,
-		false,
-		false,
 	)
 	fatalStop(node, err, "TransactionInfo BALANCE", b2s(dtxInfo))
 
