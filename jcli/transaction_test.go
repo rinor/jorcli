@@ -330,13 +330,7 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeConstant,
 		prefix,
 		"",
-		"default",
-		"default",
-		"default",
-		"default",
-		false,
-		false,
-		false,
+		"",
 	)
 	ok(t, err)
 	equals(t, expectedInfo, txInfo)

@@ -375,14 +375,8 @@ func TransactionMakeWitness(
 //                                  [--fee-certificate <certificate>]
 //                                  [--fee-coefficient <coefficient>]
 //                                  [--fee-constant <constant>]
-//                                  [--format <format>]
+//                                  [--output-format <format>]
 //                                  [--output <output file>]
-//                                  [--only-utxos]
-//                                  [--only-accounts]
-//                                  [--only-outputs]
-//                                  [--format-utxo-input <format-utxo-input>]
-//                                  [--format-account-input <format-account-input>]
-//                                  [--format-output <format-output>]
 //                                  [--prefix <address prefix>] | [STDOUT]
 func TransactionInfo(
 	stdinStaging []byte, stagingFile string,
@@ -390,14 +384,8 @@ func TransactionInfo(
 	feeCoefficient uint64,
 	feeConstant uint64,
 	prefix string,
+	outputFormat string,
 	outputFile string,
-	format string,
-	formatUTxOInput string,
-	formatAccountInput string,
-	formatOutput string,
-	onlyUTxOs bool,
-	onlyAccounts bool,
-	onlyOutputs bool,
 ) ([]byte, error) {
 	if len(stdinStaging) == 0 && stagingFile == "" {
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
@@ -416,33 +404,11 @@ func TransactionInfo(
 	if prefix != "" {
 		arg = append(arg, "--prefix", prefix)
 	}
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
+	}
 	if outputFile != "" {
 		arg = append(arg, "--output", outputFile)
-	}
-	// NOTE:
-	// workaround since "" empty string has meaning here (disables output),
-	// so need to pass "default" string to use whatever is default format.
-	if format != "default" {
-		arg = append(arg, "--format", format)
-	}
-	if formatUTxOInput != "default" {
-		arg = append(arg, "--format-utxo-input", formatUTxOInput)
-	}
-	if formatAccountInput != "default" {
-		arg = append(arg, "--format-account-input", formatAccountInput)
-	}
-	if formatOutput != "default" {
-		arg = append(arg, "--format-output", formatOutput)
-	}
-
-	if onlyUTxOs {
-		arg = append(arg, "--only-utxos", strconv.FormatBool(onlyUTxOs))
-	}
-	if onlyAccounts {
-		arg = append(arg, "--only-accounts", strconv.FormatBool(onlyAccounts))
-	}
-	if onlyOutputs {
-		arg = append(arg, "--only-outputs", strconv.FormatBool(onlyOutputs))
 	}
 
 	out, err := jcli(stdinStaging, arg...)
