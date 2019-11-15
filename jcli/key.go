@@ -3,6 +3,7 @@ package jcli
 import (
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 // KeyGenerate - generate a private key using a SEED value.
@@ -16,7 +17,10 @@ func KeyGenerate(
 	if keyType == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "keyType")
 	}
-	arg := []string{"key", "generate", "--type", keyType}
+	arg := []string{
+		"key", "generate",
+		"--type", keyType,
+	}
 	if seed != "" {
 		arg = append(arg, "--seed", seed)
 	}
@@ -50,7 +54,7 @@ func KeyToPublic(
 		stdinSk = nil
 	}
 	if outputFilePk != "" {
-		arg = append(arg, outputFilePk) // TODO: UPSTREAM unify with "--output" as other file output commands
+		arg = append(arg, outputFilePk)
 	}
 
 	out, err := jcli(stdinSk, arg...)
@@ -121,7 +125,10 @@ func KeyFromBytes(
 		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFile")
 	}
 
-	arg := []string{"key", "from-bytes", "--type", keyType}
+	arg := []string{
+		"key", "from-bytes",
+		"--type", keyType,
+	}
 	if inputFile != "" {
 		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
 		stdinSk = nil
@@ -216,4 +223,32 @@ func KeyVerify(
 	}
 
 	return jcli(stdinData, arg...)
+}
+
+// KeyDerive - derive a child key.
+//
+// [STDIN] | jcli key derive [--input <parent_key>] <index> [<OUTPUT_FILE>] | STDOUT
+func KeyDerive(
+	stdinParentKey []byte,
+	inputFileParentKey string,
+	indexChildKey uint32,
+	outputFileChildKey string,
+) ([]byte, error) {
+	if len(stdinParentKey) == 0 && inputFileParentKey == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinParentKey", "inputFileParentKey")
+	}
+
+	arg := []string{
+		"key", "derive",
+		strconv.FormatUint(uint64(indexChildKey), 10),
+	}
+	if inputFileParentKey != "" {
+		arg = append(arg, "--input", inputFileParentKey)
+		stdinParentKey = nil
+	}
+	if outputFileChildKey != "" {
+		arg = append(arg, outputFileChildKey)
+	}
+
+	return jcli(stdinParentKey, arg...)
 }

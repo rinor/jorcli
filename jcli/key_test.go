@@ -196,3 +196,23 @@ func TestKeyVerify_stdin(t *testing.T) {
 	ok(t, err)
 	equals(t, expectedVerify, verify) // Prod: bytes.Equal(expectedVerify, verify)
 }
+
+func ExampleKeyDerive_stdin() {
+	var (
+		stdinParentKey     = []byte("xprv1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtp5lqlnmu4238paf3w5h03ej6zqdev8jngzgudjkjykx2vlr9mn6a5ec2azq")
+		inputFileParentKey = "" // "" - input from STDIN (stdinParentKey []byte), "parent.key" - will load the private key from that file
+		indexChildKey      = uint32(0)
+		outputFileChildKey = "" // "" - output to STDOUT ([]byte) only, "child.key" - will also save the derived key to that file
+	)
+
+	childKey, err := jcli.KeyDerive(stdinParentKey, inputFileParentKey, indexChildKey, outputFileChildKey)
+
+	if err != nil {
+		fmt.Printf("KeyDerive: %s", err)
+	} else {
+		fmt.Printf("%s", string(childKey))
+	}
+	// Output:
+	//
+	// xprv10z6xdkgmvpqqvfgw4y37fy0sqwv66gkc04hee4w7phf0drnhp4rkvk5q0w0fjjj378r9296536av9g7ypcl8w7exeef3ud4p24yhl5870s27hrfs7vglwfhus8a32wkqknlnjj456h5gjwmtslyqka70accut0ax
+}
