@@ -241,11 +241,6 @@ func main() {
 	//     PoolUpdate           - YES (N/A)
 	//     OwnerStakeDelegation - NO  (N/A - jcli certificate new stake-delegation)
 	//
-	/*
-		// Sign the certificate with FAUCET private key and also with FIXED private key
-		stakePoolCertSigned, err := jcli.CertificateSign(stakePoolCert, []string{faucetFileSK, fixedFileSK}, "", "")
-		fatalOn(err, b2s(stakePoolCertSigned))
-	*/
 
 	//////////////////////
 	//  secrets config  //
@@ -340,22 +335,10 @@ func main() {
 
 	*******************************************************************/
 
-	/////////////////////////////
-	// STAKE POOL Registration //
-	/////////////////////////////
-
+	// Wait for local node to be ready
 	var (
 		// generic interface used for json data.
 		jsonData map[string]interface{}
-
-		// spending counter data
-		faucetCounter uint32
-		fixedCounter  uint32
-
-		// fees data
-		feeCertificate uint64
-		feeCoefficient uint64
-		feeConstant    uint64
 
 		nodeReady bool
 		nodeState string
@@ -407,358 +390,8 @@ func main() {
 	fatalStop(node, err, b2s(selfTip))
 	log.Printf("SelfTip: %s\n", b2s(selfTip))
 
-	// Since the pool has 2 owners, lets make both of them pay :)
-	//
-	// the total ammount to pay for this transaction is 11100, because:
-	// total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
-	//
-	// LinearFees.Certificate = 10_000 (and the tx contains a certificate)
-	// LinearFees.Coefficient =     50 (we have 2 inputs so total is 100)
-	// LinearFees.Constant    =  1_000
-	// -------------------------------
-	// TOTAL (lovelace)       =  1_000 + (2 + 0)*50 + 10_000 = 11_100
-
-	// get blockchain setting from rest
-	blockchainSettings, err := jcli.RestSettings(restAddressAPI, "json")
-	fatalStop(node, err, "RestSettings", b2s(blockchainSettings))
-
-	// will use a generic way to parse json data without using structs,
-	// just to show how is done.
-	// One can also build a struct representing the settings or
-	// only the fees using jnode.LinearFees for example.
-
-	err = json.Unmarshal(blockchainSettings, &jsonData)
-	fatalStop(node, err)
-
-	// fees
-	jsonFees, ok := jsonData["fees"].(map[string]interface{})
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFees"))
-	}
-
-	// fee certificate
-	jsonFeeCertificate, ok := jsonFees["certificate"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCertificate"))
-	}
-	feeCertificate = uint64(jsonFeeCertificate)
-
-	// fee coefficient
-	jsonFeeCoefficient, ok := jsonFees["coefficient"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCoefficient"))
-	}
-	feeCoefficient = uint64(jsonFeeCoefficient)
-
-	// fee constant
-	jsonFeeConstant, ok := jsonFees["constant"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeConstant"))
-	}
-	feeConstant = uint64(jsonFeeConstant)
-
-	// we will have 2 inputs and 0 outputs.
-	// total fees: constant + (num_inputs + num_outputs) * coefficient + certificate
-	totalFees := feeConstant + 2*feeCoefficient + feeCertificate
-
-	//////////////////////////////
-	// 1 - Create a transaction //
-	//////////////////////////////
-
-	txStaging, err := jcli.TransactionNew(nil, "")
-	fatalStop(node, err, "TransactionNew", b2s(txStaging))
-
-	///////////////////////////////////////////
-	// 2 - add accounts to transaction input //
-	///////////////////////////////////////////
-
-	// 2.a - Add the FAUCET Account address to the transaction
-	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(faucetAddr), totalFees/2)
-	fatalStop(node, err, "TransactionAddAccount FAUCET", b2s(txStaging))
-
-	// 2.b -  Add the FIXED Account address to the transaction
-	txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(fixedAddr), totalFees-(totalFees/2))
-	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
-
-	////////////////////////////////////////////////
-	// 3 - Add the certificate to the transaction //
-	////////////////////////////////////////////////
-
-	// This needs an unsigned certificate now, otherwise will fail
-	txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCert))
-	fatalStop(node, err, "TransactionAddCertificate", b2s(txStaging))
-
-	// Check if transaction is balanced otherwise
-	// finalize will fail (if balance != 0)
-
-	// get balance value from transaction info
-	txInfo, err := jcli.TransactionInfo(
-		txStaging, "",
-		feeCertificate,
-		feeCoefficient,
-		feeConstant,
-		addressPrefix,
-		"{{.balance}}",
-		"",
-	)
-	fatalStop(node, err, "TransactionInfo BALANCE", b2s(txInfo))
-
-	// get string value.
-	// when math ops required, convert it to number.
-	txBalance := b2s(txInfo)
-
-	// jic, since shouldn't happen (unless jcli cmd changed)
-	if txBalance == "" {
-		fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", txBalance))
-	}
-
-	// BUG: if balance outside (int) range ...
-	txBalanceAmmount, err := strconv.Atoi(txBalance)
-	fatalStop(node, err, "strconv.Atoi(txBalance)", txBalance)
-	if txBalanceAmmount != 0 {
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", txBalance))
-	}
-
-	//////////////////////////////
-	// 4 - Lock the transaction //
-	//////////////////////////////
-
-	txStaging, err = jcli.TransactionFinalize(txStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(fixedAddr))
-	fatalStop(node, err, "TransactionFinalize", b2s(txStaging))
-
-	////////////////////////////
-	// 5 - Make the witnesses //
-	////////////////////////////
-
-	// 5.a - Get transaction data for witness
-	txDataForWitness, err := jcli.TransactionDataForWitness(txStaging, "")
-	fatalStop(node, err, "TransactionDataForWitness", b2s(txDataForWitness))
-
-	// 5.b - FAUCET witness
-
-	// Get faucet account spending counter
-	faucetState, err := jcli.RestAccount(b2s(faucetAddr), restAddressAPI, "json")
-	fatalStop(node, err, b2s(faucetState))
-	err = json.Unmarshal(faucetState, &jsonData)
-	fatalStop(node, err)
-	jsonCounter, ok := jsonData["counter"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "faucetCounter"))
-	}
-	faucetCounter = uint32(jsonCounter)
-
-	// save the witness data to this file
-	faucetWitnessFile := workingDir + string(os.PathSeparator) + "faucet.witness"
-	faucetWitness, err := jcli.TransactionMakeWitness(
-		faucetSK,
-		b2s(txDataForWitness),
-		block0Hash,
-		"account", faucetCounter,
-		faucetWitnessFile,
-		"",
-	)
-	fatalStop(node, err, "TransactionMakeWitness FAUCET", b2s(faucetWitness))
-
-	// 5.c - FIXED witness
-
-	// Get fixed account spending counter
-	fixedState, err := jcli.RestAccount(b2s(fixedAddr), restAddressAPI, "json")
-	fatalStop(node, err, b2s(fixedState))
-	err = json.Unmarshal(fixedState, &jsonData)
-	fatalStop(node, err)
-	jsonCounter, ok = jsonData["counter"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fixedCounter"))
-	}
-	fixedCounter = uint32(jsonCounter)
-
-	// save the witness data to this file
-	fixedWitnessFile := workingDir + string(os.PathSeparator) + "fixed.witness"
-	fixedWitness, err := jcli.TransactionMakeWitness(
-		fixedSK,
-		b2s(txDataForWitness),
-		block0Hash,
-		"account", fixedCounter,
-		fixedWitnessFile,
-		"",
-	)
-	fatalStop(node, err, "TransactionMakeWitness FIXED", b2s(fixedWitness))
-
-	//////////////////////////////////////////////
-	// 6 - Add the witnesses to the transaction //
-	//////////////////////////////////////////////
-
-	// 6.a - Add FAUCET witness
-	txStaging, err = jcli.TransactionAddWitness(txStaging, "", faucetWitnessFile)
-	fatalStop(node, err, "TransactionAddWitness FAUCET", b2s(txStaging))
-
-	// 6.b - Add FIXED witness
-	txStaging, err = jcli.TransactionAddWitness(txStaging, "", fixedWitnessFile)
-	fatalStop(node, err, "TransactionAddWitness FIXED", b2s(txStaging))
-
-	//////////////////////////////
-	// 7 - Seal the transaction //
-	//////////////////////////////
-
-	txStaging, err = jcli.TransactionSeal(txStaging, "")
-	fatalStop(node, err, "TransactionSeal", b2s(txStaging))
-
-	//////////////////////////////
-	// 8 - Auth the transaction //
-	//////////////////////////////
-
-	// Since the transaction contains a stake pool registration certificate
-	// we need to auth it with owners secret keys FAUCET and FIXED
-	txStaging, err = jcli.TransactionAuth(txStaging, "", []string{faucetFileSK, fixedFileSK})
-	fatalStop(node, err, "TransactionAuth", b2s(txStaging))
-
-	////////////////////////////////////////////
-	// 9 - Convert the transaction to message //
-	////////////////////////////////////////////
-
-	txMessage, err := jcli.TransactionToMessage(txStaging, "")
-	fatalStop(node, err, "TransactionToMessage", b2s(txMessage))
-
-	/////////////////////////////////////////////////
-	// 10 - Send the transaction to the blockchain //
-	/////////////////////////////////////////////////
-
-	fragmentID, err := jcli.RestMessagePost(txMessage, restAddressAPI, "")
-	fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
-
-	///////////////////////////////////////////////
-	// 11 - Check certificate transaction status //
-	///////////////////////////////////////////////
-
-	// There are different ways to set a checkpoint when to check for status changes.
-	// One could check for tip changes and then check for status changes,
-	// or use a loop with timeout based on slot_duration.
-	// In this example a loop is used.
-	//
-	// If the node has explorer enabled, one could also use graphql queries to get the status.
-	// TODO: implement this example.
-	//
-	// NOTE:
-	// - the tip can change also during sync if the node is behind,
-	//   so it does not guaranties the transaction inclusion
-	//
-	// - slot leader election in genesis_praos is unpredictable
-
+	// Check the stake pool is already registered
 	var (
-		logFragmentID  = b2s(fragmentID)
-		fragmentStatus string
-		fragmentInfo   string
-
-		// generic interface used for json data.
-		jsonDataList []map[string]interface{}
-	)
-
-	log.Printf("Wait for pool registration certificate transaction [%s] status change...\n", logFragmentID)
-
-	// 150 derived from slots_per_epoch
-	for x, done := 0, false; !done && x < 150; x++ {
-		fragmentLogs, err := jcli.RestMessageLogs(restAddressAPI, "json")
-		fatalStop(node, err, "RestMessageLogs", b2s(fragmentLogs))
-
-		err = json.Unmarshal(fragmentLogs, &jsonDataList)
-		fatalStop(node, err)
-
-		// This may be resourse intensive depending on the number of message logs.
-		for i := range jsonDataList {
-			logID, ok := jsonDataList[i]["fragment_id"].(string)
-			if !ok {
-				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fragment_id"))
-			}
-
-			// we are interested in a specific fragment_id
-			if logFragmentID != logID {
-				continue
-			}
-
-			status, ok := jsonDataList[i]["status"]
-			if !ok {
-				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "status"))
-			}
-
-			switch reflect.TypeOf(status).Kind() {
-
-			case reflect.String:
-				/**************************************
-				   "status": "Pending"
-				**************************************/
-				fragmentStatus = status.(string)
-
-			case reflect.Map:
-				/**************************************
-				   "status": {
-				     "InABlock": {
-					   "block": "3aa748dd766dbe0bc1c77ab5200c85cda8743464ba07fdf98944bfa63339e571",
-				       "date": "114237.32"
-				     }
-				   }
-				**************************************/
-				blockDate, accepted := status.(map[string]interface{})["InABlock"]
-				if accepted {
-					fragmentStatus = "InABlock"
-					info, ok := blockDate.(map[string]interface{})["date"]
-					if ok {
-						fragmentInfo = info.(string)
-					}
-					info, ok = blockDate.(map[string]interface{})["block"]
-					if ok {
-						fragmentInfo = fragmentInfo + " (" + info.(string) + ")"
-					}
-					done = true
-					break
-				}
-
-				/**************************************
-				   "status": {
-				     "Rejected": {
-				       "reason": "some reason info"
-				     }
-				   }
-				**************************************/
-				reason, rejected := status.(map[string]interface{})["Rejected"]
-				if rejected {
-					fragmentStatus = "Rejected"
-					info, ok := reason.(map[string]interface{})["reason"]
-					if ok {
-						fragmentInfo = info.(string)
-					}
-					done = true
-					// break
-				}
-			} /* switch */
-
-		} /* for */
-
-		if !done {
-			time.Sleep(2 * time.Second) // 2 is derived from slot_duration
-		}
-
-	} /* for */
-
-	log.Printf("FragmentID: %s - %s [%s]\n", logFragmentID, fragmentStatus, fragmentInfo)
-	switch fragmentStatus {
-	case "":
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", logFragmentID))
-	case "Pending":
-		fatalStop(node, fmt.Errorf("%s - %s", logFragmentID, fragmentStatus))
-	case "Rejected":
-		fatalStop(node, fmt.Errorf("%s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
-	case "InABlock":
-		// transaction included in a block
-	default:
-		fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
-	}
-
-	/////////////////////////////////////////
-	// 12 - Check the stake pool is listed //
-	/////////////////////////////////////////
-
-	var (
-		// generic interface used for json data.
 		jsonStakePoolList []string
 
 		ledgerPoolID   = b2s(stakePoolID)
@@ -780,272 +413,655 @@ func main() {
 	}
 
 	if !stakePoolFound {
-		fatalStop(node, fmt.Errorf("StakePool %s - Not found", ledgerPoolID))
-	}
 
-	/*****************************************************************
+		/////////////////////////////
+		// STAKE POOL Registration //
+		/////////////////////////////
 
-		At this point the StakePool is configured and running,
-		but the node behaves like a passive one since:
-		1) StakePool is registered on the network,
-		   but has NO STAKE yet.
+		var (
+			// spending counter data
+			faucetCounter uint32
+			fixedCounter  uint32
 
-	*******************************************************************/
+			// fees data
+			feeCertificate uint64
+			feeCoefficient uint64
+			feeConstant    uint64
+		)
 
-	///////////////////////////
-	// STAKE POOL Delegation //
-	///////////////////////////
+		// Since the pool has 2 owners, lets make both of them pay :)
+		//
+		// the total ammount to pay for this transaction is 11100, because:
+		// total fees: constant + (num_inputs + num_outputs) * coefficient [+ certificate]
+		//
+		// LinearFees.Certificate = 10_000 (and the tx contains a certificate)
+		// LinearFees.Coefficient =     50 (we have 2 inputs so total is 100)
+		// LinearFees.Constant    =  1_000
+		// -------------------------------
+		// TOTAL (lovelace)       =  1_000 + (2 + 0)*50 + 10_000 = 11_100
 
-	// DELEGATOR account will stake to this new pool
-	// FAUCET and FIXED are the owners of this pool
-	// so we still need to auth the transaction.
+		// get blockchain setting from rest
+		blockchainSettings, err := jcli.RestSettings(restAddressAPI, "json")
+		fatalStop(node, err, "RestSettings", b2s(blockchainSettings))
 
-	/////////////////////////////////////////////////
-	// 1 - Create the stake delegation certificate //
-	/////////////////////////////////////////////////
+		// will use a generic way to parse json data without using structs,
+		// just to show how is done.
+		// One can also build a struct representing the settings or
+		// only the fees using jnode.LinearFees for example.
 
-	delegationCert, err := jcli.CertificateNewStakeDelegation(b2s(delegatorPK), []string{b2s(stakePoolID)}, "")
-	fatalStop(node, err, "CertificateNewStakeDelegation", b2s(delegationCert))
-
-	// This is transaction based certificate, no need to sign
-	/*
-		///////////////////////////////////////////////
-		// 2 - Sign the stake delegation certificate //
-		///////////////////////////////////////////////
-
-		delegationCertSigned, err := jcli.CertificateSign(delegationCert, []string{delegatorFileSK}, "", "")
-		fatalStop(node, err, "CertificateSign", b2s(delegationCertSigned))
-	*/
-
-	///////////////////////////////////////
-	// 2 - Create a transaction and send //
-	///////////////////////////////////////
-
-	// The flow is almost the same as the
-	// transaction flow in Stake Pool Registration
-	// so the comments will be less verbose
-
-	var (
-		// we will have 1 input and 0 outputs.
-		// total fees: constant + (num_inputs + num_outputs) * coefficient + certificate
-		totalDelegationFees = feeConstant + 1*feeCoefficient + feeCertificate
-	)
-
-	dtxStaging, err := jcli.TransactionNew(nil, "")
-	fatalStop(node, err, "TransactionNew", b2s(dtxStaging))
-
-	dtxStaging, err = jcli.TransactionAddAccount(dtxStaging, "", b2s(delegatorAddr), totalDelegationFees)
-	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
-
-	dtxStaging, err = jcli.TransactionAddCertificate(dtxStaging, "", b2s(delegationCert))
-	fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
-
-	dtxInfo, err := jcli.TransactionInfo(
-		dtxStaging, "",
-		feeCertificate,
-		feeCoefficient,
-		feeConstant,
-		addressPrefix,
-		"{{.balance}}",
-		"",
-	)
-	fatalStop(node, err, "TransactionInfo BALANCE", b2s(dtxInfo))
-
-	dtxBalance := b2s(dtxInfo)
-	if dtxBalance == "" {
-		fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", dtxBalance))
-	}
-
-	dtxBalanceAmmount, err := strconv.Atoi(dtxBalance)
-	fatalStop(node, err, "strconv.Atoi(dtxBalance)", dtxBalance)
-	if dtxBalanceAmmount != 0 {
-		fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", dtxBalance))
-	}
-
-	dtxStaging, err = jcli.TransactionFinalize(dtxStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(delegatorAddr))
-	fatalStop(node, err, "TransactionFinalize", b2s(dtxStaging))
-
-	dtxDataForWitness, err := jcli.TransactionDataForWitness(dtxStaging, "")
-	fatalStop(node, err, "TransactionDataForWitness", b2s(dtxDataForWitness))
-
-	delegatorState, err := jcli.RestAccount(b2s(delegatorAddr), restAddressAPI, "json")
-	fatalStop(node, err, b2s(delegatorState))
-
-	err = json.Unmarshal(delegatorState, &jsonData)
-	fatalStop(node, err)
-
-	jsonCounter, ok = jsonData["counter"].(float64)
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "delegatorCounter"))
-	}
-
-	delegatorCounter := uint32(jsonCounter)
-
-	// save the witness data to this file
-	delegatorWitnessFile := workingDir + string(os.PathSeparator) + "delegator.witness"
-	dfixedWitness, err := jcli.TransactionMakeWitness(
-		delegatorSK,
-		b2s(dtxDataForWitness),
-		block0Hash,
-		"account", delegatorCounter,
-		delegatorWitnessFile,
-		"",
-	)
-	fatalStop(node, err, "TransactionMakeWitness FIXED", b2s(dfixedWitness))
-
-	dtxStaging, err = jcli.TransactionAddWitness(dtxStaging, "", delegatorWitnessFile)
-	fatalStop(node, err, "TransactionAddWitness FIXED", b2s(dtxStaging))
-
-	dtxStaging, err = jcli.TransactionSeal(dtxStaging, "")
-	fatalStop(node, err, "TransactionSeal", b2s(dtxStaging))
-
-	// The transaction contains a stake pool delegation certificate,
-	// but since the delegator is NOT one of the pools owners
-	// we need to auth it with delegator secret keys.
-	dtxStaging, err = jcli.TransactionAuth(dtxStaging, "", []string{delegatorFileSK})
-	fatalStop(node, err, "TransactionAuth", b2s(dtxStaging))
-
-	dtxMessage, err := jcli.TransactionToMessage(dtxStaging, "")
-	fatalStop(node, err, "TransactionToMessage", b2s(dtxMessage))
-
-	dfragmentID, err := jcli.RestMessagePost(dtxMessage, restAddressAPI, "")
-	fatalStop(node, err, "RestMessagePost", b2s(dfragmentID))
-
-	var (
-		dlogFragmentID  = b2s(dfragmentID)
-		dfragmentStatus string
-		dfragmentInfo   string
-	)
-
-	log.Printf("Wait for delegation certificate transaction [%s] status change...\n", dlogFragmentID)
-
-	// 150 derived from slots_per_epoch
-	for x, done := 0, false; !done && x < 150; x++ {
-		fragmentLogs, err := jcli.RestMessageLogs(restAddressAPI, "json")
-		fatalStop(node, err, "RestMessageLogs", b2s(fragmentLogs))
-
-		err = json.Unmarshal(fragmentLogs, &jsonDataList)
+		err = json.Unmarshal(blockchainSettings, &jsonData)
 		fatalStop(node, err)
 
-		// This may be resourse intensive depending on the number of message logs.
-		for i := range jsonDataList {
-			logID, ok := jsonDataList[i]["fragment_id"].(string)
-			if !ok {
-				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fragment_id"))
-			}
+		// fees
+		jsonFees, ok := jsonData["fees"].(map[string]interface{})
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFees"))
+		}
 
-			// we are interested in a specific fragment_id
-			if dlogFragmentID != logID {
-				continue
-			}
+		// fee certificate
+		jsonFeeCertificate, ok := jsonFees["certificate"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCertificate"))
+		}
+		feeCertificate = uint64(jsonFeeCertificate)
 
-			status, ok := jsonDataList[i]["status"]
-			if !ok {
-				fatalStop(node, fmt.Errorf("%s - NOT FOUND", "status"))
-			}
+		// fee coefficient
+		jsonFeeCoefficient, ok := jsonFees["coefficient"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeCoefficient"))
+		}
+		feeCoefficient = uint64(jsonFeeCoefficient)
 
-			switch reflect.TypeOf(status).Kind() {
+		// fee constant
+		jsonFeeConstant, ok := jsonFees["constant"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "jsonFeeConstant"))
+		}
+		feeConstant = uint64(jsonFeeConstant)
 
-			case reflect.String:
-				dfragmentStatus = status.(string)
-			case reflect.Map:
-				blockDate, accepted := status.(map[string]interface{})["InABlock"]
-				if accepted {
-					dfragmentStatus = "InABlock"
-					info, ok := blockDate.(map[string]interface{})["date"]
-					if ok {
-						dfragmentInfo = info.(string)
-					}
-					info, ok = blockDate.(map[string]interface{})["block"]
-					if ok {
-						dfragmentInfo = dfragmentInfo + " (" + info.(string) + ")"
-					}
-					done = true
-					break
+		// we will have 2 inputs and 0 outputs.
+		// total fees: constant + (num_inputs + num_outputs) * coefficient + certificate
+		totalFees := feeConstant + 2*feeCoefficient + feeCertificate
+
+		//////////////////////////////
+		// 1 - Create a transaction //
+		//////////////////////////////
+
+		txStaging, err := jcli.TransactionNew(nil, "")
+		fatalStop(node, err, "TransactionNew", b2s(txStaging))
+
+		///////////////////////////////////////////
+		// 2 - add accounts to transaction input //
+		///////////////////////////////////////////
+
+		// 2.a - Add the FAUCET Account address to the transaction
+		txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(faucetAddr), totalFees/2)
+		fatalStop(node, err, "TransactionAddAccount FAUCET", b2s(txStaging))
+
+		// 2.b -  Add the FIXED Account address to the transaction
+		txStaging, err = jcli.TransactionAddAccount(txStaging, "", b2s(fixedAddr), totalFees-(totalFees/2))
+		fatalStop(node, err, "TransactionAddAccount FIXED", b2s(txStaging))
+
+		////////////////////////////////////////////////
+		// 3 - Add the certificate to the transaction //
+		////////////////////////////////////////////////
+
+		// This needs an unsigned certificate now, otherwise will fail
+		txStaging, err = jcli.TransactionAddCertificate(txStaging, "", b2s(stakePoolCert))
+		fatalStop(node, err, "TransactionAddCertificate", b2s(txStaging))
+
+		// Check if transaction is balanced otherwise
+		// finalize will fail (if balance != 0)
+
+		// get balance value from transaction info
+		txInfo, err := jcli.TransactionInfo(
+			txStaging, "",
+			feeCertificate,
+			feeCoefficient,
+			feeConstant,
+			addressPrefix,
+			"{{.balance}}",
+			"",
+		)
+		fatalStop(node, err, "TransactionInfo BALANCE", b2s(txInfo))
+
+		// get string value.
+		// when math ops required, convert it to number.
+		txBalance := b2s(txInfo)
+
+		// jic, since shouldn't happen (unless jcli cmd changed)
+		if txBalance == "" {
+			fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", txBalance))
+		}
+
+		// BUG: if balance outside (int) range ...
+		txBalanceAmmount, err := strconv.Atoi(txBalance)
+		fatalStop(node, err, "strconv.Atoi(txBalance)", txBalance)
+		if txBalanceAmmount != 0 {
+			fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", txBalance))
+		}
+
+		//////////////////////////////
+		// 4 - Lock the transaction //
+		//////////////////////////////
+
+		txStaging, err = jcli.TransactionFinalize(txStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(fixedAddr))
+		fatalStop(node, err, "TransactionFinalize", b2s(txStaging))
+
+		////////////////////////////
+		// 5 - Make the witnesses //
+		////////////////////////////
+
+		// 5.a - Get transaction data for witness
+		txDataForWitness, err := jcli.TransactionDataForWitness(txStaging, "")
+		fatalStop(node, err, "TransactionDataForWitness", b2s(txDataForWitness))
+
+		// 5.b - FAUCET witness
+
+		// Get faucet account spending counter
+		faucetState, err := jcli.RestAccount(b2s(faucetAddr), restAddressAPI, "json")
+		fatalStop(node, err, b2s(faucetState))
+		err = json.Unmarshal(faucetState, &jsonData)
+		fatalStop(node, err)
+		jsonCounter, ok := jsonData["counter"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "faucetCounter"))
+		}
+		faucetCounter = uint32(jsonCounter)
+
+		// save the witness data to this file
+		faucetWitnessFile := workingDir + string(os.PathSeparator) + "faucet.witness"
+		faucetWitness, err := jcli.TransactionMakeWitness(
+			faucetSK,
+			b2s(txDataForWitness),
+			block0Hash,
+			"account", faucetCounter,
+			faucetWitnessFile,
+			"",
+		)
+		fatalStop(node, err, "TransactionMakeWitness FAUCET", b2s(faucetWitness))
+
+		// 5.c - FIXED witness
+
+		// Get fixed account spending counter
+		fixedState, err := jcli.RestAccount(b2s(fixedAddr), restAddressAPI, "json")
+		fatalStop(node, err, b2s(fixedState))
+		err = json.Unmarshal(fixedState, &jsonData)
+		fatalStop(node, err)
+		jsonCounter, ok = jsonData["counter"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fixedCounter"))
+		}
+		fixedCounter = uint32(jsonCounter)
+
+		// save the witness data to this file
+		fixedWitnessFile := workingDir + string(os.PathSeparator) + "fixed.witness"
+		fixedWitness, err := jcli.TransactionMakeWitness(
+			fixedSK,
+			b2s(txDataForWitness),
+			block0Hash,
+			"account", fixedCounter,
+			fixedWitnessFile,
+			"",
+		)
+		fatalStop(node, err, "TransactionMakeWitness FIXED", b2s(fixedWitness))
+
+		//////////////////////////////////////////////
+		// 6 - Add the witnesses to the transaction //
+		//////////////////////////////////////////////
+
+		// 6.a - Add FAUCET witness
+		txStaging, err = jcli.TransactionAddWitness(txStaging, "", faucetWitnessFile)
+		fatalStop(node, err, "TransactionAddWitness FAUCET", b2s(txStaging))
+
+		// 6.b - Add FIXED witness
+		txStaging, err = jcli.TransactionAddWitness(txStaging, "", fixedWitnessFile)
+		fatalStop(node, err, "TransactionAddWitness FIXED", b2s(txStaging))
+
+		//////////////////////////////
+		// 7 - Seal the transaction //
+		//////////////////////////////
+
+		txStaging, err = jcli.TransactionSeal(txStaging, "")
+		fatalStop(node, err, "TransactionSeal", b2s(txStaging))
+
+		//////////////////////////////
+		// 8 - Auth the transaction //
+		//////////////////////////////
+
+		// Since the transaction contains a stake pool registration certificate
+		// we need to auth it with owners secret keys FAUCET and FIXED
+		txStaging, err = jcli.TransactionAuth(txStaging, "", []string{faucetFileSK, fixedFileSK})
+		fatalStop(node, err, "TransactionAuth", b2s(txStaging))
+
+		////////////////////////////////////////////
+		// 9 - Convert the transaction to message //
+		////////////////////////////////////////////
+
+		txMessage, err := jcli.TransactionToMessage(txStaging, "")
+		fatalStop(node, err, "TransactionToMessage", b2s(txMessage))
+
+		/////////////////////////////////////////////////
+		// 10 - Send the transaction to the blockchain //
+		/////////////////////////////////////////////////
+
+		fragmentID, err := jcli.RestMessagePost(txMessage, restAddressAPI, "")
+		fatalStop(node, err, "RestMessagePost", b2s(fragmentID))
+
+		///////////////////////////////////////////////
+		// 11 - Check certificate transaction status //
+		///////////////////////////////////////////////
+
+		// There are different ways to set a checkpoint when to check for status changes.
+		// One could check for tip changes and then check for status changes,
+		// or use a loop with timeout based on slot_duration.
+		// In this example a loop is used.
+		//
+		// If the node has explorer enabled, one could also use graphql queries to get the status.
+		// TODO: implement this example.
+		//
+		// NOTE:
+		// - the tip can change also during sync if the node is behind,
+		//   so it does not guaranties the transaction inclusion
+		//
+		// - slot leader election in genesis_praos is unpredictable
+
+		var (
+			logFragmentID  = b2s(fragmentID)
+			fragmentStatus string
+			fragmentInfo   string
+
+			// generic interface used for json data.
+			jsonDataList []map[string]interface{}
+		)
+
+		log.Printf("Wait for pool registration certificate transaction [%s] status change...\n", logFragmentID)
+
+		// 150 derived from slots_per_epoch
+		for x, done := 0, false; !done && x < 150; x++ {
+			fragmentLogs, err := jcli.RestMessageLogs(restAddressAPI, "json")
+			fatalStop(node, err, "RestMessageLogs", b2s(fragmentLogs))
+
+			err = json.Unmarshal(fragmentLogs, &jsonDataList)
+			fatalStop(node, err)
+
+			// This may be resourse intensive depending on the number of message logs.
+			for i := range jsonDataList {
+				logID, ok := jsonDataList[i]["fragment_id"].(string)
+				if !ok {
+					fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fragment_id"))
 				}
-				reason, rejected := status.(map[string]interface{})["Rejected"]
-				if rejected {
-					dfragmentStatus = "Rejected"
-					info, ok := reason.(map[string]interface{})["reason"]
-					if ok {
-						dfragmentInfo = info.(string)
-					}
-					done = true
-					// break
+
+				// we are interested in a specific fragment_id
+				if logFragmentID != logID {
+					continue
 				}
-			} /* switch */
+
+				status, ok := jsonDataList[i]["status"]
+				if !ok {
+					fatalStop(node, fmt.Errorf("%s - NOT FOUND", "status"))
+				}
+
+				switch reflect.TypeOf(status).Kind() {
+
+				case reflect.String:
+					/**************************************
+					   "status": "Pending"
+					**************************************/
+					fragmentStatus = status.(string)
+
+				case reflect.Map:
+					/**************************************
+					   "status": {
+					     "InABlock": {
+						   "block": "3aa748dd766dbe0bc1c77ab5200c85cda8743464ba07fdf98944bfa63339e571",
+					       "date": "114237.32"
+					     }
+					   }
+					**************************************/
+					blockDate, accepted := status.(map[string]interface{})["InABlock"]
+					if accepted {
+						fragmentStatus = "InABlock"
+						info, ok := blockDate.(map[string]interface{})["date"]
+						if ok {
+							fragmentInfo = info.(string)
+						}
+						info, ok = blockDate.(map[string]interface{})["block"]
+						if ok {
+							fragmentInfo = fragmentInfo + " (" + info.(string) + ")"
+						}
+						done = true
+						break
+					}
+
+					/**************************************
+					   "status": {
+					     "Rejected": {
+					       "reason": "some reason info"
+					     }
+					   }
+					**************************************/
+					reason, rejected := status.(map[string]interface{})["Rejected"]
+					if rejected {
+						fragmentStatus = "Rejected"
+						info, ok := reason.(map[string]interface{})["reason"]
+						if ok {
+							fragmentInfo = info.(string)
+						}
+						done = true
+						// break
+					}
+				} /* switch */
+
+			} /* for */
+
+			if !done {
+				time.Sleep(2 * time.Second) // 2 is derived from slot_duration
+			}
 
 		} /* for */
 
-		if !done {
-			time.Sleep(2 * time.Second) // 2 is derived from slot_duration
+		log.Printf("FragmentID: %s - %s [%s]\n", logFragmentID, fragmentStatus, fragmentInfo)
+		switch fragmentStatus {
+		case "":
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", logFragmentID))
+		case "Pending":
+			fatalStop(node, fmt.Errorf("%s - %s", logFragmentID, fragmentStatus))
+		case "Rejected":
+			fatalStop(node, fmt.Errorf("%s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
+		case "InABlock":
+			// transaction included in a block
+		default:
+			fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", logFragmentID, fragmentStatus, fragmentInfo))
 		}
 
-	} /* for */
+		/////////////////////////////////////////
+		// 12 - Check the stake pool is listed //
+		/////////////////////////////////////////
 
-	log.Printf("FragmentID: %s - %s [%s]\n", dlogFragmentID, dfragmentStatus, dfragmentInfo)
-	switch dfragmentStatus {
-	case "":
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", dlogFragmentID))
-	case "Pending":
-		fatalStop(node, fmt.Errorf("%s - %s", dlogFragmentID, dfragmentStatus))
-	case "Rejected":
-		fatalStop(node, fmt.Errorf("%s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
-	case "InABlock":
-		// transaction included in a block
-	default:
-		fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
-	}
+		jsonStakePools, err := jcli.RestStakePools(restAddressAPI, "json")
+		fatalStop(node, err, "RestStakePools", b2s(jsonStakePools))
 
-	/////////////////////////////////
-	// Check the delegation status //
-	/////////////////////////////////
+		err = json.Unmarshal(jsonStakePools, &jsonStakePoolList)
+		fatalStop(node, err)
 
-	jsonDelegatorData, err := jcli.RestAccount(b2s(delegatorAddr), restAddressAPI, "json")
-	fatalStop(node, err, "RestAccount", b2s(jsonDelegatorData))
-
-	err = json.Unmarshal(jsonDelegatorData, &jsonData)
-	fatalStop(node, err)
-
-	accDelegation, ok := jsonData["delegation"].(map[string]interface{})
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "delegation"))
-	}
-
-	accPools, ok := accDelegation["pools"].([]interface{})
-	if !ok {
-		fatalStop(node, fmt.Errorf("%s - NOT FOUND", "pools"))
-	}
-
-	stakeDelegationFound := false
-	for i := range accPools {
-		for _, poolData := range accPools[i].([]interface{}) {
-			poolID, ok := poolData.(string)
-			if !ok {
-				// probably this is the counter (float64)
+		for i := range jsonStakePoolList {
+			// we are interested in a specific poolID
+			if ledgerPoolID != jsonStakePoolList[i] {
 				continue
 			}
-			if poolID != b2s(stakePoolID) {
-				continue
+			stakePoolFound = true
+			break
+		}
+
+		if !stakePoolFound {
+			fatalStop(node, fmt.Errorf("StakePool %s - Not found", ledgerPoolID))
+		}
+
+		/*****************************************************************
+
+			At this point the StakePool is configured and running,
+			but the node behaves like a passive one since:
+			1) StakePool is registered on the network,
+			   but has NO STAKE yet.
+
+		*******************************************************************/
+
+		///////////////////////////
+		// STAKE POOL Delegation //
+		///////////////////////////
+
+		// DELEGATOR account will stake to this new pool
+		// FAUCET and FIXED are the owners of this pool
+		// so we still need to auth the transaction.
+
+		/////////////////////////////////////////////////
+		// 1 - Create the stake delegation certificate //
+		/////////////////////////////////////////////////
+
+		delegationCert, err := jcli.CertificateNewStakeDelegation(b2s(delegatorPK), []string{b2s(stakePoolID)}, "")
+		fatalStop(node, err, "CertificateNewStakeDelegation", b2s(delegationCert))
+
+		// This is transaction based certificate, no need to sign
+		/*
+			///////////////////////////////////////////////
+			// 2 - Sign the stake delegation certificate //
+			///////////////////////////////////////////////
+
+			delegationCertSigned, err := jcli.CertificateSign(delegationCert, []string{delegatorFileSK}, "", "")
+			fatalStop(node, err, "CertificateSign", b2s(delegationCertSigned))
+		*/
+
+		///////////////////////////////////////
+		// 2 - Create a transaction and send //
+		///////////////////////////////////////
+
+		// The flow is almost the same as the
+		// transaction flow in Stake Pool Registration
+		// so the comments will be less verbose
+
+		var (
+			// we will have 1 input and 0 outputs.
+			// total fees: constant + (num_inputs + num_outputs) * coefficient + certificate
+			totalDelegationFees = feeConstant + 1*feeCoefficient + feeCertificate
+		)
+
+		dtxStaging, err := jcli.TransactionNew(nil, "")
+		fatalStop(node, err, "TransactionNew", b2s(dtxStaging))
+
+		dtxStaging, err = jcli.TransactionAddAccount(dtxStaging, "", b2s(delegatorAddr), totalDelegationFees)
+		fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
+
+		dtxStaging, err = jcli.TransactionAddCertificate(dtxStaging, "", b2s(delegationCert))
+		fatalStop(node, err, "TransactionAddAccount FIXED", b2s(dtxStaging))
+
+		dtxInfo, err := jcli.TransactionInfo(
+			dtxStaging, "",
+			feeCertificate,
+			feeCoefficient,
+			feeConstant,
+			addressPrefix,
+			"{{.balance}}",
+			"",
+		)
+		fatalStop(node, err, "TransactionInfo BALANCE", b2s(dtxInfo))
+
+		dtxBalance := b2s(dtxInfo)
+		if dtxBalance == "" {
+			fatalStop(node, fmt.Errorf("TransactionInfo, BALANCE has no data [balance=%s]", dtxBalance))
+		}
+
+		dtxBalanceAmmount, err := strconv.Atoi(dtxBalance)
+		fatalStop(node, err, "strconv.Atoi(dtxBalance)", dtxBalance)
+		if dtxBalanceAmmount != 0 {
+			fatalStop(node, fmt.Errorf("TransactionInfo, NOT BALANCED [balance=%s], Finalize will fail", dtxBalance))
+		}
+
+		dtxStaging, err = jcli.TransactionFinalize(dtxStaging, "", feeCertificate, feeCoefficient, feeConstant, b2s(delegatorAddr))
+		fatalStop(node, err, "TransactionFinalize", b2s(dtxStaging))
+
+		dtxDataForWitness, err := jcli.TransactionDataForWitness(dtxStaging, "")
+		fatalStop(node, err, "TransactionDataForWitness", b2s(dtxDataForWitness))
+
+		delegatorState, err := jcli.RestAccount(b2s(delegatorAddr), restAddressAPI, "json")
+		fatalStop(node, err, b2s(delegatorState))
+
+		err = json.Unmarshal(delegatorState, &jsonData)
+		fatalStop(node, err)
+
+		jsonCounter, ok = jsonData["counter"].(float64)
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "delegatorCounter"))
+		}
+
+		delegatorCounter := uint32(jsonCounter)
+
+		// save the witness data to this file
+		delegatorWitnessFile := workingDir + string(os.PathSeparator) + "delegator.witness"
+		dfixedWitness, err := jcli.TransactionMakeWitness(
+			delegatorSK,
+			b2s(dtxDataForWitness),
+			block0Hash,
+			"account", delegatorCounter,
+			delegatorWitnessFile,
+			"",
+		)
+		fatalStop(node, err, "TransactionMakeWitness FIXED", b2s(dfixedWitness))
+
+		dtxStaging, err = jcli.TransactionAddWitness(dtxStaging, "", delegatorWitnessFile)
+		fatalStop(node, err, "TransactionAddWitness FIXED", b2s(dtxStaging))
+
+		dtxStaging, err = jcli.TransactionSeal(dtxStaging, "")
+		fatalStop(node, err, "TransactionSeal", b2s(dtxStaging))
+
+		// The transaction contains a stake pool delegation certificate,
+		// but since the delegator is NOT one of the pools owners
+		// we need to auth it with delegator secret keys.
+		dtxStaging, err = jcli.TransactionAuth(dtxStaging, "", []string{delegatorFileSK})
+		fatalStop(node, err, "TransactionAuth", b2s(dtxStaging))
+
+		dtxMessage, err := jcli.TransactionToMessage(dtxStaging, "")
+		fatalStop(node, err, "TransactionToMessage", b2s(dtxMessage))
+
+		dfragmentID, err := jcli.RestMessagePost(dtxMessage, restAddressAPI, "")
+		fatalStop(node, err, "RestMessagePost", b2s(dfragmentID))
+
+		var (
+			dlogFragmentID  = b2s(dfragmentID)
+			dfragmentStatus string
+			dfragmentInfo   string
+		)
+
+		log.Printf("Wait for delegation certificate transaction [%s] status change...\n", dlogFragmentID)
+
+		// 150 derived from slots_per_epoch
+		for x, done := 0, false; !done && x < 150; x++ {
+			fragmentLogs, err := jcli.RestMessageLogs(restAddressAPI, "json")
+			fatalStop(node, err, "RestMessageLogs", b2s(fragmentLogs))
+
+			err = json.Unmarshal(fragmentLogs, &jsonDataList)
+			fatalStop(node, err)
+
+			// This may be resourse intensive depending on the number of message logs.
+			for i := range jsonDataList {
+				logID, ok := jsonDataList[i]["fragment_id"].(string)
+				if !ok {
+					fatalStop(node, fmt.Errorf("%s - NOT FOUND", "fragment_id"))
+				}
+
+				// we are interested in a specific fragment_id
+				if dlogFragmentID != logID {
+					continue
+				}
+
+				status, ok := jsonDataList[i]["status"]
+				if !ok {
+					fatalStop(node, fmt.Errorf("%s - NOT FOUND", "status"))
+				}
+
+				switch reflect.TypeOf(status).Kind() {
+
+				case reflect.String:
+					dfragmentStatus = status.(string)
+				case reflect.Map:
+					blockDate, accepted := status.(map[string]interface{})["InABlock"]
+					if accepted {
+						dfragmentStatus = "InABlock"
+						info, ok := blockDate.(map[string]interface{})["date"]
+						if ok {
+							dfragmentInfo = info.(string)
+						}
+						info, ok = blockDate.(map[string]interface{})["block"]
+						if ok {
+							dfragmentInfo = dfragmentInfo + " (" + info.(string) + ")"
+						}
+						done = true
+						break
+					}
+					reason, rejected := status.(map[string]interface{})["Rejected"]
+					if rejected {
+						dfragmentStatus = "Rejected"
+						info, ok := reason.(map[string]interface{})["reason"]
+						if ok {
+							dfragmentInfo = info.(string)
+						}
+						done = true
+						// break
+					}
+				} /* switch */
+
+			} /* for */
+
+			if !done {
+				time.Sleep(2 * time.Second) // 2 is derived from slot_duration
 			}
-			stakeDelegationFound = true
-			break
+
+		} /* for */
+
+		log.Printf("FragmentID: %s - %s [%s]\n", dlogFragmentID, dfragmentStatus, dfragmentInfo)
+		switch dfragmentStatus {
+		case "":
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", dlogFragmentID))
+		case "Pending":
+			fatalStop(node, fmt.Errorf("%s - %s", dlogFragmentID, dfragmentStatus))
+		case "Rejected":
+			fatalStop(node, fmt.Errorf("%s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
+		case "InABlock":
+			// transaction included in a block
+		default:
+			fatalStop(node, fmt.Errorf("unknown status for %s - %s [%s]", dlogFragmentID, dfragmentStatus, dfragmentInfo))
 		}
-		if stakeDelegationFound {
-			break
+
+		/////////////////////////////////
+		// Check the delegation status //
+		/////////////////////////////////
+
+		jsonDelegatorData, err := jcli.RestAccount(b2s(delegatorAddr), restAddressAPI, "json")
+		fatalStop(node, err, "RestAccount", b2s(jsonDelegatorData))
+
+		err = json.Unmarshal(jsonDelegatorData, &jsonData)
+		fatalStop(node, err)
+
+		accDelegation, ok := jsonData["delegation"].(map[string]interface{})
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "delegation"))
 		}
+
+		accPools, ok := accDelegation["pools"].([]interface{})
+		if !ok {
+			fatalStop(node, fmt.Errorf("%s - NOT FOUND", "pools"))
+		}
+
+		stakeDelegationFound := false
+		for i := range accPools {
+			for _, poolData := range accPools[i].([]interface{}) {
+				poolID, ok := poolData.(string)
+				if !ok {
+					// probably this is the counter (float64)
+					continue
+				}
+				if poolID != b2s(stakePoolID) {
+					continue
+				}
+				stakeDelegationFound = true
+				break
+			}
+			if stakeDelegationFound {
+				break
+			}
+		}
+
+		if !stakeDelegationFound {
+			fatalStop(node, fmt.Errorf("%s delegation - NOT FOUND", stakePoolID))
+		}
+
+		/*****************************************************************
+
+			At this point the StakePool is ready and
+			in the next 2 epochs will become slot leader contendent
+
+		*******************************************************************/
 	}
-
-	if !stakeDelegationFound {
-		fatalStop(node, fmt.Errorf("%s delegation - NOT FOUND", stakePoolID))
-	}
-
-	/*****************************************************************
-
-		At this point the StakePool is ready and
-		in the next 2 epochs will become slot leader contendent
-
-	*******************************************************************/
 
 	log.Println()
 	log.Printf("Genesis Hash: %s", block0Hash)
