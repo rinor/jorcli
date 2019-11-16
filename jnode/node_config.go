@@ -72,9 +72,9 @@ p2p:
 
 {{- with .Log}}
 log:
-  level:  {{ .Level }}
-  format: {{ .Format }}
-  output: {{ .Output }}
+  - output: {{ .Output }}
+    level:  {{ .Level }}
+    format: {{ .Format }}
 {{end}}
 
 {{- with .Mempool}}
