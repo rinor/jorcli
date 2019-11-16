@@ -52,31 +52,27 @@ func CertificateGetStakePoolID(
 //  jcli certificate new stake-delegation <STAKE_KEY> <STAKE_POOL_ID:weight>... [output] | [STDOUT]
 func CertificateNewStakeDelegation(
 	stakeKey string,
-	weightedPoolId []string,
+	weightedPoolID []string,
 	outputFile string,
 ) ([]byte, error) {
 	if stakeKey == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "stakeKey")
 	}
-	if len(weightedPoolId) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "weightedPoolId")
+	if len(weightedPoolID) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "weightedPoolID")
 	}
-	// TODO: Confirm/Fix the limits
-	/*
-		maxPools := 8 // The maximum number of pools
-		if len(weightedPoolId) > maxPools {
-			return nil, fmt.Errorf("%s expected between %d - %d, got %d", "weightedPoolId", 1, maxPools, len(weightedPoolId))
-		}
-	*/
+
+	maxPools := 8 // The maximum number of delegation pools
+	if len(weightedPoolID) > maxPools {
+		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "weightedPoolID", 1, maxPools, len(weightedPoolID))
+	}
 
 	arg := []string{
 		"certificate", "new", "stake-delegation",
 		stakeKey,
 	}
-	arg = append(arg, weightedPoolId...)
-	// for _, pool := range weightedPoolId {
-	// 	arg = append(arg, pool) // FIXME: should check data validity!
-	// }
+	arg = append(arg, weightedPoolID...) // FIXME: should check data validity!
+
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
