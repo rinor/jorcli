@@ -30,7 +30,7 @@ _$ go get github.com/rinor/jorcli
 ## Usage & Examples
 
 For usage and examples see the [Godoc](https://godoc.org/github.com/rinor/jorcli).
-Check also [examples](examples) folder in this repo.
+Check also [jorcli_examples](https://github.com/rinor/jorcli_examples) repository.
 
 ## Status
 
@@ -44,18 +44,6 @@ Check also [examples](examples) folder in this repo.
 - [x] **transaction** - Build and view offline transaction
 - [x] **utils** - Utilities that perform specialized tasks
 - [x] **rest** - Send request to node REST API
-  - [x] **account** - Account operations
-  - [x] **block** - Block operations
-  - [x] **leaders** - Node leaders operations
-  - [x] **message** - Message sending
-  - [x] **network** - Network information
-  - [x] **node** - Node information
-  - [x] **settings** - Node settings
-  - [x] **shutdown** - Shutdown node
-  - [x] **stake-pools** - Stake pools operations
-  - [x] **stake** - Gets stake distribution
-  - [x] **tip** - Blockchain tip information
-  - [x] **utxo** - UTxO information
 
 **DONE** *Jörmungandr node*:
 
@@ -69,11 +57,11 @@ Check also [examples](examples) folder in this repo.
   - [x] node config
     - [ ] implement output gelf (to be implemented)
 
-**WIP** *Jörmungandr* rest API:
+**TODO** *Jörmungandr* rest API:
 
 - [ ] build from [openapi](https://github.com/input-output-hk/jormungandr/blob/master/doc/openapi.yaml)
 
-**WIP** *Jörmungandr explorer node* graphql API:
+**TODO** *Jörmungandr explorer node* graphql API:
 
 - [ ] build from [explorer](https://github.com/input-output-hk/jormungandr/tree/master/jormungandr/src/rest/explorer)
 
