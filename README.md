@@ -55,7 +55,8 @@ Check also [jorcli_examples](https://github.com/rinor/jorcli_examples) repositor
   - [x] block0 (genesis) config
   - [x] secrets config
   - [x] node config
-    - [ ] implement output gelf (to be implemented)
+    - [ ] implement log output gelf (to be implemented)
+    - [ ] implement log output file (to be implemented)
 
 **TODO** *Jörmungandr* rest API:
 

@@ -68,8 +68,8 @@ p2p:
   policy:
     quarantine_duration: {{ .QuarantineDuration }}
   {{- end}}
-  {{- if .UnreachableNotificationSize}}
-  unreachable_notification_size: {{ .UnreachableNotificationSize }}
+  {{- if .MaxUnreachableNodesToConnectPerEvent}}
+  max_unreachable_nodes_to_connect_per_event: {{ .MaxUnreachableNodesToConnectPerEvent }}
   {{- end}}
 {{end}}
 
@@ -115,15 +115,15 @@ type NodeConfig struct {
 
 // ConfigP2P ...
 type ConfigP2P struct {
-	PublicAddress               string                 // `"public_address"`
-	ListenAddress               string                 // `"listen_address"`
-	PublicID                    string                 // `"public_id"`
-	TrustedPeers                []TrustedPeer          // `"trusted_peers"`
-	TopicsOfInterest            ConfigTopicsOfInterest // `"topics_of_interest"`
-	MaxConnections              uint                   // `"max_connections"`
-	AllowPrivateAddresses       bool                   // `"allow_private_addresses"`
-	Policy                      PolicyConfig           // `"policy"`
-	UnreachableNotificationSize uint                   // `"unreachable_notification_size"`
+	PublicAddress                        string                 // `"public_address"`
+	ListenAddress                        string                 // `"listen_address"`
+	PublicID                             string                 // `"public_id"`
+	TrustedPeers                         []TrustedPeer          // `"trusted_peers"`
+	TopicsOfInterest                     ConfigTopicsOfInterest // `"topics_of_interest"`
+	MaxConnections                       uint                   // `"max_connections"`
+	AllowPrivateAddresses                bool                   // `"allow_private_addresses"`
+	Policy                               PolicyConfig           // `"policy"`
+	MaxUnreachableNodesToConnectPerEvent uint                   // `"max_unreachable_nodes_to_connect_per_event"`
 }
 
 // TrustedPeer ...
@@ -212,7 +212,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
 	nodeCfg.P2P.MaxConnections = 256
 	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
-	nodeCfg.P2P.UnreachableNotificationSize = 20
+	nodeCfg.P2P.MaxUnreachableNodesToConnectPerEvent = 20
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
