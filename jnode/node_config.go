@@ -71,6 +71,13 @@ p2p:
   {{- if .MaxUnreachableNodesToConnectPerEvent}}
   max_unreachable_nodes_to_connect_per_event: {{ .MaxUnreachableNodesToConnectPerEvent }}
   {{- end}}
+  {{- if .GossipInterval}}
+  gossip_interval: {{ .GossipInterval }}
+  {{- end}}
+  {{- if .TopologyForceResetInterval}}
+  topology_force_reset_interval: {{ .TopologyForceResetInterval }}
+  {{- end}}
+
 {{end}}
 
 {{- with .Log}}
@@ -124,6 +131,8 @@ type ConfigP2P struct {
 	AllowPrivateAddresses                bool                   // `"allow_private_addresses"`
 	Policy                               PolicyConfig           // `"policy"`
 	MaxUnreachableNodesToConnectPerEvent uint                   // `"max_unreachable_nodes_to_connect_per_event"`
+	GossipInterval                       string                 // `"gossip_interval"`
+	TopologyForceResetInterval           string                 // `"topology_force_reset_interval"`
 }
 
 // TrustedPeer ...
@@ -213,6 +222,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.MaxConnections = 256
 	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
 	nodeCfg.P2P.MaxUnreachableNodesToConnectPerEvent = 20
+	nodeCfg.P2P.GossipInterval = "10s"
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
