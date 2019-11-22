@@ -106,18 +106,23 @@ secret_files:
   - {{ . }}
   {{- end}}
 {{- end}}
+
+{{- if .NoBlockchainUpdatesWarningInterval}}
+no_blockchain_updates_warning_interval: {{ .NoBlockchainUpdatesWarningInterval }}
+{{- end}}
 `
 
 // NodeConfig --config
 type NodeConfig struct {
-	Storage     string           // `"storage"`
-	SecretFiles []string         // `"secret_files"`
-	Explorer    ConfigExplorer   // `"explorer"`
-	Rest        ConfigRest       // `"rest"`
-	P2P         ConfigP2P        // `"p2p"`
-	Log         ConfigLog        // `"log"`
-	Mempool     ConfigMempool    // `"mempool"`
-	Leadership  ConfigLeadership // `"leadership"`
+	Storage                            string           // `"storage"`
+	SecretFiles                        []string         // `"secret_files"`
+	Explorer                           ConfigExplorer   // `"explorer"`
+	Rest                               ConfigRest       // `"rest"`
+	P2P                                ConfigP2P        // `"p2p"`
+	Log                                ConfigLog        // `"log"`
+	Mempool                            ConfigMempool    // `"mempool"`
+	Leadership                         ConfigLeadership // `"leadership"`
+	NoBlockchainUpdatesWarningInterval string           // `"no_blockchain_updates_warning_interval"`
 }
 
 // ConfigP2P ...
@@ -234,6 +239,8 @@ func NewNodeConfig() *NodeConfig {
 
 	nodeCfg.Leadership.LogTTL = "1h"
 	nodeCfg.Leadership.GarbageCollectionInterval = "15m"
+
+	nodeCfg.NoBlockchainUpdatesWarningInterval = "30m"
 
 	return &nodeCfg
 }
