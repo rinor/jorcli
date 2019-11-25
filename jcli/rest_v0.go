@@ -18,11 +18,11 @@ func RestAccount(
 	host string,
 	outputFormat string,
 ) ([]byte, error) {
-	if accountID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "accountID")
-	}
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if accountID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "accountID")
 	}
 
 	arg := []string{"rest", "v0", "account", "get", accountID}
@@ -45,11 +45,11 @@ func RestBlock(
 	blockID string,
 	host string,
 ) ([]byte, error) {
-	if blockID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "blockID")
-	}
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if blockID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
 
 	arg := []string{"rest", "v0", "block", blockID, "get"}
@@ -68,11 +68,11 @@ func RestBlockNextID(
 	countIds uint,
 	host string,
 ) ([]byte, error) {
-	if blockID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "blockID")
-	}
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if blockID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "blockID")
 	}
 
 	// NOTE: don't like this uint at all, but keep it for now
@@ -170,11 +170,11 @@ func RestLeadersPost(
 	host string,
 	inputFileSk string,
 ) ([]byte, error) {
-	if len(stdinSk) == 0 && inputFileSk == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFileSk")
-	}
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if len(stdinSk) == 0 && inputFileSk == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinSk", "inputFileSk")
 	}
 
 	arg := []string{"rest", "v0", "leaders", "post"}
@@ -223,11 +223,11 @@ func RestMessagePost(
 	host string,
 	inputFileMsg string,
 ) ([]byte, error) {
-	if len(stdinMsg) == 0 && inputFileMsg == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinMsg", "inputFileMsg")
-	}
 	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
 		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if len(stdinMsg) == 0 && inputFileMsg == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinMsg", "inputFileMsg")
 	}
 
 	arg := []string{"rest", "v0", "message", "post"}
@@ -349,6 +349,33 @@ func RestStakePools(
 	}
 
 	arg := []string{"rest", "v0", "stake-pools", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
+	}
+
+	return jcli(nil, arg...)
+}
+
+//
+// RestStakePool - Get stake pool details
+//
+//  jcli rest v0 stake-pool get <pool-id> --host <host> --output-format <format> | STDOUT
+func RestStakePool(
+	poolID string,
+	host string,
+	outputFormat string,
+) ([]byte, error) {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+	if poolID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "poolID")
+	}
+
+	arg := []string{"rest", "v0", "stake-pool", "get", poolID}
 	if host != "" {
 		arg = append(arg, "--host", host)
 	}
