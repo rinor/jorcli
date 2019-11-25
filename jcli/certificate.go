@@ -85,8 +85,6 @@ func CertificateNewStakeDelegation(
 	return ioutil.ReadFile(outputFile)
 }
 
-// BUG(rinor): The certificate 'serial' is declared as uint64 when actually it should be uint128.
-
 // CertificateNewStakePoolRegistration - build a stake pool registration certificate with single/multiple owners.
 //
 //  jcli certificate new stake-pool-registration
@@ -94,7 +92,6 @@ func CertificateNewStakeDelegation(
 //                                              --vrf-key <VRF_KEY>
 //                                              --start-validity <SECONDS-SINCE-START>
 //                                              --management-threshold <THRESHOLD>
-//                                              --serial <SERIAL>
 //                                              --owner <OWNER_PUBLIC_KEY> --owner... (max owners TBD)
 //                                              [--operator <OPERATOR_PUBLIC_KEY> --operator... (max operators TBD)]
 //                                              [output] | STDOUT
@@ -103,7 +100,6 @@ func CertificateNewStakePoolRegistration(
 	vrfKey string,
 	startValidity uint64,
 	managementThreshold uint8,
-	serial uint64,
 	owner []string,
 	operator []string,
 	outputFile string,
@@ -140,7 +136,6 @@ func CertificateNewStakePoolRegistration(
 		"--vrf-key", vrfKey,
 		"--start-validity", strconv.FormatUint(startValidity, 10),
 		"--management-threshold", strconv.FormatUint(uint64(managementThreshold), 10),
-		"--serial", strconv.FormatUint(serial, 10),
 	}
 	for _, ownerPublicKey := range owner {
 		arg = append(arg, "--owner", ownerPublicKey) // FIXME: should check data validity!

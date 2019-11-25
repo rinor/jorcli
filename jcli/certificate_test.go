@@ -13,7 +13,6 @@ func ExampleCertificateNewStakePoolRegistration() {
 		vrfKey              string
 		startValidity       = uint64(0)
 		managementThreshold = uint8(1)
-		serial              = uint64(1020304050)
 		owner               = []string{"ed25519_pk10p43s2c5g3hhdklz9k6awwy5nvv7cnkwv6szgaxvac4ju0jm2a0qyf6j8v"}
 		operator            []string // no operator in this case
 		outputFile          = ""     // "" - output to STDOUT only, "stakePool.cert" - will also save output to that file
@@ -54,7 +53,7 @@ func ExampleCertificateNewStakePoolRegistration() {
 	kesKey = strings.TrimSpace(string(kesPublicKey))
 	vrfKey = strings.TrimSpace(string(vrfPublicKey))
 
-	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(kesKey, vrfKey, startValidity, managementThreshold, serial, owner, operator, outputFile)
+	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(kesKey, vrfKey, startValidity, managementThreshold, owner, operator, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateNewStakePoolRegistration: %s", err)
@@ -159,7 +158,7 @@ func ExampleCertificatePrint_registrationSigned_stdin() {
 	}
 	// Output:
 	//
-	// Certificate(PoolRegistration(PoolRegistration { serial: 1020304050, start_validity: TimeOffsetSeconds(DurationSeconds(0)), permissions: PoolPermissions(1), owners: [786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e], operators: [], rewards: TaxType { fixed: Value(0), ratio: Ratio { numerator: 0, denominator: 1 }, max_limit: None }, reward_account: None, keys: GenesisPraosLeader { kes_public_key: 954798c34404bd28528e7c4241ad1c63989dab19130e0278d84b069a11114e2b, vrf_public_key: 9c66a339c8344f922fc3206cb5dae814a594c0177dd3235c254d9c409a65b808 } }))
+	// Certificate(PoolRegistration(PoolRegistration { start_validity: TimeOffsetSeconds(DurationSeconds(0)), permissions: PoolPermissions(1), owners: [786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e], operators: [], rewards: TaxType { fixed: Value(0), ratio: Ratio { numerator: 0, denominator: 1 }, max_limit: None }, reward_account: None, keys: GenesisPraosLeader { kes_public_key: 954798c34404bd28528e7c4241ad1c63989dab19130e0278d84b069a11114e2b, vrf_public_key: 9c66a339c8344f922fc3206cb5dae814a594c0177dd3235c254d9c409a65b808 } }))
 }
 
 func ExampleCertificatePrint_delegationSigned_stdin() {
