@@ -116,15 +116,30 @@ func TestTransactionAddOutput(t *testing.T) {
 
 func ExampleTransactionFinalize_staging() {
 	var (
-		stdinStaging   []byte
-		stagingFile    = "tx.staging"
+		stdinStaging []byte
+		stagingFile  = "tx.staging"
+
 		feeCertificate = uint64(3)
 		feeCoefficient = uint64(2)
 		feeConstant    = uint64(1)
-		changeAddress  = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
+
+		feeCertificatePoolRegistration     = uint64(3)
+		feeCertificateStakeDelegation      = uint64(3)
+		feeCertificateOwnerStakeDelegation = uint64(3)
+
+		changeAddress = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
 	)
 
-	tx, err := jcli.TransactionFinalize(stdinStaging, stagingFile, feeCertificate, feeCoefficient, feeConstant, changeAddress)
+	tx, err := jcli.TransactionFinalize(
+		stdinStaging, stagingFile,
+		feeCertificate,
+		feeCoefficient,
+		feeConstant,
+		feeCertificatePoolRegistration,
+		feeCertificateStakeDelegation,
+		feeCertificateOwnerStakeDelegation,
+		changeAddress,
+	)
 
 	if err != nil {
 		fmt.Printf("TransactionFinalize: %s", err)
@@ -135,16 +150,31 @@ func ExampleTransactionFinalize_staging() {
 
 func TestTransactionFinalize(t *testing.T) {
 	var (
-		stdinStaging   = loadBytes(t, "tx-03_add_output_staging.golden")
-		stagingFile    = ""
+		stdinStaging = loadBytes(t, "tx-03_add_output_staging.golden")
+		stagingFile  = ""
+
 		feeCertificate = uint64(3)
 		feeCoefficient = uint64(2)
 		feeConstant    = uint64(1)
-		changeAddress  = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
-		expectedTx     = loadBytes(t, "tx-04_finalize_staging.golden")
+
+		feeCertificatePoolRegistration     = uint64(3)
+		feeCertificateStakeDelegation      = uint64(3)
+		feeCertificateOwnerStakeDelegation = uint64(3)
+
+		changeAddress = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
+		expectedTx    = loadBytes(t, "tx-04_finalize_staging.golden")
 	)
 
-	tx, err := jcli.TransactionFinalize(stdinStaging, stagingFile, feeCertificate, feeCoefficient, feeConstant, changeAddress)
+	tx, err := jcli.TransactionFinalize(
+		stdinStaging, stagingFile,
+		feeCertificate,
+		feeCoefficient,
+		feeConstant,
+		feeCertificatePoolRegistration,
+		feeCertificateStakeDelegation,
+		feeCertificateOwnerStakeDelegation,
+		changeAddress,
+	)
 	ok(t, err)
 	equals(t, expectedTx, tx)
 }
@@ -319,7 +349,12 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificate = uint64(3)
 		feeCoefficient = uint64(2)
 		feeConstant    = uint64(1)
-		prefix         = "ta"
+
+		feeCertificatePoolRegistration     = uint64(3)
+		feeCertificateStakeDelegation      = uint64(3)
+		feeCertificateOwnerStakeDelegation = uint64(3)
+
+		prefix = "ta"
 	)
 
 	txInfo, err := jcli.TransactionInfo(
@@ -328,6 +363,9 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificate,
 		feeCoefficient,
 		feeConstant,
+		feeCertificatePoolRegistration,
+		feeCertificateStakeDelegation,
+		feeCertificateOwnerStakeDelegation,
 		prefix,
 		"",
 		"",
