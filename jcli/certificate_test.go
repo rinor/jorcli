@@ -17,6 +17,12 @@ func ExampleCertificateNewStakePoolRegistration() {
 		operator            []string // no operator in this case
 		outputFile          = ""     // "" - output to STDOUT only, "stakePool.cert" - will also save output to that file
 
+		taxFixed = uint64(0)
+		taxRatio = ""
+		taxLimit = uint64(0)
+
+		rewardAccount = ""
+
 		// seed used only for testing and reproducibility
 		seed = "0000000000000000000000000000000000000000000000000000000000000000"
 	)
@@ -53,7 +59,7 @@ func ExampleCertificateNewStakePoolRegistration() {
 	kesKey = strings.TrimSpace(string(kesPublicKey))
 	vrfKey = strings.TrimSpace(string(vrfPublicKey))
 
-	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(kesKey, vrfKey, startValidity, managementThreshold, owner, operator, outputFile)
+	stakePoolCert, err := jcli.CertificateNewStakePoolRegistration(kesKey, vrfKey, startValidity, managementThreshold, owner, operator, taxFixed, taxRatio, taxLimit, rewardAccount, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateNewStakePoolRegistration: %s", err)

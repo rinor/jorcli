@@ -94,6 +94,10 @@ func CertificateNewStakeDelegation(
 //                                              --management-threshold <THRESHOLD>
 //                                              --owner <OWNER_PUBLIC_KEY> --owner... (max owners TBD)
 //                                              [--operator <OPERATOR_PUBLIC_KEY> --operator... (max operators TBD)]
+//                                              [--tax-fixed <TAX_VALUE>]
+//                                              [--tax-ratio <TAX_RATIO>]
+//                                              [--tax-limit <TAX_LIMIT>]
+//                                              [<reward_account>]
 //                                              [output] | STDOUT
 func CertificateNewStakePoolRegistration(
 	kesKey string,
@@ -102,6 +106,10 @@ func CertificateNewStakePoolRegistration(
 	managementThreshold uint8,
 	owner []string,
 	operator []string,
+	taxFixed uint64,
+	taxRatio string,
+	taxLimit uint64,
+	rewardAccount string,
 	outputFile string,
 ) ([]byte, error) {
 	if kesKey == "" {
@@ -143,13 +151,39 @@ func CertificateNewStakePoolRegistration(
 	for _, operatorPublicKey := range operator {
 		arg = append(arg, "--operator", operatorPublicKey) // FIXME: should check data validity!
 	}
+
+	if taxFixed > 0 {
+		arg = append(arg, "--tax-fixed", strconv.FormatUint(taxFixed, 10))
+	}
+	if taxRatio != "" {
+		arg = append(arg, "--tax-ration", taxRatio)
+	}
+	if taxLimit > 0 {
+		arg = append(arg, "--tax-limit", strconv.FormatUint(taxLimit, 10))
+	}
+
+	if rewardAccount != "" {
+		arg = append(arg, rewardAccount)
+	}
 	if outputFile != "" {
 		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
 	}
 
 	out, err := jcli(nil, arg...)
-	if err != nil || outputFile == "" {
+	if err != nil /* || outputFile == "" */ {
 		return out, err
+	}
+
+	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
+	//
+	// convert stdout to outputFile
+	if outputFile != "" && rewardAccount == "" {
+		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
+			return nil, err
+		}
+	}
+	if outputFile == "" {
+		return out, nil
 	}
 
 	return ioutil.ReadFile(outputFile)
