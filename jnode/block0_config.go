@@ -32,6 +32,12 @@ blockchain_configuration:
     constant: {{ .Constant }}
     coefficient: {{ .Coefficient }}
     certificate: {{ .Certificate }}
+    {{with .PerCertificateFees -}}
+    per_certificate_fees:
+      certificate_pool_registration: {{ .CertificatePoolRegistration }}
+      certificate_stake_delegation: {{ .CertificateStakeDelegation }}
+      certificate_owner_stake_delegation: {{ .CertificateOwnerStakeDelegation }}
+    {{- end}}
   {{- end}}
   {{- if .ConsensusLeaderIds}}
   consensus_leader_ids:
@@ -66,18 +72,19 @@ type Block0Config struct {
 
 // BlockchainConfig ...
 type BlockchainConfig struct {
-	Discrimination                       string     // `"discrimination"`
-	Block0Consensus                      string     // `"block0_consensus"`
-	Block0Date                           int64      // `"block0_date"`
-	SlotDuration                         uint8      // `"slot_duration"`
-	SlotsPerEpoch                        uint32     // `"slots_per_epoch"`
-	EpochStabilityDepth                  uint32     // `"epoch_stability_depth"`
-	KesUpdateSpeed                       uint32     // `"kes_update_speed"`
-	MaxNumberOfTransactionsPerBlock      uint32     // `"max_number_of_transactions_per_block"`
-	BftSlotsRatio                        float64    // `"bft_slots_ratio"`
-	ConsensusGenesisPraosActiveSlotCoeff float64    // `"consensus_genesis_praos_active_slot_coeff"`
-	LinearFees                           LinearFees // `"linear_fees"`
-	ConsensusLeaderIds                   []string   // `"consensus_leader_ids"`
+	Discrimination                       string             // `"discrimination"`
+	Block0Consensus                      string             // `"block0_consensus"`
+	Block0Date                           int64              // `"block0_date"`
+	SlotDuration                         uint8              // `"slot_duration"`
+	SlotsPerEpoch                        uint32             // `"slots_per_epoch"`
+	EpochStabilityDepth                  uint32             // `"epoch_stability_depth"`
+	KesUpdateSpeed                       uint32             // `"kes_update_speed"`
+	MaxNumberOfTransactionsPerBlock      uint32             // `"max_number_of_transactions_per_block"`
+	BftSlotsRatio                        float64            // `"bft_slots_ratio"`
+	ConsensusGenesisPraosActiveSlotCoeff float64            // `"consensus_genesis_praos_active_slot_coeff"`
+	LinearFees                           LinearFees         // `"linear_fees"`
+	PerCertificateFees                   PerCertificateFees // `"per_certificate_fees"`
+	ConsensusLeaderIds                   []string           // `"consensus_leader_ids"`
 
 	// FIXME: implement as per latest version.
 	Treasury uint64 // `"treasury"`
@@ -90,6 +97,13 @@ type LinearFees struct {
 	Certificate uint64 // `"certificate"`
 	Coefficient uint64 // `"coefficient"`
 	Constant    uint64 // `"constant"`
+}
+
+// PerCertificateFees ...
+type PerCertificateFees struct {
+	CertificatePoolRegistration     uint64 // `"certificate_pool_registration"`
+	CertificateStakeDelegation      uint64 // `"certificate_stake_delegation"`
+	CertificateOwnerStakeDelegation uint64 // `"certificate_owner_stake_delegation"`
 }
 
 // BlockchainInitial ...
