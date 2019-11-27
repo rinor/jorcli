@@ -18,6 +18,7 @@ blockchain_configuration:
   max_number_of_transactions_per_block: ~
   epoch_stability_depth: ~
   treasury: ~
+  treasury_parameters: ~
   rewards: ~
 initial:
   - fund:
