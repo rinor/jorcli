@@ -24,6 +24,18 @@ blockchain_configuration:
   {{- if .Treasury}}
   treasury: {{ .Treasury }}
   {{- end}}
+  {{with .TreasuryParameters -}}
+  treasury_parameters:
+    {{- if .Fixed }}
+    fixed: {{ .Fixed }}
+    {{- end}}
+    {{- if .Ratio }}
+    ratio: {{ .Ratio }}
+    {{- end}}
+    {{- if .MaxLimit }}
+    max_limit: {{ .MaxLimit }}
+    {{- end}}
+  {{- end}}
   {{- if .Rewards }}
   rewards: {{ .Rewards }}
   {{- end}}
@@ -34,9 +46,15 @@ blockchain_configuration:
     certificate: {{ .Certificate }}
     {{with .PerCertificateFees -}}
     per_certificate_fees:
+      {{- if .CertificatePoolRegistration }}
       certificate_pool_registration: {{ .CertificatePoolRegistration }}
+      {{- end}}
+      {{- if .CertificateStakeDelegation }}
       certificate_stake_delegation: {{ .CertificateStakeDelegation }}
+      {{- end}}
+      {{- if .CertificateOwnerStakeDelegation }}
       certificate_owner_stake_delegation: {{ .CertificateOwnerStakeDelegation }}
+      {{- end}}
     {{- end}}
   {{- end}}
   {{- if .ConsensusLeaderIds}}
@@ -72,25 +90,29 @@ type Block0Config struct {
 
 // BlockchainConfig ...
 type BlockchainConfig struct {
-	Discrimination                       string             // `"discrimination"`
-	Block0Consensus                      string             // `"block0_consensus"`
-	Block0Date                           int64              // `"block0_date"`
-	SlotDuration                         uint8              // `"slot_duration"`
-	SlotsPerEpoch                        uint32             // `"slots_per_epoch"`
-	EpochStabilityDepth                  uint32             // `"epoch_stability_depth"`
-	KesUpdateSpeed                       uint32             // `"kes_update_speed"`
-	MaxNumberOfTransactionsPerBlock      uint32             // `"max_number_of_transactions_per_block"`
-	BftSlotsRatio                        float64            // `"bft_slots_ratio"`
-	ConsensusGenesisPraosActiveSlotCoeff float64            // `"consensus_genesis_praos_active_slot_coeff"`
-	LinearFees                           LinearFees         // `"linear_fees"`
-	PerCertificateFees                   PerCertificateFees // `"per_certificate_fees"`
-	ConsensusLeaderIds                   []string           // `"consensus_leader_ids"`
-
-	// FIXME: implement as per latest version.
-	Treasury uint64 // `"treasury"`
-	Rewards  uint64 // `"rewards"`
+	Discrimination                       string   // `"discrimination"`
+	Block0Consensus                      string   // `"block0_consensus"`
+	Block0Date                           int64    // `"block0_date"`
+	SlotDuration                         uint8    // `"slot_duration"`
+	SlotsPerEpoch                        uint32   // `"slots_per_epoch"`
+	EpochStabilityDepth                  uint32   // `"epoch_stability_depth"`
+	KesUpdateSpeed                       uint32   // `"kes_update_speed"`
+	MaxNumberOfTransactionsPerBlock      uint32   // `"max_number_of_transactions_per_block"`
+	ConsensusGenesisPraosActiveSlotCoeff float64  // `"consensus_genesis_praos_active_slot_coeff"`
+	BftSlotsRatio                        float64  // `"bft_slots_ratio"`
+	ConsensusLeaderIds                   []string // `"consensus_leader_ids"`
+	// Fees
+	LinearFees         LinearFees         // `"linear_fees"`
+	PerCertificateFees PerCertificateFees // `"per_certificate_fees"`
+	// Treasury
+	Treasury           uint64             // `"treasury"`
+	TreasuryParameters TreasuryParameters // `"treasury_parameters"`
+	// Rewards
+	Rewards uint64 // `"rewards"`
 
 }
+
+// FIXME: check/handle 0 values on config
 
 // LinearFees ...
 type LinearFees struct {
@@ -99,11 +121,22 @@ type LinearFees struct {
 	Constant    uint64 // `"constant"`
 }
 
+// FIXME: PerCertificateFees - check/handle 0 values on config
+
 // PerCertificateFees ...
 type PerCertificateFees struct {
 	CertificatePoolRegistration     uint64 // `"certificate_pool_registration"`
 	CertificateStakeDelegation      uint64 // `"certificate_stake_delegation"`
 	CertificateOwnerStakeDelegation uint64 // `"certificate_owner_stake_delegation"`
+}
+
+// FIXME: TreasuryParameters - check/handle 0 values on config
+
+// TreasuryParameters ...
+type TreasuryParameters struct {
+	Fixed    uint64 // `"fixed"`
+	Ratio    string // `"ratio"`
+	MaxLimit uint64 // `"max_limit"`
 }
 
 // BlockchainInitial ...
