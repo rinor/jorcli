@@ -97,7 +97,7 @@ func CertificateNewStakeDelegation(
 //                                              [--tax-fixed <TAX_VALUE>]
 //                                              [--tax-ratio <TAX_RATIO>]
 //                                              [--tax-limit <TAX_LIMIT>]
-//                                              [<reward_account>]
+//                                              [--reward-account <REWARD_ACCOUNT>]
 //                                              [output] | STDOUT
 func CertificateNewStakePoolRegistration(
 	kesKey string,
@@ -161,29 +161,16 @@ func CertificateNewStakePoolRegistration(
 	if taxLimit > 0 {
 		arg = append(arg, "--tax-limit", strconv.FormatUint(taxLimit, 10))
 	}
-
 	if rewardAccount != "" {
-		arg = append(arg, rewardAccount)
+		arg = append(arg, "--reward-account", rewardAccount)
 	}
 	if outputFile != "" {
-		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+		arg = append(arg, outputFile)
 	}
 
 	out, err := jcli(nil, arg...)
-	if err != nil /* || outputFile == "" */ {
+	if err != nil || outputFile == "" {
 		return out, err
-	}
-
-	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
-	//
-	// convert stdout to outputFile
-	if outputFile != "" && rewardAccount == "" {
-		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
-			return nil, err
-		}
-	}
-	if outputFile == "" {
-		return out, nil
 	}
 
 	return ioutil.ReadFile(outputFile)
