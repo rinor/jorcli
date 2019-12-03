@@ -47,9 +47,42 @@ func CertificateGetStakePoolID(
 	return ioutil.ReadFile(outputFile)
 }
 
+// CertificateNewOwnerStakeDelegation - build an owner stake delegation certificate.
+//
+//  jcli certificate new owner-stake-delegation <STAKE_POOL_ID:weight>... [--output <output>] | [STDOUT]
+func CertificateNewOwnerStakeDelegation(
+	weightedPoolID []string,
+	outputFile string,
+) ([]byte, error) {
+	if len(weightedPoolID) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "weightedPoolID")
+	}
+
+	maxPools := 8 // The maximum number of delegation pools
+	if len(weightedPoolID) > maxPools {
+		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "weightedPoolID", 1, maxPools, len(weightedPoolID))
+	}
+
+	arg := []string{
+		"certificate", "new", "owner-stake-delegation",
+	}
+	arg = append(arg, weightedPoolID...) // FIXME: should check data validity!
+
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
 // CertificateNewStakeDelegation - build a stake delegation certificate.
 //
-//  jcli certificate new stake-delegation <STAKE_KEY> <STAKE_POOL_ID:weight>... [output] | [STDOUT]
+//  jcli certificate new stake-delegation <STAKE_KEY> <STAKE_POOL_ID:weight>... [--output <output>] | [STDOUT]
 func CertificateNewStakeDelegation(
 	stakeKey string,
 	weightedPoolID []string,
@@ -74,7 +107,7 @@ func CertificateNewStakeDelegation(
 	arg = append(arg, weightedPoolID...) // FIXME: should check data validity!
 
 	if outputFile != "" {
-		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+		arg = append(arg, "--output", outputFile)
 	}
 
 	out, err := jcli(nil, arg...)

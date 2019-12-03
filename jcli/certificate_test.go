@@ -110,6 +110,24 @@ func ExampleCertificateGetStakePoolID_stdin() {
 	// 6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8
 }
 
+func ExampleCertificateNewOwnerStakeDelegation() {
+	var (
+		stakePoolID = "6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8"
+		outputFile  = "" // "" - output to STDOUT ([]byte) only, "stakePoolOwnerDelegation.new" - will also save output to that file
+	)
+
+	stakeNewDeleg, err := jcli.CertificateNewOwnerStakeDelegation([]string{stakePoolID}, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewStakeDelegation: %s", err)
+	} else {
+		fmt.Printf("%s", stakeNewDeleg)
+	}
+	// Output:
+	//
+	// cert1qgqkly7lz29gl20hct6gere9jrfp75wq4szmxv2nvczpzllhyxxshkqxlmcrj
+}
+
 func ExampleCertificateNewStakeDelegation() {
 	var (
 		stakePoolID = "6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8"
