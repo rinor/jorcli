@@ -89,7 +89,9 @@ log:
 
 {{- with .Mempool}}
 mempool:
+    pool_max_entries: {{ .PoolMaxEntries }}
     fragment_ttl: {{ .FragmentTTL }}
+    log_max_entries: {{ .LogMaxEntries }}
     log_ttl: {{ .LogTTL }}
     garbage_collection_interval: {{ .GarbageCollectionInterval }}
 {{end}}
@@ -197,7 +199,9 @@ type ConfigGelf struct {
 
 // ConfigMempool ...
 type ConfigMempool struct {
+	PoolMaxEntries            uint   // `"pool_max_entries"`
 	FragmentTTL               string // `"fragment_ttl"`
+	LogMaxEntries             uint   // `"log_max_entries"`
 	LogTTL                    string // `"log_ttl"`
 	GarbageCollectionInterval string // `"garbage_collection_interval"`
 }
@@ -233,7 +237,9 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
 	nodeCfg.Log.Output = "stdout" // "stdout", "stderr", ...
 
+	nodeCfg.Mempool.PoolMaxEntries = 10_000
 	nodeCfg.Mempool.FragmentTTL = "30m"
+	nodeCfg.Mempool.LogMaxEntries = 100_000
 	nodeCfg.Mempool.LogTTL = "1h"
 	nodeCfg.Mempool.GarbageCollectionInterval = "15m"
 
