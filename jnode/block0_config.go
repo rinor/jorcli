@@ -26,25 +26,30 @@ blockchain_configuration:
   {{- end}}
   {{with .TreasuryParameters -}}
   treasury_parameters:
-    {{- if .Fixed }}
     fixed: {{ .Fixed }}
-    {{- end}}
-    {{- if .Ratio }}
     ratio: {{ .Ratio }}
-    {{- end}}
     {{- if .MaxLimit }}
     max_limit: {{ .MaxLimit }}
     {{- end}}
   {{- end}}
-  {{- if .Rewards }}
-  rewards: {{ .Rewards }}
+  total_reward_supply: {{ .TotalRewardSupply }}
+  {{with .RewardParameters -}}
+  {{- if and .Formula .Constant .Ratio .EpochRate }}
+  reward_parameters:
+    {{ .Formula }}:
+      constant: {{ .Constant }}
+      ratio: {{ .Ratio }}
+      epoch_start: {{ .EpochStart }}
+      epoch_rate: {{ .EpochRate }}
+  {{- end}}
   {{- end}}
   {{with .LinearFees -}}
   linear_fees:
     constant: {{ .Constant }}
     coefficient: {{ .Coefficient }}
     certificate: {{ .Certificate }}
-    {{with .PerCertificateFees -}}
+    {{- with .PerCertificateFees -}}
+    {{- if or .CertificatePoolRegistration .CertificateStakeDelegation .CertificateOwnerStakeDelegation }}
     per_certificate_fees:
       {{- if .CertificatePoolRegistration }}
       certificate_pool_registration: {{ .CertificatePoolRegistration }}
@@ -55,6 +60,7 @@ blockchain_configuration:
       {{- if .CertificateOwnerStakeDelegation }}
       certificate_owner_stake_delegation: {{ .CertificateOwnerStakeDelegation }}
       {{- end}}
+    {{- end}}
     {{- end}}
   {{- end}}
   {{- if .ConsensusLeaderIds}}
@@ -102,23 +108,22 @@ type BlockchainConfig struct {
 	BftSlotsRatio                        float64  // `"bft_slots_ratio"`
 	ConsensusLeaderIds                   []string // `"consensus_leader_ids"`
 	// Fees
-	LinearFees         LinearFees         // `"linear_fees"`
-	PerCertificateFees PerCertificateFees // `"per_certificate_fees"`
+	LinearFees LinearFees // `"linear_fees"`
 	// Treasury
 	Treasury           uint64             // `"treasury"`
 	TreasuryParameters TreasuryParameters // `"treasury_parameters"`
 	// Rewards
-	Rewards uint64 // `"rewards"`
+	TotalRewardSupply uint64           // `"total_reward_supply"`
+	RewardParameters  RewardParameters // `"reward_parameters"`
 
 }
 
-// FIXME: check/handle 0 values on config
-
 // LinearFees ...
 type LinearFees struct {
-	Certificate uint64 // `"certificate"`
-	Coefficient uint64 // `"coefficient"`
-	Constant    uint64 // `"constant"`
+	Certificate        uint64             // `"certificate"`
+	Coefficient        uint64             // `"coefficient"`
+	Constant           uint64             // `"constant"`
+	PerCertificateFees PerCertificateFees // `"per_certificate_fees"`
 }
 
 // FIXME: PerCertificateFees - check/handle 0 values on config
@@ -137,6 +142,15 @@ type TreasuryParameters struct {
 	Fixed    uint64 // `"fixed"`
 	Ratio    string // `"ratio"`
 	MaxLimit uint64 // `"max_limit"`
+}
+
+// RewardParameters ...
+type RewardParameters struct {
+	Formula    string // `"halving"` or `"linear"`
+	Constant   uint64 // `"constant"`
+	Ratio      string // `"ratio"`
+	EpochStart uint32 // `"epoch_start"`
+	EpochRate  uint32 // `"epoch_rate"`
 }
 
 // BlockchainInitial ...
@@ -159,19 +173,32 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.Block0Consensus = "genesis_praos"
 	chainConfig.Block0Date = time.Now().Unix()
 	chainConfig.SlotDuration = 2
-	chainConfig.SlotsPerEpoch = 43200
+	chainConfig.SlotsPerEpoch = 43_200
 	chainConfig.EpochStabilityDepth = 10
-	chainConfig.KesUpdateSpeed = 43200
+	chainConfig.KesUpdateSpeed = 43_200
 	chainConfig.BftSlotsRatio = 0 // 0.22
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
 	chainConfig.MaxNumberOfTransactionsPerBlock = 255
 
 	chainConfig.Treasury = 0
-	chainConfig.Rewards = 0
+	chainConfig.TreasuryParameters.Fixed = 0
+	chainConfig.TreasuryParameters.Ratio = "0/1"
+	chainConfig.TreasuryParameters.MaxLimit = 0
 
-	chainConfig.LinearFees.Certificate = 10000
+	chainConfig.TotalRewardSupply = 0
+	chainConfig.RewardParameters.Formula = "linear"
+	chainConfig.RewardParameters.Constant = 0
+	chainConfig.RewardParameters.Ratio = "0/1"
+	chainConfig.RewardParameters.EpochStart = 0
+	chainConfig.RewardParameters.EpochRate = 0
+
+	chainConfig.LinearFees.Certificate = 10_000
 	chainConfig.LinearFees.Coefficient = 50
-	chainConfig.LinearFees.Constant = 1000
+	chainConfig.LinearFees.Constant = 1_000
+
+	chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 10_000
+	chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 10_000
+	chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 10_000
 
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,
