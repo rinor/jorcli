@@ -18,8 +18,7 @@ blockchain_configuration:
   slot_duration: {{ .SlotDuration }}
   kes_update_speed: {{ .KesUpdateSpeed }}
   consensus_genesis_praos_active_slot_coeff: {{ .ConsensusGenesisPraosActiveSlotCoeff }}
-  bft_slots_ratio: {{ .BftSlotsRatio }}
-  max_number_of_transactions_per_block: {{ .MaxNumberOfTransactionsPerBlock }}
+  block_content_max_size: {{ .BlockContentMaxSize }}
   epoch_stability_depth: {{ .EpochStabilityDepth }}
   {{- if .Treasury}}
   treasury: {{ .Treasury }}
@@ -103,9 +102,8 @@ type BlockchainConfig struct {
 	SlotsPerEpoch                        uint32   // `"slots_per_epoch"`
 	EpochStabilityDepth                  uint32   // `"epoch_stability_depth"`
 	KesUpdateSpeed                       uint32   // `"kes_update_speed"`
-	MaxNumberOfTransactionsPerBlock      uint32   // `"max_number_of_transactions_per_block"`
+	BlockContentMaxSize                  uint32   // `"block_content_max_size"`
 	ConsensusGenesisPraosActiveSlotCoeff float64  // `"consensus_genesis_praos_active_slot_coeff"`
-	BftSlotsRatio                        float64  // `"bft_slots_ratio"`
 	ConsensusLeaderIds                   []string // `"consensus_leader_ids"`
 	// Fees
 	LinearFees LinearFees // `"linear_fees"`
@@ -176,9 +174,8 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.SlotsPerEpoch = 43_200
 	chainConfig.EpochStabilityDepth = 10
 	chainConfig.KesUpdateSpeed = 43_200
-	chainConfig.BftSlotsRatio = 0 // 0.22
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
-	chainConfig.MaxNumberOfTransactionsPerBlock = 255
+	chainConfig.BlockContentMaxSize = 102_400
 
 	chainConfig.Treasury = 0
 	chainConfig.TreasuryParameters.Fixed = 0
