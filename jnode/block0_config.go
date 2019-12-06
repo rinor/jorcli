@@ -20,9 +20,7 @@ blockchain_configuration:
   consensus_genesis_praos_active_slot_coeff: {{ .ConsensusGenesisPraosActiveSlotCoeff }}
   block_content_max_size: {{ .BlockContentMaxSize }}
   epoch_stability_depth: {{ .EpochStabilityDepth }}
-  {{- if .Treasury}}
   treasury: {{ .Treasury }}
-  {{- end}}
   {{with .TreasuryParameters -}}
   treasury_parameters:
     fixed: {{ .Fixed }}
@@ -98,18 +96,21 @@ type BlockchainConfig struct {
 	Discrimination                       string   // `"discrimination"`
 	Block0Consensus                      string   // `"block0_consensus"`
 	Block0Date                           int64    // `"block0_date"`
-	SlotDuration                         uint8    // `"slot_duration"`
-	SlotsPerEpoch                        uint32   // `"slots_per_epoch"`
-	EpochStabilityDepth                  uint32   // `"epoch_stability_depth"`
-	KesUpdateSpeed                       uint32   // `"kes_update_speed"`
-	BlockContentMaxSize                  uint32   // `"block_content_max_size"`
-	ConsensusGenesisPraosActiveSlotCoeff float64  // `"consensus_genesis_praos_active_slot_coeff"`
-	ConsensusLeaderIds                   []string // `"consensus_leader_ids"`
+	SlotDuration                         uint8    // `"slot_duration"` [1 - 255] def=5 seconds
+	SlotsPerEpoch                        uint32   // `"slots_per_epoch"` [1 - 1_000_000] def=720
+	EpochStabilityDepth                  uint32   // `"epoch_stability_depth"` def=102_400
+	KesUpdateSpeed                       uint32   // `"kes_update_speed"` [60 - 365*24*3600] def=43_200 seconds (12 * 3600)
+	BlockContentMaxSize                  uint32   // `"block_content_max_size"` def=102_400
+	ConsensusGenesisPraosActiveSlotCoeff float64  // `"consensus_genesis_praos_active_slot_coeff"` [0.001 - 1.000] def=0.1
+	ConsensusLeaderIds                   []string // `"consensus_leader_ids"` bft leaders
+
 	// Fees
 	LinearFees LinearFees // `"linear_fees"`
+
 	// Treasury
 	Treasury           uint64             // `"treasury"`
 	TreasuryParameters TreasuryParameters // `"treasury_parameters"`
+
 	// Rewards
 	TotalRewardSupply uint64           // `"total_reward_supply"`
 	RewardParameters  RewardParameters // `"reward_parameters"`
@@ -170,9 +171,9 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.Discrimination = "test"
 	chainConfig.Block0Consensus = "genesis_praos"
 	chainConfig.Block0Date = time.Now().Unix()
-	chainConfig.SlotDuration = 2
-	chainConfig.SlotsPerEpoch = 43_200
-	chainConfig.EpochStabilityDepth = 10
+	chainConfig.SlotDuration = 5
+	chainConfig.SlotsPerEpoch = 720
+	chainConfig.EpochStabilityDepth = 102_400
 	chainConfig.KesUpdateSpeed = 43_200
 	chainConfig.ConsensusGenesisPraosActiveSlotCoeff = 0.1
 	chainConfig.BlockContentMaxSize = 102_400
