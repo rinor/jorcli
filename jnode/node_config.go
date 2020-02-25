@@ -51,6 +51,9 @@ p2p:
   {{- if .MaxConnections}}
   max_connections: {{ .MaxConnections }}
   {{- end}}
+  {{- if .MaxClientConnections}}
+  max_client_connections: {{ .MaxClientConnections }}
+  {{- end}}
   {{- if .AllowPrivateAddresses}}
   allow_private_addresses: {{ .AllowPrivateAddresses }}
   {{- end}}
@@ -90,16 +93,12 @@ log:
 {{- with .Mempool}}
 mempool:
     pool_max_entries: {{ .PoolMaxEntries }}
-    fragment_ttl: {{ .FragmentTTL }}
     log_max_entries: {{ .LogMaxEntries }}
-    log_ttl: {{ .LogTTL }}
-    garbage_collection_interval: {{ .GarbageCollectionInterval }}
 {{end}}
 
 {{- with .Leadership}}
 leadership:
-    log_ttl: {{ .LogTTL }}
-    garbage_collection_interval: {{ .GarbageCollectionInterval }}
+    logs_capacity: {{ .LogsCapacity }}
 {{end}}
 
 {{- if .SecretFiles}}
@@ -111,6 +110,14 @@ secret_files:
 
 {{- if .NoBlockchainUpdatesWarningInterval}}
 no_blockchain_updates_warning_interval: {{ .NoBlockchainUpdatesWarningInterval }}
+{{- end}}
+
+{{- if .SkipBootstrap}}
+skip_bootstrap: {{ .SkipBootstrap }}
+{{- end}}
+
+{{- if .BootstrapFromTrustedPeers}}
+bootstrap_from_trusted_peers: {{ .BootstrapFromTrustedPeers }}
 {{- end}}
 `
 
@@ -125,6 +132,8 @@ type NodeConfig struct {
 	Mempool                            ConfigMempool    // `"mempool"`
 	Leadership                         ConfigLeadership // `"leadership"`
 	NoBlockchainUpdatesWarningInterval string           // `"no_blockchain_updates_warning_interval"`
+	SkipBootstrap                      bool             // `"skip_bootstrap"`
+	BootstrapFromTrustedPeers          bool             // `"bootstrap_from_trusted_peers"`
 }
 
 // ConfigP2P ...
@@ -135,11 +144,13 @@ type ConfigP2P struct {
 	TrustedPeers                         []TrustedPeer          // `"trusted_peers"`
 	TopicsOfInterest                     ConfigTopicsOfInterest // `"topics_of_interest"`
 	MaxConnections                       uint                   // `"max_connections"`
+	MaxClientConnections                 uint                   // `"max_client_connections"`
 	AllowPrivateAddresses                bool                   // `"allow_private_addresses"`
 	Policy                               PolicyConfig           // `"policy"`
 	MaxUnreachableNodesToConnectPerEvent uint                   // `"max_unreachable_nodes_to_connect_per_event"`
 	GossipInterval                       string                 // `"gossip_interval"`
 	TopologyForceResetInterval           string                 // `"topology_force_reset_interval"`
+	MaxBootstrapAttempts                 int                    // `"max_bootstrap_attempts"`
 }
 
 // TrustedPeer ...
@@ -199,17 +210,13 @@ type ConfigGelf struct {
 
 // ConfigMempool ...
 type ConfigMempool struct {
-	PoolMaxEntries            uint   // `"pool_max_entries"`
-	FragmentTTL               string // `"fragment_ttl"`
-	LogMaxEntries             uint   // `"log_max_entries"`
-	LogTTL                    string // `"log_ttl"`
-	GarbageCollectionInterval string // `"garbage_collection_interval"`
+	PoolMaxEntries uint // `"pool_max_entries"`
+	LogMaxEntries  uint // `"log_max_entries"`
 }
 
 // ConfigLeadership ...
 type ConfigLeadership struct {
-	LogTTL                    string // `"log_ttl"`
-	GarbageCollectionInterval string // `"garbage_collection_interval"`
+	LogsCapacity uint // `"logs_capacity"`
 }
 
 // NewNodeConfig ...
@@ -229,6 +236,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
 	nodeCfg.P2P.MaxConnections = 256
+	nodeCfg.P2P.MaxClientConnections = 8
 	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
 	nodeCfg.P2P.MaxUnreachableNodesToConnectPerEvent = 20
 	nodeCfg.P2P.GossipInterval = "10s"
@@ -238,15 +246,15 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.Log.Output = "stdout" // "stdout", "stderr", ...
 
 	nodeCfg.Mempool.PoolMaxEntries = 10_000
-	nodeCfg.Mempool.FragmentTTL = "30m"
 	nodeCfg.Mempool.LogMaxEntries = 100_000
-	nodeCfg.Mempool.LogTTL = "1h"
-	nodeCfg.Mempool.GarbageCollectionInterval = "15m"
 
-	nodeCfg.Leadership.LogTTL = "1h"
-	nodeCfg.Leadership.GarbageCollectionInterval = "15m"
+	nodeCfg.Leadership.LogsCapacity = 1_024
 
 	nodeCfg.NoBlockchainUpdatesWarningInterval = "30m"
+
+	nodeCfg.SkipBootstrap = false
+
+	nodeCfg.BootstrapFromTrustedPeers = true
 
 	return &nodeCfg
 }
