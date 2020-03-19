@@ -45,13 +45,13 @@ func ExampleDebugMessage() {
 	// )
 }
 
-func ExampleDebugBlock_PoolRegistration() {
+func ExampleDebugBlock() {
 	var (
 		stdinHex  []byte
 		inputFile = "testdata/block_PoolRegistration_hex.golden"
 	)
 
-	dbgMesg, err := jcli.DebugMessage(stdinHex, inputFile)
+	dbgMesg, err := jcli.DebugBlock(stdinHex, inputFile)
 
 	if err != nil {
 		fmt.Printf("DebugMessage: %s", err)
