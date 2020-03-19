@@ -29,8 +29,10 @@ rest:
     {{- end}}
     max_age_secs: {{ .MaxAgeSecs }}
   {{- end}}
-  {{- if .Pkcs12}}
-  pkcs12: {{ .Pkcs12 }}
+  {{- with .TLS }}
+  tls:
+    cert_file: {{ .CertFile }}
+    priv_key_file: {{ .PrivKeyFile }}
   {{- end}}
 {{end}}
 {{- end}}
@@ -119,12 +121,20 @@ skip_bootstrap: {{ .SkipBootstrap }}
 {{- if .BootstrapFromTrustedPeers}}
 bootstrap_from_trusted_peers: {{ .BootstrapFromTrustedPeers }}
 {{- end}}
+
+{{- if .HttpFetchBlock0Service}}
+http_fetch_block0_service:
+  {{- range .HttpFetchBlock0Service}}
+  - {{ . }}
+  {{- end}}
+{{- end}}
 `
 
 // NodeConfig --config
 type NodeConfig struct {
 	Storage                            string           // `"storage"`
 	SecretFiles                        []string         // `"secret_files"`
+	HttpFetchBlock0Service             []string         // `"http_fetch_block0_service"`
 	Explorer                           ConfigExplorer   // `"explorer"`
 	Rest                               ConfigRest       // `"rest"`
 	P2P                                ConfigP2P        // `"p2p"`
@@ -174,8 +184,14 @@ type PolicyConfig struct {
 type ConfigRest struct {
 	Enabled bool       // custom addition
 	Listen  string     // `"listen"`
-	Pkcs12  string     // `"pkcs12"`
+	TLS     ConfigTLS  // `"tls"`
 	Cors    ConfigCors // `"cors"`
+}
+
+// ConfigTLS ...
+type ConfigTLS struct {
+	CertFile    string // `"cert_file"`
+	PrivKeyFile string // `"priv_key_file"`
 }
 
 // ConfigCors ...
@@ -236,10 +252,11 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
 	nodeCfg.P2P.MaxConnections = 256
-	nodeCfg.P2P.MaxClientConnections = 8
+	nodeCfg.P2P.MaxClientConnections = 192
 	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
 	nodeCfg.P2P.MaxUnreachableNodesToConnectPerEvent = 20
 	nodeCfg.P2P.GossipInterval = "10s"
+	// nodeCfg.P2P.MaxBootstrapAttempts = 0 // Fixme: unset and 0 have different effects.
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
@@ -254,7 +271,7 @@ func NewNodeConfig() *NodeConfig {
 
 	nodeCfg.SkipBootstrap = false
 
-	nodeCfg.BootstrapFromTrustedPeers = true
+	nodeCfg.BootstrapFromTrustedPeers = false
 
 	return &nodeCfg
 }
@@ -284,4 +301,9 @@ func (nodeCfg *NodeConfig) AddSecretFile(secretFile string) {
 // AddTrustedPeer to node config
 func (nodeCfg *NodeConfig) AddTrustedPeer(address string, id string) {
 	nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, TrustedPeer{address, id})
+}
+
+// AddHttpFetchBlock0Service to node config
+func (nodeCfg *NodeConfig) AddHttpFetchBlock0Service(urlBlock0 string) {
+	nodeCfg.HttpFetchBlock0Service = append(nodeCfg.HttpFetchBlock0Service, urlBlock0)
 }
