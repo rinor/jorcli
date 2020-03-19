@@ -462,3 +462,23 @@ func RestNetworkStats(
 
 	return jcli(nil, arg...)
 }
+
+/* ******************** DIAGNOSTIC ******************** */
+
+// RestDiagnostic - Get system diagnostic information.
+//
+//  jcli rest v0 diagnostic get --host <host> | STDOUT
+func RestDiagnostic(
+	host string,
+) ([]byte, error) {
+	if host == "" && os.Getenv(envJormungandrRestAPIURL) == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "host")
+	}
+
+	arg := []string{"rest", "v0", "diagnostic", "get"}
+	if host != "" {
+		arg = append(arg, "--host", host)
+	}
+
+	return jcli(nil, arg...)
+}
