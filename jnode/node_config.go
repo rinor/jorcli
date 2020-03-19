@@ -29,7 +29,7 @@ rest:
     {{- end}}
     max_age_secs: {{ .MaxAgeSecs }}
   {{- end}}
-  {{- if and .TLS.CertFile TLS.PrivKeyFile }}
+  {{- if and .TLS.CertFile .TLS.PrivKeyFile }}
   {{- with .TLS }}
   tls:
     cert_file: {{ .CertFile }}
