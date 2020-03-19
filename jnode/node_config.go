@@ -15,7 +15,7 @@ explorer:
   enabled: {{ .Enabled }}
 {{- end}}
 
-{{- if .Rest.Enabled }}
+{{- if .Rest.Listen }}
 {{with .Rest}}
 rest:
   listen: {{ .Listen }}
@@ -29,10 +29,12 @@ rest:
     {{- end}}
     max_age_secs: {{ .MaxAgeSecs }}
   {{- end}}
+  {{- if and .TLS.CertFile TLS.PrivKeyFile }}
   {{- with .TLS }}
   tls:
     cert_file: {{ .CertFile }}
     priv_key_file: {{ .PrivKeyFile }}
+  {{end}}
   {{- end}}
 {{end}}
 {{- end}}
@@ -50,15 +52,10 @@ p2p:
     messages: {{ .Messages }}
     blocks: {{ .Blocks }}
   {{- end}}
-  {{- if .MaxConnections}}
   max_connections: {{ .MaxConnections }}
-  {{- end}}
-  {{- if .MaxClientConnections}}
   max_client_connections: {{ .MaxClientConnections }}
-  {{- end}}
-  {{- if .AllowPrivateAddresses}}
+  max_unreachable_nodes_to_connect_per_event: {{ .MaxUnreachableNodesToConnectPerEvent }}
   allow_private_addresses: {{ .AllowPrivateAddresses }}
-  {{- end}}
   {{- if .TrustedPeers}}
   trusted_peers:
     {{- range .TrustedPeers}}
@@ -73,12 +70,7 @@ p2p:
   policy:
     quarantine_duration: {{ .QuarantineDuration }}
   {{- end}}
-  {{- if .MaxUnreachableNodesToConnectPerEvent}}
-  max_unreachable_nodes_to_connect_per_event: {{ .MaxUnreachableNodesToConnectPerEvent }}
-  {{- end}}
-  {{- if .GossipInterval}}
   gossip_interval: {{ .GossipInterval }}
-  {{- end}}
   {{- if .TopologyForceResetInterval}}
   topology_force_reset_interval: {{ .TopologyForceResetInterval }}
   {{- end}}
@@ -110,17 +102,11 @@ secret_files:
   {{- end}}
 {{- end}}
 
-{{- if .NoBlockchainUpdatesWarningInterval}}
 no_blockchain_updates_warning_interval: {{ .NoBlockchainUpdatesWarningInterval }}
-{{- end}}
 
-{{- if .SkipBootstrap}}
 skip_bootstrap: {{ .SkipBootstrap }}
-{{- end}}
 
-{{- if .BootstrapFromTrustedPeers}}
 bootstrap_from_trusted_peers: {{ .BootstrapFromTrustedPeers }}
-{{- end}}
 
 {{- if .HttpFetchBlock0Service}}
 http_fetch_block0_service:
@@ -182,10 +168,9 @@ type PolicyConfig struct {
 
 // ConfigRest ...
 type ConfigRest struct {
-	Enabled bool       // custom addition
-	Listen  string     // `"listen"`
-	TLS     ConfigTLS  // `"tls"`
-	Cors    ConfigCors // `"cors"`
+	Listen string     // `"listen"`
+	TLS    ConfigTLS  // `"tls"`
+	Cors   ConfigCors // `"cors"`
 }
 
 // ConfigTLS ...
@@ -243,7 +228,6 @@ func NewNodeConfig() *NodeConfig {
 
 	nodeCfg.Explorer.Enabled = false
 
-	nodeCfg.Rest.Enabled = false
 	nodeCfg.Rest.Listen = "127.0.0.1:8443"
 	nodeCfg.Rest.Cors.MaxAgeSecs = 0
 
