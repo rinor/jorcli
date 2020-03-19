@@ -2,6 +2,7 @@ package jcli_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/rinor/jorcli/jcli"
 )
@@ -42,4 +43,31 @@ func ExampleDebugMessage() {
 	//         ),
 	//     },
 	// )
+}
+
+func ExampleDebugBlock_PoolRegistration() {
+	var (
+		stdinHex  []byte
+		inputFile = "testdata/block_PoolRegistration_hex.golden"
+	)
+
+	dbgMesg, err := jcli.DebugMessage(stdinHex, inputFile)
+
+	if err != nil {
+		fmt.Printf("DebugMessage: %s", err)
+	} else {
+		fmt.Printf("%s", dbgMesg)
+	}
+}
+
+func TestDebugBlock_PoolRegistration(t *testing.T) {
+	var (
+		stdinHex       []byte
+		inputFile      = filePath(t, "block_PoolRegistration_hex.golden")
+		expectedOutput = loadBytes(t, "block_PoolRegistration_txt.golden")
+	)
+
+	output, err := jcli.DebugBlock(stdinHex, inputFile)
+	ok(t, err)
+	equals(t, expectedOutput, output) // Prod: bytes.Equal(expectedOutput, output)
 }
