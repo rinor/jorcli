@@ -209,6 +209,36 @@ func CertificateNewStakePoolRegistration(
 	return ioutil.ReadFile(outputFile)
 }
 
+// CertificateNewStakePoolRetirement - retire the given stake pool ID From the blockchain.
+// By doing so all remaining stake delegated to this stake pool will become pending and will need to be re-delegated.
+//
+// jcli certificate new stake-pool-retirement --pool-id <POOL_ID> --retirement-time <SECONDS-SINCE-START> [output]  | STDOUT
+func CertificateNewStakePoolRetirement(
+	poolID string,
+	retirementTime uint64,
+	outputFile string,
+) ([]byte, error) {
+	if poolID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "poolID")
+	}
+
+	arg := []string{
+		"certificate", "new", "stake-pool-retirement",
+		"--pool-id", poolID,
+		"--retirement-time", strconv.FormatUint(retirementTime, 10),
+	}
+	if outputFile != "" {
+		arg = append(arg, outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
 // CertificateSign - Sign certificate,
 // you can call this command multiple time to add multiple signatures if this is required.
 //

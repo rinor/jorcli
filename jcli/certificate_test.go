@@ -151,20 +151,59 @@ func ExampleCertificateSign_delegation_stdin() {
 	var (
 		stdinCert      = []byte("cert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqt0j0039z5048mu9ayv3ujep5sl28q2cpdnx9fkvpq30lmjrrgtmqn0cwmu")
 		signingKeyFile = []string{"testdata/private_key_txt.golden"} // ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4
-		inputFile      = ""                                          // "" - input from STDIN (stdinCert []byte), "stakePool.cert" - will load the certificate from that file
-		outputFile     = ""                                          // "" - output to STDOUT ([]byte) only, "stakePool.signed_cert" - will also save output to that file
+		inputFile      = ""                                          // "" - input from STDIN (stdinCert []byte), "stakePoolDelegation.cert" - will load the certificate from that file
+		outputFile     = ""                                          // "" - output to STDOUT ([]byte) only, "stakePoolDelegation.signed_cert" - will also save output to that file
 	)
 
-	stakePoolSignedCert, err := jcli.CertificateSign(stdinCert, signingKeyFile, inputFile, outputFile)
+	stakePoolDelegationSignedCert, err := jcli.CertificateSign(stdinCert, signingKeyFile, inputFile, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateSign: %s", err)
 	} else {
-		fmt.Printf("%s", stakePoolSignedCert)
+		fmt.Printf("%s", stakePoolDelegationSignedCert)
 	}
 	// Output:
 	//
 	// signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqt0j0039z5048mu9ayv3ujep5sl28q2cpdnx9fkvpq30lmjrrgtmqqctzczvu6e3v65m40n40c3y2pnu4vhd888dygkrtnfm0ts92fe50jy0h0ugh6wlvgy4xvr3lz4uuqzg2xgu6vv8tr24jrwhg0l09klp5wvwzl5
+}
+
+func ExampleCertificateNewStakePoolRetirement() {
+	var (
+		poolID         = "6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8"
+		retirementTime = uint64(0)
+		outputFile     = ""
+	)
+
+	stakePoolRetirementCert, err := jcli.CertificateNewStakePoolRetirement(poolID, retirementTime, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewStakePoolRetirement: %s", err)
+	} else {
+		fmt.Printf("%s", stakePoolRetirementCert)
+	}
+	// Output:
+	//
+	// cert1q3he8hcj3286na7z7jxg7fvs6g04rs9vqkenz5mxqsghlaep359asqqqqqqqqqqqqqlpzcht
+}
+
+func ExampleCertificateSign_retirement_stdin() {
+	var (
+		stdinCert      = []byte("cert1q3he8hcj3286na7z7jxg7fvs6g04rs9vqkenz5mxqsghlaep359asqqqqqqqqqqqqqlpzcht")
+		signingKeyFile = []string{"testdata/private_key_txt.golden"} // ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4
+		inputFile      = ""                                          // "" - input from STDIN (stdinCert []byte), "stakePoolRetirement.cert" - will load the certificate from that file
+		outputFile     = ""                                          // "" - output to STDOUT ([]byte) only, "stakePoolRetirement.signed_cert" - will also save output to that file
+	)
+
+	stakePoolRetirementSignedCert, err := jcli.CertificateSign(stdinCert, signingKeyFile, inputFile, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateSign: %s", err)
+	} else {
+		fmt.Printf("%s", stakePoolRetirementSignedCert)
+	}
+	// Output:
+	//
+	// signedcert1q3he8hcj3286na7z7jxg7fvs6g04rs9vqkenz5mxqsghlaep359asqqqqqqqqqqqqqqsq49x23cxqe3wtpawjnjhfu29gezruvd8uyemd2wdm3g6w55l0pswg76pchp70r5dk343fxfctphzweuy04sd79wdmqcznepfzxkf25pqkxc6x0
 }
 
 func ExampleCertificatePrint_registrationSigned_stdin() {
@@ -188,7 +227,7 @@ func ExampleCertificatePrint_registrationSigned_stdin() {
 func ExampleCertificatePrint_delegationSigned_stdin() {
 	var (
 		stdinCert = []byte("signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqt0j0039z5048mu9ayv3ujep5sl28q2cpdnx9fkvpq30lmjrrgtmqqctzczvu6e3v65m40n40c3y2pnu4vhd888dygkrtnfm0ts92fe50jy0h0ugh6wlvgy4xvr3lz4uuqzg2xgu6vv8tr24jrwhg0l09klp5wvwzl5")
-		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePoolDelegation.new" - will load the certificate from that file
+		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePoolDelegation.signed_cert" - will load the certificate from that file
 	)
 
 	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)
@@ -201,4 +240,22 @@ func ExampleCertificatePrint_delegationSigned_stdin() {
 	// Output:
 	//
 	// Certificate(StakeDelegation(StakeDelegation { account_id: UnspecifiedAccountIdentifier([120, 107, 24, 43, 20, 68, 111, 118, 219, 226, 45, 181, 215, 56, 148, 155, 25, 236, 78, 206, 102, 160, 36, 116, 204, 238, 43, 46, 62, 91, 87, 94]), delegation: Full($ hash_ty(0x6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8)) }))
+}
+
+func ExampleCertificatePrint_retirementSigned_stdin() {
+	var (
+		stdinCert = []byte("signedcert1q3he8hcj3286na7z7jxg7fvs6g04rs9vqkenz5mxqsghlaep359asqqqqqqqqqqqqqqsq49x23cxqe3wtpawjnjhfu29gezruvd8uyemd2wdm3g6w55l0pswg76pchp70r5dk343fxfctphzweuy04sd79wdmqcznepfzxkf25pqkxc6x0")
+		inputFile = "" // "" - input from STDIN (stdinCert []byte), "stakePoolRetirement.signed_cert" - will load the certificate from that file
+	)
+
+	certPrint, err := jcli.CertificatePrint(stdinCert, inputFile)
+
+	if err != nil {
+		fmt.Printf("CertificatePrint: %s", err)
+	} else {
+		fmt.Printf("%s", certPrint)
+	}
+	// Output:
+	//
+	// Certificate(PoolRetirement(PoolRetirement { pool_id: $ hash_ty(0x6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8), retirement_time: TimeOffsetSeconds(DurationSeconds(0)) }))
 }
