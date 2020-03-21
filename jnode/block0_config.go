@@ -40,6 +40,18 @@ blockchain_configuration:
       epoch_rate: {{ .EpochRate }}
   {{- end}}
   {{- end}}
+  {{with .RewardConstraints -}}
+  {{- if and .RewardDrawingLimitMax .PoolParticipationCapping .PoolParticipationCapping.Min .PoolParticipationCapping.Max }}
+  reward_constraints:
+	reward_drawing_limit_max: {{ .RewardDrawingLimitMax }}
+	pool_participation_capping:
+	  min: {{ .PoolParticipationCapping.Min }}
+      max: {{ .PoolParticipationCapping.Max }}
+  {{- end}}
+  {{- end}}
+  {{- if .FeesGoTo}}
+  fees_go_to: {{ .FeesGoTo }}
+  {{- end}}
   {{with .LinearFees -}}
   linear_fees:
     constant: {{ .Constant }}
@@ -81,6 +93,13 @@ initial:
   {{if .Cert}}
   - cert: {{ .Cert }}
   {{- end}}
+  {{- with .LegacyFund}}
+  - legacy_fund:
+      {{- range .}}
+      - address: {{ .Address }}
+        value: {{ .Value}}
+      {{- end -}}
+  {{- end -}}
 {{- end}}
 {{- end}}
 `
@@ -106,14 +125,16 @@ type BlockchainConfig struct {
 
 	// Fees
 	LinearFees LinearFees // `"linear_fees"`
+	FeesGoTo   string     // `"fees_go_to"` default is "rewards", can be "treasury"
 
 	// Treasury
 	Treasury           uint64             // `"treasury"`
 	TreasuryParameters TreasuryParameters // `"treasury_parameters"`
 
 	// Rewards
-	TotalRewardSupply uint64           // `"total_reward_supply"`
-	RewardParameters  RewardParameters // `"reward_parameters"`
+	TotalRewardSupply uint64            // `"total_reward_supply"`
+	RewardParameters  RewardParameters  // `"reward_parameters"`
+	RewardConstraints RewardConstraints // `"reward_constraints"`
 
 }
 
@@ -152,10 +173,23 @@ type RewardParameters struct {
 	EpochRate  uint32 // `"epoch_rate"`
 }
 
+// RewardConstraints ...
+type RewardConstraints struct {
+	RewardDrawingLimitMax    string                   // `"reward_drawing_limit_max"`
+	PoolParticipationCapping PoolParticipationCapping // `"pool_participation_capping"`
+}
+
+// PoolParticipationCapping ...
+type PoolParticipationCapping struct {
+	Min uint32 // `"min"`
+	Max uint32 // `"max"`
+}
+
 // BlockchainInitial ...
 type BlockchainInitial struct {
-	Fund []InitialFund // `"fund"`
-	Cert string        // `"cert"`
+	Fund       []InitialFund // `"fund"`
+	Cert       string        // `"cert"`
+	LegacyFund []InitialFund // `"legacy_fund"`
 }
 
 // InitialFund ...
@@ -190,6 +224,7 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.RewardParameters.EpochStart = 0
 	chainConfig.RewardParameters.EpochRate = 0
 
+	chainConfig.FeesGoTo = "rewards"
 	chainConfig.LinearFees.Certificate = 10_000
 	chainConfig.LinearFees.Coefficient = 50
 	chainConfig.LinearFees.Constant = 1_000
@@ -249,6 +284,28 @@ func (block0Cfg *Block0Config) AddInitialFund(address string, value uint64) erro
 		block0Cfg.Initial,
 		BlockchainInitial{
 			Fund: []InitialFund{fundInit},
+		},
+	)
+
+	return nil
+}
+
+// AddInitialLegacyFund to block0 Initial config
+func (block0Cfg *Block0Config) AddInitialLegacyFund(address string, value uint64) error {
+	// FIXME: check validity
+	if address == "" {
+		return fmt.Errorf("parameter missing : %s", "address")
+	}
+
+	fundInit := InitialFund{
+		Address: address,
+		Value:   value,
+	}
+
+	block0Cfg.Initial = append(
+		block0Cfg.Initial,
+		BlockchainInitial{
+			LegacyFund: []InitialFund{fundInit},
 		},
 	)
 
