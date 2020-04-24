@@ -78,6 +78,12 @@ blockchain_configuration:
     - {{ . -}}
     {{end}}
   {{end}}
+  {{- if .Committees}}
+  committees:
+    {{- range .Committees}}
+    - {{ . -}}
+    {{end}}
+  {{end}}
 {{end}}
 
 {{- with .Initial -}}
@@ -135,6 +141,8 @@ type BlockchainConfig struct {
 	TotalRewardSupply uint64            // `"total_reward_supply"`
 	RewardParameters  RewardParameters  // `"reward_parameters"`
 	RewardConstraints RewardConstraints // `"reward_constraints"`
+
+	Committees []string //`"committees"`
 
 }
 
@@ -307,6 +315,21 @@ func (block0Cfg *Block0Config) AddInitialLegacyFund(address string, value uint64
 		BlockchainInitial{
 			LegacyFund: []InitialFund{fundInit},
 		},
+	)
+
+	return nil
+}
+
+// AddCommittee to block0 Initial config
+func (block0Cfg *Block0Config) AddCommittee(cid string) error {
+	// FIXME: check validity
+	if cid == "" {
+		return fmt.Errorf("parameter missing : %s", "cert")
+	}
+
+	block0Cfg.BlockchainConfiguration.Committees = append(
+		block0Cfg.BlockchainConfiguration.Committees,
+		cid,
 	)
 
 	return nil
