@@ -137,7 +137,7 @@ type ConfigP2P struct {
 	PublicAddress                        string                 // `"public_address"`
 	ListenAddress                        string                 // `"listen_address"`
 	PublicID                             string                 // `"public_id"`
-	TrustedPeers                         []TrustedPeer          // `"trusted_peers"`
+	TrustedPeers                         []Peer                 // `"trusted_peers"`
 	TopicsOfInterest                     ConfigTopicsOfInterest // `"topics_of_interest"`
 	MaxConnections                       uint                   // `"max_connections"`
 	MaxClientConnections                 uint                   // `"max_client_connections"`
@@ -147,10 +147,11 @@ type ConfigP2P struct {
 	GossipInterval                       string                 // `"gossip_interval"`
 	TopologyForceResetInterval           string                 // `"topology_force_reset_interval"`
 	MaxBootstrapAttempts                 int                    // `"max_bootstrap_attempts"`
+	Layers                               Layers                 // `"layers"`
 }
 
-// TrustedPeer ...
-type TrustedPeer struct {
+// Peer ...
+type Peer struct {
 	Address string // `"address"`
 	ID      string // `"id"`
 }
@@ -163,7 +164,21 @@ type ConfigTopicsOfInterest struct {
 
 // PolicyConfig ...
 type PolicyConfig struct {
-	QuarantineDuration string // `"quarantine_duration"`
+	QuarantineDuration      string   // `"quarantine_duration"`
+	MaxQuarantine           string   // `"max_quarantine"`
+	MaxNumQuarantineRecords uint     // `"max_num_quarantine_records"`
+	QuarantineWhitelist     []string // `"quarantine_whitelist"`
+}
+
+// Layers ...
+type Layers struct {
+	PreferredList PreferredList // `"preferred_list"`
+}
+
+// PreferredList ...
+type PreferredList struct {
+	ViewMax uint   // `"view_max"`
+	Peers   []Peer // "`peers`"
 }
 
 // ConfigRest ...
@@ -233,14 +248,21 @@ func NewNodeConfig() *NodeConfig {
 
 	nodeCfg.P2P.PublicAddress = "/ip4/127.0.0.1/tcp/8299"
 	nodeCfg.P2P.ListenAddress = "/ip4/127.0.0.1/tcp/8299"
+
 	nodeCfg.P2P.TopicsOfInterest.Messages = "high"
 	nodeCfg.P2P.TopicsOfInterest.Blocks = "high"
+
 	nodeCfg.P2P.MaxConnections = 256
 	nodeCfg.P2P.MaxClientConnections = 192
-	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
+
 	nodeCfg.P2P.MaxUnreachableNodesToConnectPerEvent = 20
 	nodeCfg.P2P.GossipInterval = "10s"
+
+	nodeCfg.P2P.Policy.QuarantineDuration = "30m"
+
 	// nodeCfg.P2P.MaxBootstrapAttempts = 0 // Fixme: unset and 0 have different effects.
+
+	nodeCfg.P2P.Layers.PreferredList.ViewMax = 20
 
 	nodeCfg.Log.Level = "trace"   // off, critical, error, warn, info, debug, trace
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
@@ -284,10 +306,15 @@ func (nodeCfg *NodeConfig) AddSecretFile(secretFile string) {
 
 // AddTrustedPeer to node config
 func (nodeCfg *NodeConfig) AddTrustedPeer(address string, id string) {
-	nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, TrustedPeer{address, id})
+	nodeCfg.P2P.TrustedPeers = append(nodeCfg.P2P.TrustedPeers, Peer{address, id})
 }
 
 // AddHttpFetchBlock0Service to node config
 func (nodeCfg *NodeConfig) AddHttpFetchBlock0Service(urlBlock0 string) {
 	nodeCfg.HttpFetchBlock0Service = append(nodeCfg.HttpFetchBlock0Service, urlBlock0)
+}
+
+// AddPreferredList to node config
+func (nodeCfg *NodeConfig) AddPreferredList(address string, id string) {
+	nodeCfg.P2P.Layers.PreferredList.Peers = append(nodeCfg.P2P.Layers.PreferredList.Peers, Peer{address, id})
 }
