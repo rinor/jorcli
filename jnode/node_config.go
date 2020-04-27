@@ -69,12 +69,27 @@ p2p:
   {{- with .Policy}}
   policy:
     quarantine_duration: {{ .QuarantineDuration }}
+    {{- if .QuarantineWhitelist}}
+    quarantine_whitelist:
+      {{- range .QuarantineWhitelist}}
+      - {{ . -}}
+      {{end}}
+    {{- end}}
   {{- end}}
+  layers:
+    preferred_list:
+      view_max: {{ .Layers.PreferredList.ViewMax }}
+      {{- if .Layers.PreferredList.Peers }}
+      peers:
+        {{- range .Layers.PreferredList.Peers}}
+        - address: {{ .Address}}
+          id: {{ .ID -}}
+        {{end}}
+      {{- end}}
   gossip_interval: {{ .GossipInterval }}
   {{- if .TopologyForceResetInterval}}
   topology_force_reset_interval: {{ .TopologyForceResetInterval }}
   {{- end}}
-
 {{end}}
 
 {{- with .Log}}
@@ -317,4 +332,9 @@ func (nodeCfg *NodeConfig) AddHttpFetchBlock0Service(urlBlock0 string) {
 // AddPreferredList to node config
 func (nodeCfg *NodeConfig) AddPreferredList(address string, id string) {
 	nodeCfg.P2P.Layers.PreferredList.Peers = append(nodeCfg.P2P.Layers.PreferredList.Peers, Peer{address, id})
+}
+
+// AddQuarantineWhitelist to node config
+func (nodeCfg *NodeConfig) AddQuarantineWhitelist(address string) {
+	nodeCfg.P2P.Policy.QuarantineWhitelist = append(nodeCfg.P2P.Policy.QuarantineWhitelist, address)
 }
