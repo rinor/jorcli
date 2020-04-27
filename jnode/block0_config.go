@@ -324,7 +324,7 @@ func (block0Cfg *Block0Config) AddInitialLegacyFund(address string, value uint64
 func (block0Cfg *Block0Config) AddCommittee(cid string) error {
 	// FIXME: check validity
 	if cid == "" {
-		return fmt.Errorf("parameter missing : %s", "cert")
+		return fmt.Errorf("parameter missing : %s", "cid")
 	}
 
 	block0Cfg.BlockchainConfiguration.Committees = append(

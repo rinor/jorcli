@@ -127,6 +127,9 @@ func ExampleTransactionFinalize_staging() {
 		feeCertificateStakeDelegation      = uint64(3)
 		feeCertificateOwnerStakeDelegation = uint64(3)
 
+		feeCertificateVoteCast = uint64(1)
+		feeCertificateVotePlan = uint64(2)
+
 		changeAddress = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
 	)
 
@@ -138,6 +141,8 @@ func ExampleTransactionFinalize_staging() {
 		feeCertificatePoolRegistration,
 		feeCertificateStakeDelegation,
 		feeCertificateOwnerStakeDelegation,
+		feeCertificateVoteCast,
+		feeCertificateVotePlan,
 		changeAddress,
 	)
 
@@ -161,6 +166,9 @@ func TestTransactionFinalize(t *testing.T) {
 		feeCertificateStakeDelegation      = uint64(3)
 		feeCertificateOwnerStakeDelegation = uint64(3)
 
+		feeCertificateVoteCast = uint64(1)
+		feeCertificateVotePlan = uint64(2)
+
 		changeAddress = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
 		expectedTx    = loadBytes(t, "tx-04_finalize_staging.golden")
 	)
@@ -173,6 +181,8 @@ func TestTransactionFinalize(t *testing.T) {
 		feeCertificatePoolRegistration,
 		feeCertificateStakeDelegation,
 		feeCertificateOwnerStakeDelegation,
+		feeCertificateVoteCast,
+		feeCertificateVotePlan,
 		changeAddress,
 	)
 	ok(t, err)
@@ -354,6 +364,9 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificateStakeDelegation      = uint64(3)
 		feeCertificateOwnerStakeDelegation = uint64(3)
 
+		feeCertificateVoteCast = uint64(1)
+		feeCertificateVotePlan = uint64(2)
+
 		prefix = "ta"
 	)
 
@@ -366,6 +379,8 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificatePoolRegistration,
 		feeCertificateStakeDelegation,
 		feeCertificateOwnerStakeDelegation,
+		feeCertificateVoteCast,
+		feeCertificateVotePlan,
 		prefix,
 		"",
 		"",

@@ -203,6 +203,8 @@ func TransactionAddCertificate(
 //                                      [--fee-pool-registration <certificate-pool-registration>]
 //                                      [--fee-stake-delegation <certificate-stake-delegation>]
 //                                      [--fee-owner-stake-delegation <certificate-owner-stake-delegation>]
+//                                      [--fee-vote-cast <certificate-vote-cast>]
+//                                      [--fee-vote-plan <certificate-vote-plan>]
 //                                      [change]
 //                                      [--staging <staging-file>] | [STDOUT]
 func TransactionFinalize(
@@ -214,6 +216,8 @@ func TransactionFinalize(
 	feeCertificatePoolRegistration uint64,
 	feeCertificateStakeDelegation uint64,
 	feeCertificateOwnerStakeDelegation uint64,
+	feeCertificateVoteCast uint64,
+	feeCertificateVotePlan uint64,
 	changeAddress string, // FIXME: UPSTREAM add change description since is ambiguous
 ) ([]byte, error) {
 	if len(stdinStaging) == 0 && stagingFile == "" {
@@ -230,22 +234,29 @@ func TransactionFinalize(
 		"--fee-coefficient", strconv.FormatUint(feeCoefficient, 10),
 		"--fee-constant", strconv.FormatUint(feeConstant, 10),
 	)
-	// FIXME: is 0 needed!!!
 	if feeCertificatePoolRegistration > 0 {
 		arg = append(arg,
 			"--fee-pool-registration", strconv.FormatUint(feeCertificatePoolRegistration, 10),
 		)
 	}
-	// FIXME: is 0 needed!!!
 	if feeCertificateStakeDelegation > 0 {
 		arg = append(arg,
 			"--fee-stake-delegation", strconv.FormatUint(feeCertificateStakeDelegation, 10),
 		)
 	}
-	// FIXME: is 0 needed!!!
 	if feeCertificateOwnerStakeDelegation > 0 {
 		arg = append(arg,
 			"--fee-owner-stake-delegation", strconv.FormatUint(feeCertificateOwnerStakeDelegation, 10),
+		)
+	}
+	if feeCertificateVoteCast > 0 {
+		arg = append(arg,
+			"--fee-vote-cast", strconv.FormatUint(feeCertificateVoteCast, 10),
+		)
+	}
+	if feeCertificateVotePlan > 0 {
+		arg = append(arg,
+			"--fee-vote-plan", strconv.FormatUint(feeCertificateVotePlan, 10),
 		)
 	}
 	if changeAddress != "" {
@@ -402,6 +413,8 @@ func TransactionMakeWitness(
 //                                  [--fee-pool-registration <certificate-pool-registration>]
 //                                  [--fee-stake-delegation <certificate-stake-delegation>]
 //                                  [--fee-owner-stake-delegation <certificate-owner-stake-delegation>]
+//                                  [--fee-vote-cast <certificate-vote-cast>]
+//                                  [--fee-vote-plan <certificate-vote-plan>]
 //                                  [--output-format <format>]
 //                                  [--output <output file>]
 //                                  [--prefix <address prefix>] | [STDOUT]
@@ -413,6 +426,8 @@ func TransactionInfo(
 	feeCertificatePoolRegistration uint64,
 	feeCertificateStakeDelegation uint64,
 	feeCertificateOwnerStakeDelegation uint64,
+	feeCertificateVoteCast uint64,
+	feeCertificateVotePlan uint64,
 	prefix string,
 	outputFormat string,
 	outputFile string,
@@ -431,22 +446,29 @@ func TransactionInfo(
 		"--fee-coefficient", strconv.FormatUint(feeCoefficient, 10),
 		"--fee-constant", strconv.FormatUint(feeConstant, 10),
 	)
-	// FIXME: is 0 needed!!!
 	if feeCertificatePoolRegistration > 0 {
 		arg = append(arg,
 			"--fee-pool-registration", strconv.FormatUint(feeCertificatePoolRegistration, 10),
 		)
 	}
-	// FIXME: is 0 needed!!!
 	if feeCertificateStakeDelegation > 0 {
 		arg = append(arg,
 			"--fee-stake-delegation", strconv.FormatUint(feeCertificateStakeDelegation, 10),
 		)
 	}
-	// FIXME: is 0 needed!!!
 	if feeCertificateOwnerStakeDelegation > 0 {
 		arg = append(arg,
 			"--fee-owner-stake-delegation", strconv.FormatUint(feeCertificateOwnerStakeDelegation, 10),
+		)
+	}
+	if feeCertificateVoteCast > 0 {
+		arg = append(arg,
+			"--fee-vote-cast", strconv.FormatUint(feeCertificateVoteCast, 10),
+		)
+	}
+	if feeCertificateVotePlan > 0 {
+		arg = append(arg,
+			"--fee-vote-plan", strconv.FormatUint(feeCertificateVotePlan, 10),
 		)
 	}
 	if prefix != "" {
