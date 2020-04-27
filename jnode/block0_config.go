@@ -71,6 +71,17 @@ blockchain_configuration:
       {{- end}}
     {{- end}}
     {{- end}}
+    {{- with .PerVoteCertificateFees -}}
+    {{- if or .CertificateVoteCast .CertificateVotePlan }}
+    per_vote_certificate_fees:
+      {{- if .CertificateVoteCast }}
+      certificate_vote_cast: {{ .CertificateVoteCast }}
+      {{- end}}
+      {{- if .CertificateVotePlan }}
+      certificate_vote_plan: {{ .CertificateVotePlan }}
+      {{- end}}
+    {{- end}}
+    {{- end}}
   {{- end}}
   {{- if .ConsensusLeaderIds}}
   consensus_leader_ids:
@@ -148,10 +159,11 @@ type BlockchainConfig struct {
 
 // LinearFees ...
 type LinearFees struct {
-	Certificate        uint64             // `"certificate"`
-	Coefficient        uint64             // `"coefficient"`
-	Constant           uint64             // `"constant"`
-	PerCertificateFees PerCertificateFees // `"per_certificate_fees"`
+	Certificate            uint64                 // `"certificate"`
+	Coefficient            uint64                 // `"coefficient"`
+	Constant               uint64                 // `"constant"`
+	PerCertificateFees     PerCertificateFees     // `"per_certificate_fees"`
+	PerVoteCertificateFees PerVoteCertificateFees // `"per_vote_certificate_fees"`
 }
 
 // FIXME: PerCertificateFees - check/handle 0 values on config
@@ -161,6 +173,12 @@ type PerCertificateFees struct {
 	CertificatePoolRegistration     uint64 // `"certificate_pool_registration"`
 	CertificateStakeDelegation      uint64 // `"certificate_stake_delegation"`
 	CertificateOwnerStakeDelegation uint64 // `"certificate_owner_stake_delegation"`
+}
+
+// PerVoteCertificateFees ...
+type PerVoteCertificateFees struct {
+	CertificateVoteCast uint64 // `"certificate_vote_cast"`
+	CertificateVotePlan uint64 // `"certificate_vote_plan"`
 }
 
 // FIXME: TreasuryParameters - check/handle 0 values on config
@@ -233,6 +251,7 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.RewardParameters.EpochRate = 0
 
 	chainConfig.FeesGoTo = "rewards"
+
 	chainConfig.LinearFees.Certificate = 10_000
 	chainConfig.LinearFees.Coefficient = 50
 	chainConfig.LinearFees.Constant = 1_000
@@ -240,6 +259,9 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 10_000
 	chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 10_000
 	chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 10_000
+
+	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVoteCast = 10_000
+	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVotePlan = 10_000
 
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,
