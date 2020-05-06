@@ -60,7 +60,9 @@ p2p:
   trusted_peers:
     {{- range .TrustedPeers}}
     - address: {{ .Address }}
-      id: {{ .ID }}
+      {{ if .ID }}
+      id: {{ .ID -}}
+      {{end}}
     {{- end}}
   {{- end}}
   {{- if .PublicID}}
@@ -83,7 +85,9 @@ p2p:
       peers:
         {{- range .Layers.PreferredList.Peers}}
         - address: {{ .Address}}
+          {{ if .ID }}
           id: {{ .ID -}}
+          {{end}}
         {{end}}
       {{- end}}
   gossip_interval: {{ .GossipInterval }}
@@ -168,7 +172,8 @@ type ConfigP2P struct {
 // Peer ...
 type Peer struct {
 	Address string // `"address"`
-	ID      string // `"id"`
+	// Deprecated - keep for compatibility
+	ID string // `"id"`
 }
 
 // ConfigTopicsOfInterest ...

@@ -256,12 +256,12 @@ func NewBlock0Config() *Block0Config {
 	chainConfig.LinearFees.Coefficient = 50
 	chainConfig.LinearFees.Constant = 1_000
 
-	chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 10_000
-	chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 10_000
-	chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 10_000
+	// chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 10_000
+	// chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 10_000
+	// chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 10_000
 
-	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVoteCast = 10_000
-	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVotePlan = 10_000
+	// chainConfig.LinearFees.PerVoteCertificateFees.CertificateVoteCast = 10_000
+	// chainConfig.LinearFees.PerVoteCertificateFees.CertificateVotePlan = 10_000
 
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,

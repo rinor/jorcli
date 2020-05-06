@@ -194,7 +194,11 @@ func (jnode *Jnode) AddSecretFile(secretFile string) {
 
 // AddTrustedPeer to node config
 func (jnode *Jnode) AddTrustedPeer(address string, id string) {
-	jnode.TrustedPeers = append(jnode.TrustedPeers, address+"@"+id)
+	if id == "" {
+		jnode.TrustedPeers = append(jnode.TrustedPeers, address)
+	} else {
+		jnode.TrustedPeers = append(jnode.TrustedPeers, address+"@"+id)
+	}
 }
 
 // BinName set the executable name/full path if not the default one.
