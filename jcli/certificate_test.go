@@ -191,11 +191,11 @@ func ExampleCertificateNewVotePlan() {
 		voteStart    = "0.0"
 		voteEnd      = "5.0"
 		committeeEnd = "10.0"
-		proposalId   = []string{"adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280", "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404"}
+		proposalID   = []string{"adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280", "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404"}
 		outputFile   = ""
 	)
 
-	votePlanCert, err := jcli.CertificateNewVotePlan(voteStart, voteEnd, committeeEnd, proposalId, outputFile)
+	votePlanCert, err := jcli.CertificateNewVotePlan(voteStart, voteEnd, committeeEnd, proposalID, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateNewVotePlan: %s", err)
@@ -205,6 +205,25 @@ func ExampleCertificateNewVotePlan() {
 	// Output:
 	//
 	// cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf
+}
+
+func ExampleCertificateGetVotePlanID_stdin() {
+	var (
+		stdinCert  = []byte("cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf")
+		inputFile  = "" // "" - input from STDIN (stdinCert []byte), "votePlan.cert" - will load the certificate from that file
+		outputFile = "" // "" - output to STDOUT ([]byte) only, "votePlan.id" - will also save output to that file
+	)
+
+	votePlanID, err := jcli.CertificateGetVotePlanID(stdinCert, inputFile, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateGetVotePlanID: %s", err)
+	} else {
+		fmt.Printf("%s", votePlanID)
+	}
+	// Output:
+	//
+	// 7c1e49c31425c03cef428c313d1d438800b0ef8101532188e3c1e0372d2eae76
 }
 
 func ExampleCertificateSign_retirement_stdin() {

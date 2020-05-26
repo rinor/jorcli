@@ -246,7 +246,7 @@ func CertificateNewVotePlan(
 	voteStart string,
 	voteEnd string,
 	committeeEnd string,
-	proposalId []string,
+	proposalID []string,
 	outputFile string,
 ) ([]byte, error) {
 	if voteStart == "" {
@@ -259,13 +259,13 @@ func CertificateNewVotePlan(
 		return nil, fmt.Errorf("parameter missing : %s", "committeeEnd")
 	}
 
-	if len(proposalId) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "proposalId")
+	if len(proposalID) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "proposalID")
 	}
 
 	maxProposals := 255 // The maximum number of proposals per voteplan
-	if len(proposalId) > maxProposals {
-		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "proposalId", 1, maxProposals, len(proposalId))
+	if len(proposalID) > maxProposals {
+		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "proposalID", 1, maxProposals, len(proposalID))
 	}
 
 	arg := []string{
@@ -275,7 +275,7 @@ func CertificateNewVotePlan(
 		"--committee-end", committeeEnd,
 	}
 
-	for _, proposal := range proposalId {
+	for _, proposal := range proposalID {
 		arg = append(arg, "--proposal-id", proposal)
 	}
 
@@ -286,6 +286,47 @@ func CertificateNewVotePlan(
 	out, err := jcli(nil, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
+// CertificateGetVotePlanID - get the vote plan id from the given vote plan certificate.
+//
+//  [STDIN] | jcli certificate get-vote-plan-id [<FILE_INPUT>] [<FILE_OUTPUT>] | [STDOUT]
+func CertificateGetVotePlanID(
+	stdinCert []byte,
+	inputFile string,
+	outputFile string,
+) ([]byte, error) {
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
+	}
+
+	arg := []string{"certificate", "get-vote-plan-id"}
+	if inputFile != "" {
+		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinCert = nil
+	}
+	if outputFile != "" && inputFile != "" {
+		arg = append(arg, outputFile) // TODO: UPSTREAM unify with "--output" as other file output commands
+	}
+
+	out, err := jcli(stdinCert, arg...)
+	if err != nil /* || outputFile == "" */ {
+		return out, err
+	}
+
+	// TODO: Remove this once/if UPSTREAM fixed (--input and --output)
+	//
+	// convert stdout to outputFile
+	if outputFile != "" && inputFile == "" {
+		if err = ioutil.WriteFile(outputFile, out, 0644); err != nil {
+			return nil, err
+		}
+	}
+	if outputFile == "" {
+		return out, nil
 	}
 
 	return ioutil.ReadFile(outputFile)
