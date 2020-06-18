@@ -186,7 +186,7 @@ func ExampleCertificateNewStakePoolRetirement() {
 	// cert1q3he8hcj3286na7z7jxg7fvs6g04rs9vqkenz5mxqsghlaep359asqqqqqqqqqqqqqlpzcht
 }
 
-func ExampleCertificateNewVotePlan() {
+func ExampleCertificateNewVotePlan_stdin() {
 	var (
 		stdinConfig = []byte(`
 {
@@ -251,6 +251,24 @@ func ExampleCertificateGetVotePlanID_stdin() {
 	//
 	// 7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2
 
+}
+
+func ExampleCertificateNewVoteTally() {
+	var (
+		votePlanID = "7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2"
+		outputFile = ""
+	)
+
+	voteTallyCert, err := jcli.CertificateNewVoteTally(votePlanID, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewVoteTally: %s", err)
+	} else {
+		fmt.Printf("%s", voteTallyCert)
+	}
+	// Output:
+	//
+	// cert1ppalc5fjel2253v5jyve7p5648wpncc06dewrpemvt9skecq4s8vyqgzcncz3
 }
 
 func ExampleCertificateSign_retirement_stdin() {
@@ -326,26 +344,3 @@ func ExampleCertificatePrint_retirementSigned_stdin() {
 	//
 	// Certificate(PoolRetirement(PoolRetirement { pool_id: $ hash_ty(0x6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8), retirement_time: TimeOffsetSeconds(DurationSeconds(0)) }))
 }
-
-/*
-func ExampleCertificateNewVotePlanOLD() {
-	var (
-		voteStart    = "0.0"
-		voteEnd      = "5.0"
-		committeeEnd = "10.0"
-		proposalID   = []string{"adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280", "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404"}
-		outputFile   = ""
-	)
-
-	votePlanCert, err := jcli.CertificateNewVotePlan(voteStart, voteEnd, committeeEnd, proposalID, outputFile)
-
-	if err != nil {
-		fmt.Printf("CertificateNewVotePlan: %s", err)
-	} else {
-		fmt.Printf("%s", votePlanCert)
-	}
-	// Output:
-	//
-	// cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf
-}
-*/

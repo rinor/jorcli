@@ -307,6 +307,33 @@ func CertificateGetVotePlanID(
 	return ioutil.ReadFile(outputFile)
 }
 
+// CertificateNewVoteTally - create a vote tally certificate.
+//
+// jcli certificate new vote-tally --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
+func CertificateNewVoteTally(
+	votePlanID string,
+	outputFile string,
+) ([]byte, error) {
+	if votePlanID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "votePlanID")
+	}
+
+	arg := []string{
+		"certificate", "new", "vote-tally",
+		"--vote-plan-id", votePlanID,
+	}
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
 // CertificateSign - Sign certificate,
 // you can call this command multiple time to add multiple signatures if this is required.
 //
@@ -363,57 +390,3 @@ func CertificatePrint(
 
 	return jcli(stdinCert, arg...)
 }
-
-/*
-// CertificateNewVotePlan - create a vote plan certificate.
-//
-//  jcli certificate new vote-plan --vote-start <vote-start> --vote-end <vote-end> --committee-end <committee-end> [--proposal-id <proposals>...] [--output <output>] | [STDOUT]
-func CertificateNewVotePlanOLD(
-	voteStart string,
-	voteEnd string,
-	committeeEnd string,
-	proposalID []string,
-	outputFile string,
-) ([]byte, error) {
-	if voteStart == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "voteStart")
-	}
-	if voteEnd == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "voteEnd")
-	}
-	if committeeEnd == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "committeeEnd")
-	}
-
-	if len(proposalID) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "proposalID")
-	}
-
-	maxProposals := 255 // The maximum number of proposals per voteplan
-	if len(proposalID) > maxProposals {
-		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "proposalID", 1, maxProposals, len(proposalID))
-	}
-
-	arg := []string{
-		"certificate", "new", "vote-plan",
-		"--vote-start", voteStart,
-		"--vote-end", voteEnd,
-		"--committee-end", committeeEnd,
-	}
-
-	for _, proposal := range proposalID {
-		arg = append(arg, "--proposal-id", proposal)
-	}
-
-	if outputFile != "" {
-		arg = append(arg, "--output", outputFile)
-	}
-
-	out, err := jcli(nil, arg...)
-	if err != nil || outputFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(outputFile)
-}
-*/
