@@ -188,14 +188,40 @@ func ExampleCertificateNewStakePoolRetirement() {
 
 func ExampleCertificateNewVotePlan() {
 	var (
-		voteStart    = "0.0"
-		voteEnd      = "5.0"
-		committeeEnd = "10.0"
-		proposalID   = []string{"adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280", "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404"}
-		outputFile   = ""
+		stdinConfig = []byte(`
+{
+  "payload_type": "public",
+  "vote_start": {
+    "epoch": 0,
+    "slot_id": 100
+  },
+  "vote_end": {
+    "epoch": 0,
+    "slot_id": 200
+  },
+  "committee_end": {
+    "epoch": 0,
+    "slot_id": 300
+  },
+  "proposals": [
+    {
+      "external_id": "adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280",
+      "options": 3,
+      "action": "off_chain"
+    },
+    {
+      "external_id": "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404",
+      "options": 3,
+      "action": "off_chain"
+    }
+  ]
+}
+`)
+		inputFile  = ""
+		outputFile = ""
 	)
 
-	votePlanCert, err := jcli.CertificateNewVotePlan(voteStart, voteEnd, committeeEnd, proposalID, outputFile)
+	votePlanCert, err := jcli.CertificateNewVotePlan(stdinConfig, inputFile, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateNewVotePlan: %s", err)
@@ -204,12 +230,12 @@ func ExampleCertificateNewVotePlan() {
 	}
 	// Output:
 	//
-	// cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf
+	// cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqx4dhc9
 }
 
 func ExampleCertificateGetVotePlanID_stdin() {
 	var (
-		stdinCert  = []byte("cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf")
+		stdinCert  = []byte("cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqx4dhc9")
 		inputFile  = "" // "" - input from STDIN (stdinCert []byte), "votePlan.cert" - will load the certificate from that file
 		outputFile = "" // "" - output to STDOUT ([]byte) only, "votePlan.id" - will also save output to that file
 	)
@@ -223,7 +249,8 @@ func ExampleCertificateGetVotePlanID_stdin() {
 	}
 	// Output:
 	//
-	// 7c1e49c31425c03cef428c313d1d438800b0ef8101532188e3c1e0372d2eae76
+	// 7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2
+
 }
 
 func ExampleCertificateSign_retirement_stdin() {
@@ -299,3 +326,26 @@ func ExampleCertificatePrint_retirementSigned_stdin() {
 	//
 	// Certificate(PoolRetirement(PoolRetirement { pool_id: $ hash_ty(0x6f93df128a8fa9f7c2f48c8f2590d21f51c0ac05b331536604117ff7218d0bd8), retirement_time: TimeOffsetSeconds(DurationSeconds(0)) }))
 }
+
+/*
+func ExampleCertificateNewVotePlanOLD() {
+	var (
+		voteStart    = "0.0"
+		voteEnd      = "5.0"
+		committeeEnd = "10.0"
+		proposalID   = []string{"adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280", "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404"}
+		outputFile   = ""
+	)
+
+	votePlanCert, err := jcli.CertificateNewVotePlan(voteStart, voteEnd, committeeEnd, proposalID, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewVotePlan: %s", err)
+	} else {
+		fmt.Printf("%s", votePlanCert)
+	}
+	// Output:
+	//
+	// cert1qcqqqqqqqqqqqqqqqqqq2qqqqqqqqqqqpgqqqqqqq2kmjf6hz4wsnele9j03qzrx4ykam566h5483xjy4cv6hxsahsegqqm80rfhzcwrjch7vtyl4z3354dueahv9502y49yvlvvmx28p87yqspsmcxcjf
+}
+*/

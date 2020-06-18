@@ -239,51 +239,26 @@ func CertificateNewStakePoolRetirement(
 	return ioutil.ReadFile(outputFile)
 }
 
-// CertificateNewVotePlan - create a vote plan certificate.
+// CertificateNewVotePlan - create a vote plan certificate form given config data/file.
 //
-//  jcli certificate new vote-plan --vote-start <vote-start> --vote-end <vote-end> --committee-end <committee-end> [--proposal-id <proposals>...] [--output <output>] | [STDOUT]
+//  STDIN | jcli certificate new vote-plan [<FILE_INPUT>] [--output <FILE_OUTPUT>] | [STDOUT]
 func CertificateNewVotePlan(
-	voteStart string,
-	voteEnd string,
-	committeeEnd string,
-	proposalID []string,
+	stdinConfig []byte,
+	inputFile string,
 	outputFile string,
 ) ([]byte, error) {
-	if voteStart == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "voteStart")
-	}
-	if voteEnd == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "voteEnd")
-	}
-	if committeeEnd == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "committeeEnd")
-	}
-
-	if len(proposalID) == 0 {
-		return nil, fmt.Errorf("parameter missing : %s", "proposalID")
-	}
-
-	maxProposals := 255 // The maximum number of proposals per voteplan
-	if len(proposalID) > maxProposals {
-		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "proposalID", 1, maxProposals, len(proposalID))
+	if len(stdinConfig) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinConfig", "inputFile")
 	}
 
 	arg := []string{
 		"certificate", "new", "vote-plan",
-		"--vote-start", voteStart,
-		"--vote-end", voteEnd,
-		"--committee-end", committeeEnd,
 	}
-
-	for _, proposal := range proposalID {
-		arg = append(arg, "--proposal-id", proposal)
-	}
-
 	if outputFile != "" {
 		arg = append(arg, "--output", outputFile)
 	}
 
-	out, err := jcli(nil, arg...)
+	out, err := jcli(stdinConfig, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -388,3 +363,57 @@ func CertificatePrint(
 
 	return jcli(stdinCert, arg...)
 }
+
+/*
+// CertificateNewVotePlan - create a vote plan certificate.
+//
+//  jcli certificate new vote-plan --vote-start <vote-start> --vote-end <vote-end> --committee-end <committee-end> [--proposal-id <proposals>...] [--output <output>] | [STDOUT]
+func CertificateNewVotePlanOLD(
+	voteStart string,
+	voteEnd string,
+	committeeEnd string,
+	proposalID []string,
+	outputFile string,
+) ([]byte, error) {
+	if voteStart == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "voteStart")
+	}
+	if voteEnd == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "voteEnd")
+	}
+	if committeeEnd == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "committeeEnd")
+	}
+
+	if len(proposalID) == 0 {
+		return nil, fmt.Errorf("parameter missing : %s", "proposalID")
+	}
+
+	maxProposals := 255 // The maximum number of proposals per voteplan
+	if len(proposalID) > maxProposals {
+		return nil, fmt.Errorf("%s expected between %d - %d, got %d", "proposalID", 1, maxProposals, len(proposalID))
+	}
+
+	arg := []string{
+		"certificate", "new", "vote-plan",
+		"--vote-start", voteStart,
+		"--vote-end", voteEnd,
+		"--committee-end", committeeEnd,
+	}
+
+	for _, proposal := range proposalID {
+		arg = append(arg, "--proposal-id", proposal)
+	}
+
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+*/
