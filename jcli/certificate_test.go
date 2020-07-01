@@ -253,6 +253,27 @@ func ExampleCertificateGetVotePlanID_stdin() {
 
 }
 
+func ExampleCertificateNewVoteCast() {
+	var (
+		votePlanID    = "7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2"
+		proposalIndex = uint8(0)
+		choice        = uint8(1)
+		privacy       = "public"
+		outputFile    = ""
+	)
+
+	voteCastCert, err := jcli.CertificateNewVoteCast(votePlanID, proposalIndex, choice, privacy, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewVoteCast: %s", err)
+	} else {
+		fmt.Printf("%s", voteCastCert)
+	}
+	// Output:
+	//
+	// cert1qaalc5fjel2253v5jyve7p5648wpncc06dewrpemvt9skecq4s8vyqqpqy7ct20d
+}
+
 func ExampleCertificateNewVoteTally() {
 	var (
 		votePlanID = "7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2"

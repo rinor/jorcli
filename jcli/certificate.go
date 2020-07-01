@@ -307,6 +307,41 @@ func CertificateGetVotePlanID(
 	return ioutil.ReadFile(outputFile)
 }
 
+// CertificateNewVoteCast - create a vote cast certificate.
+//
+// jcli certificate new vote-cast <vote-plan-id> <proposal-index> <choice> [--public] [--output <FILE_OUTPUT>] | STDOUT
+func CertificateNewVoteCast(
+	votePlanID string,
+	proposalIndex uint8,
+	choice uint8,
+	privacy string,
+	outputFile string,
+) ([]byte, error) {
+	if votePlanID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "votePlanID")
+	}
+
+	arg := []string{
+		"certificate", "new", "vote-cast",
+		votePlanID,
+		strconv.FormatUint(uint64(proposalIndex), 10),
+		strconv.FormatUint(uint64(choice), 10),
+	}
+	if privacy != "" {
+		arg = append(arg, "--"+privacy)
+	}
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
 // CertificateNewVoteTally - create a vote tally certificate.
 //
 // jcli certificate new vote-tally --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
