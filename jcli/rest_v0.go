@@ -294,7 +294,7 @@ func RestSettings(
 
 // RestShutdown - Shutdown node.
 //
-//  jcli rest v0 shutdown get --host <host> | STDOUT
+//  jcli rest v0 shutdown post --host <host> | STDOUT
 func RestShutdown(
 	host string,
 	outputFormat string,
@@ -303,7 +303,7 @@ func RestShutdown(
 		return nil, fmt.Errorf("parameter missing : %s", "host")
 	}
 
-	arg := []string{"rest", "v0", "shutdown", "get"}
+	arg := []string{"rest", "v0", "shutdown", "post"}
 	if host != "" {
 		arg = append(arg, "--host", host)
 	}
