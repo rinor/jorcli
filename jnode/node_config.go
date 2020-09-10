@@ -85,14 +85,17 @@ p2p:
       peers:
         {{- range .Layers.PreferredList.Peers}}
         - address: {{ .Address}}
-          {{ if .ID }}
+          {{- if .ID }}
           id: {{ .ID -}}
-          {{end}}
-        {{end}}
+          {{- end}}
+        {{- end}}
       {{- end}}
   gossip_interval: {{ .GossipInterval }}
   {{- if .TopologyForceResetInterval}}
   topology_force_reset_interval: {{ .TopologyForceResetInterval }}
+  {{- end}}
+  {{- if .MaxBootstrapAttempts}}
+  max_bootstrap_attempts: {{ .MaxBootstrapAttempts }}
   {{- end}}
 {{end}}
 
@@ -137,99 +140,99 @@ http_fetch_block0_service:
 
 // NodeConfig --config
 type NodeConfig struct {
-	Storage                            string           // `"storage"`
-	SecretFiles                        []string         // `"secret_files"`
-	HttpFetchBlock0Service             []string         // `"http_fetch_block0_service"`
-	Explorer                           ConfigExplorer   // `"explorer"`
-	Rest                               ConfigRest       // `"rest"`
-	P2P                                ConfigP2P        // `"p2p"`
-	Log                                ConfigLog        // `"log"`
-	Mempool                            ConfigMempool    // `"mempool"`
-	Leadership                         ConfigLeadership // `"leadership"`
-	NoBlockchainUpdatesWarningInterval string           // `"no_blockchain_updates_warning_interval"`
-	SkipBootstrap                      bool             // `"skip_bootstrap"`
-	BootstrapFromTrustedPeers          bool             // `"bootstrap_from_trusted_peers"`
+	Storage                            string           `json:"storage,omitempty"`
+	SecretFiles                        []string         `json:"secret_files,omitempty"`
+	HttpFetchBlock0Service             []string         `json:"http_fetch_block0_service,omitempty"`
+	Explorer                           ConfigExplorer   `json:"explorer,omitempty"`
+	Rest                               ConfigRest       `json:"rest,omitempty"`
+	P2P                                ConfigP2P        `json:"p2p,omitempty"`
+	Log                                ConfigLog        `json:"log,omitempty"`
+	Mempool                            ConfigMempool    `json:"mempool,omitempty"`
+	Leadership                         ConfigLeadership `json:"leadership,omitempty"`
+	NoBlockchainUpdatesWarningInterval string           `json:"no_blockchain_updates_warning_interval,omitempty"`
+	SkipBootstrap                      bool             `json:"skip_bootstrap,omitempty"`
+	BootstrapFromTrustedPeers          bool             `json:"bootstrap_from_trusted_peers,omitempty"`
 }
 
 // ConfigP2P ...
 type ConfigP2P struct {
-	PublicAddress                        string                 // `"public_address"`
-	ListenAddress                        string                 // `"listen_address"`
-	PublicID                             string                 // `"public_id"`
-	TrustedPeers                         []Peer                 // `"trusted_peers"`
-	TopicsOfInterest                     ConfigTopicsOfInterest // `"topics_of_interest"`
-	MaxConnections                       uint                   // `"max_connections"`
-	MaxClientConnections                 uint                   // `"max_client_connections"`
-	AllowPrivateAddresses                bool                   // `"allow_private_addresses"`
-	Policy                               PolicyConfig           // `"policy"`
-	MaxUnreachableNodesToConnectPerEvent uint                   // `"max_unreachable_nodes_to_connect_per_event"`
-	GossipInterval                       string                 // `"gossip_interval"`
-	TopologyForceResetInterval           string                 // `"topology_force_reset_interval"`
-	MaxBootstrapAttempts                 int                    // `"max_bootstrap_attempts"`
-	Layers                               Layers                 // `"layers"`
+	PublicAddress                        string                 `json:"public_address,omitempty"`
+	ListenAddress                        string                 `json:"listen_address,omitempty"`
+	PublicID                             string                 `json:"public_id,omitempty"`
+	TrustedPeers                         []Peer                 `json:"trusted_peers,omitempty"`
+	TopicsOfInterest                     ConfigTopicsOfInterest `json:"topics_of_interest,omitempty"`
+	MaxConnections                       uint                   `json:"max_connections,omitempty"`
+	MaxClientConnections                 uint                   `json:"max_client_connections,omitempty"`
+	AllowPrivateAddresses                bool                   `json:"allow_private_addresses,omitempty"`
+	Policy                               PolicyConfig           `json:"policy,omitempty"`
+	MaxUnreachableNodesToConnectPerEvent uint                   `json:"max_unreachable_nodes_to_connect_per_event,omitempty"`
+	GossipInterval                       string                 `json:"gossip_interval,omitempty"`
+	TopologyForceResetInterval           string                 `json:"topology_force_reset_interval,omitempty"`
+	MaxBootstrapAttempts                 int                    `json:"max_bootstrap_attempts,omitempty"`
+	Layers                               Layers                 `json:"layers,omitempty"`
 }
 
 // Peer ...
 type Peer struct {
-	Address string // `"address"`
+	Address string `json:"address,omitempty"`
 	// Deprecated - keep for compatibility
-	ID string // `"id"`
+	ID string `json:"id,omitempty"`
 }
 
 // ConfigTopicsOfInterest ...
 type ConfigTopicsOfInterest struct {
-	Messages string // `"messages"`
-	Blocks   string // `"blocks"`
+	Messages string `json:"messages"`
+	Blocks   string `json:"blocks"`
 }
 
 // PolicyConfig ...
 type PolicyConfig struct {
-	QuarantineDuration      string   // `"quarantine_duration"`
-	MaxQuarantine           string   // `"max_quarantine"`
-	MaxNumQuarantineRecords uint     // `"max_num_quarantine_records"`
-	QuarantineWhitelist     []string // `"quarantine_whitelist"`
+	QuarantineDuration      string   `json:"quarantine_duration,omitempty"`
+	MaxQuarantine           string   `json:"max_quarantine,omitempty"`
+	MaxNumQuarantineRecords uint     `json:"max_num_quarantine_records,omitempty"`
+	QuarantineWhitelist     []string `json:"quarantine_whitelist,omitempty"`
 }
 
 // Layers ...
 type Layers struct {
-	PreferredList PreferredList // `"preferred_list"`
+	PreferredList PreferredList `json:"preferred_list,omitempty"`
 }
 
 // PreferredList ...
 type PreferredList struct {
-	ViewMax uint   // `"view_max"`
-	Peers   []Peer // "`peers`"
+	ViewMax uint   `json:"view_max,omitempty"`
+	Peers   []Peer `json:"peers,omitempty"`
 }
 
 // ConfigRest ...
 type ConfigRest struct {
-	Listen string     // `"listen"`
-	TLS    ConfigTLS  // `"tls"`
-	Cors   ConfigCors // `"cors"`
+	Listen string     `json:"listen,omitempty"`
+	TLS    ConfigTLS  `json:"tls,omitempty"`
+	Cors   ConfigCors `json:"cors,omitempty"`
 }
 
 // ConfigTLS ...
 type ConfigTLS struct {
-	CertFile    string // `"cert_file"`
-	PrivKeyFile string // `"priv_key_file"`
+	CertFile    string `json:"cert_file,omitempty"`
+	PrivKeyFile string `json:"priv_key_file,omitempty"`
 }
 
 // ConfigCors ...
 type ConfigCors struct {
-	AllowedOrigins []string // `"allowed_origins"`
-	MaxAgeSecs     int      // `"max_age_secs"`true
+	AllowedOrigins []string `json:"allowed_origins,omitempty"`
+	MaxAgeSecs     int      `json:"max_age_secs,omitempty"`
 }
 
 // ConfigExplorer --enable-explorer
 type ConfigExplorer struct {
-	Enabled bool // `"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // ConfigLog --log-level, --log-format, --log-output <log_output>
 type ConfigLog struct {
-	Level  string // `"level"`
-	Format string // `"format"`
-	Output string // `"output"`
+	Level  string `json:"level,omitempty"`
+	Format string `json:"format,omitempty"`
+	Output string `json:"output,omitempty"`
 	/*
 		// FIXME: gelf through interface
 		Output struct {
@@ -240,19 +243,19 @@ type ConfigLog struct {
 
 // ConfigGelf ...
 type ConfigGelf struct {
-	Backend string // `"backend"`
-	LogID   string // `"log_id"`
+	Backend string `json:"backend,omitempty"`
+	LogID   string `json:"log_id,omitempty"`
 }
 
 // ConfigMempool ...
 type ConfigMempool struct {
-	PoolMaxEntries uint // `"pool_max_entries"`
-	LogMaxEntries  uint // `"log_max_entries"`
+	PoolMaxEntries uint `json:"pool_max_entries,omitempty"`
+	LogMaxEntries  uint `json:"log_max_entries,omitempty"`
 }
 
 // ConfigLeadership ...
 type ConfigLeadership struct {
-	LogsCapacity uint // `"logs_capacity"`
+	LogsCapacity uint `json:"logs_capacity,omitempty"`
 }
 
 // NewNodeConfig ...
@@ -288,7 +291,7 @@ func NewNodeConfig() *NodeConfig {
 	nodeCfg.Log.Format = "plain"  // "json", "plain"
 	nodeCfg.Log.Output = "stdout" // "stdout", "stderr", ...
 
-	nodeCfg.Mempool.PoolMaxEntries = 10_000
+	nodeCfg.Mempool.PoolMaxEntries = 100_000
 	nodeCfg.Mempool.LogMaxEntries = 100_000
 
 	nodeCfg.Leadership.LogsCapacity = 1_024

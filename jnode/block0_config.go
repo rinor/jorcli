@@ -123,105 +123,104 @@ initial:
 
 // Block0Config Genesis config
 type Block0Config struct {
-	BlockchainConfiguration BlockchainConfig    // `"blockchain_configuration"`
-	Initial                 []BlockchainInitial // `"initial"`
+	BlockchainConfiguration BlockchainConfig    `json:"blockchain_configuration"`
+	Initial                 []BlockchainInitial `json:"initial"`
 }
 
 // BlockchainConfig ...
 type BlockchainConfig struct {
-	Discrimination                       string   // `"discrimination"`
-	Block0Consensus                      string   // `"block0_consensus"`
-	Block0Date                           int64    // `"block0_date"`
-	SlotDuration                         uint8    // `"slot_duration"` [1 - 255] def=5 seconds
-	SlotsPerEpoch                        uint32   // `"slots_per_epoch"` [1 - 1_000_000] def=720
-	EpochStabilityDepth                  uint32   // `"epoch_stability_depth"` def=102_400
-	KesUpdateSpeed                       uint32   // `"kes_update_speed"` [60 - 365*24*3600] def=43_200 seconds (12 * 3600)
-	BlockContentMaxSize                  uint32   // `"block_content_max_size"` def=102_400
-	ConsensusGenesisPraosActiveSlotCoeff float64  // `"consensus_genesis_praos_active_slot_coeff"` [0.001 - 1.000] def=0.1
-	ConsensusLeaderIds                   []string // `"consensus_leader_ids"` bft leaders
+	Discrimination                       string   `json:"discrimination"`
+	Block0Consensus                      string   `json:"block0_consensus"`
+	Block0Date                           int64    `json:"block0_date"`
+	SlotDuration                         uint8    `json:"slot_duration"`                             // [1 - 255] def=5 seconds
+	SlotsPerEpoch                        uint32   `json:"slots_per_epoch"`                           // [1 - 1_000_000] def=720
+	EpochStabilityDepth                  uint32   `json:"epoch_stability_depth"`                     // def=102_400
+	KesUpdateSpeed                       uint32   `json:"kes_update_speed"`                          // [60 - 365*24*3600] def=43_200 seconds (12 * 3600)
+	BlockContentMaxSize                  uint32   `json:"block_content_max_size"`                    // def=102_400
+	ConsensusGenesisPraosActiveSlotCoeff float64  `json:"consensus_genesis_praos_active_slot_coeff"` // [0.001 - 1.000] def=0.1
+	ConsensusLeaderIds                   []string `json:"consensus_leader_ids"`                      // bft leaders
 
 	// Fees
-	LinearFees LinearFees // `"linear_fees"`
-	FeesGoTo   string     // `"fees_go_to"` default is "rewards", can be "treasury"
+	LinearFees LinearFees `json:"linear_fees"`
+	FeesGoTo   string     `json:"fees_go_to"` // default is "rewards", can be "treasury"
 
 	// Treasury
-	Treasury           uint64             // `"treasury"`
-	TreasuryParameters TreasuryParameters // `"treasury_parameters"`
+	Treasury           uint64             `json:"treasury"`
+	TreasuryParameters TreasuryParameters `json:"treasury_parameters"`
 
 	// Rewards
-	TotalRewardSupply uint64            // `"total_reward_supply"`
-	RewardParameters  RewardParameters  // `"reward_parameters"`
-	RewardConstraints RewardConstraints // `"reward_constraints"`
+	TotalRewardSupply uint64            `json:"total_reward_supply"`
+	RewardParameters  RewardParameters  `json:"reward_parameters"`
+	RewardConstraints RewardConstraints `json:"reward_constraints"`
 
-	Committees []string //`"committees"`
-
+	Committees []string `json:"committees"`
 }
 
 // LinearFees ...
 type LinearFees struct {
-	Certificate            uint64                 // `"certificate"`
-	Coefficient            uint64                 // `"coefficient"`
-	Constant               uint64                 // `"constant"`
-	PerCertificateFees     PerCertificateFees     // `"per_certificate_fees"`
-	PerVoteCertificateFees PerVoteCertificateFees // `"per_vote_certificate_fees"`
+	Certificate            uint64                 `json:"certificate"`
+	Coefficient            uint64                 `json:"coefficient"`
+	Constant               uint64                 `json:"constant"`
+	PerCertificateFees     PerCertificateFees     `json:"per_certificate_fees"`
+	PerVoteCertificateFees PerVoteCertificateFees `json:"per_vote_certificate_fees"`
 }
 
 // FIXME: PerCertificateFees - check/handle 0 values on config
 
 // PerCertificateFees ...
 type PerCertificateFees struct {
-	CertificatePoolRegistration     uint64 // `"certificate_pool_registration"`
-	CertificateStakeDelegation      uint64 // `"certificate_stake_delegation"`
-	CertificateOwnerStakeDelegation uint64 // `"certificate_owner_stake_delegation"`
+	CertificatePoolRegistration     uint64 `json:"certificate_pool_registration"`
+	CertificateStakeDelegation      uint64 `json:"certificate_stake_delegation"`
+	CertificateOwnerStakeDelegation uint64 `json:"certificate_owner_stake_delegation"`
 }
 
 // PerVoteCertificateFees ...
 type PerVoteCertificateFees struct {
-	CertificateVoteCast uint64 // `"certificate_vote_cast"`
-	CertificateVotePlan uint64 // `"certificate_vote_plan"`
+	CertificateVoteCast uint64 `json:"certificate_vote_cast"`
+	CertificateVotePlan uint64 `json:"certificate_vote_plan"`
 }
 
 // FIXME: TreasuryParameters - check/handle 0 values on config
 
 // TreasuryParameters ...
 type TreasuryParameters struct {
-	Fixed    uint64 // `"fixed"`
-	Ratio    string // `"ratio"`
-	MaxLimit uint64 // `"max_limit"`
+	Fixed    uint64 `json:"fixed"`
+	Ratio    string `json:"ratio"`
+	MaxLimit uint64 `json:"max_limit"`
 }
 
 // RewardParameters ...
 type RewardParameters struct {
-	Formula    string // `"halving"` or `"linear"`
-	Constant   uint64 // `"constant"`
-	Ratio      string // `"ratio"`
-	EpochStart uint32 // `"epoch_start"`
-	EpochRate  uint32 // `"epoch_rate"`
+	Formula    string `json:"-"` // `"halving"` or `"linear"`
+	Constant   uint64 `json:"constant"`
+	Ratio      string `json:"ratio"`
+	EpochStart uint32 `json:"epoch_start"`
+	EpochRate  uint32 `json:"epoch_rate"`
 }
 
 // RewardConstraints ...
 type RewardConstraints struct {
-	RewardDrawingLimitMax    string                   // `"reward_drawing_limit_max"`
-	PoolParticipationCapping PoolParticipationCapping // `"pool_participation_capping"`
+	RewardDrawingLimitMax    string                   `json:"reward_drawing_limit_max"`
+	PoolParticipationCapping PoolParticipationCapping `json:"pool_participation_capping"`
 }
 
 // PoolParticipationCapping ...
 type PoolParticipationCapping struct {
-	Min uint32 // `"min"`
-	Max uint32 // `"max"`
+	Min uint32 `json:"min"`
+	Max uint32 `json:"max"`
 }
 
 // BlockchainInitial ...
 type BlockchainInitial struct {
-	Fund       []InitialFund // `"fund"`
-	Cert       string        // `"cert"`
-	LegacyFund []InitialFund // `"legacy_fund"`
+	Fund       []InitialFund `json:"fund"`
+	Cert       string        `json:"cert"`
+	LegacyFund []InitialFund `json:"legacy_fund"`
 }
 
 // InitialFund ...
 type InitialFund struct {
-	Address string // `"address"`
-	Value   uint64 // `"value"`
+	Address string `json:"address"`
+	Value   uint64 `json:"value"`
 }
 
 // NewBlock0Config provides default block0 config
@@ -252,16 +251,16 @@ func NewBlock0Config() *Block0Config {
 
 	chainConfig.FeesGoTo = "rewards"
 
-	chainConfig.LinearFees.Certificate = 10_000
-	chainConfig.LinearFees.Coefficient = 50
-	chainConfig.LinearFees.Constant = 1_000
+	chainConfig.LinearFees.Certificate = 0
+	chainConfig.LinearFees.Coefficient = 0
+	chainConfig.LinearFees.Constant = 0
 
-	// chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 10_000
-	// chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 10_000
-	// chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 10_000
+	chainConfig.LinearFees.PerCertificateFees.CertificatePoolRegistration = 0
+	chainConfig.LinearFees.PerCertificateFees.CertificateStakeDelegation = 0
+	chainConfig.LinearFees.PerCertificateFees.CertificateOwnerStakeDelegation = 0
 
-	// chainConfig.LinearFees.PerVoteCertificateFees.CertificateVoteCast = 10_000
-	// chainConfig.LinearFees.PerVoteCertificateFees.CertificateVotePlan = 10_000
+	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVoteCast = 0
+	chainConfig.LinearFees.PerVoteCertificateFees.CertificateVotePlan = 0
 
 	return &Block0Config{
 		BlockchainConfiguration: chainConfig,

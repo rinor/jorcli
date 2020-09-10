@@ -28,20 +28,20 @@ bft:
 
 // SecretConfig ...
 type SecretConfig struct {
-	Genesis SecretGenesisPraos // `"genesis"`
-	Bft     SecretBft          // `"bft"`
+	Genesis SecretGenesisPraos `json:"genesis,omitempty"`
+	Bft     SecretBft          `json:"bft,omitempty"`
 }
 
 // SecretGenesisPraos ...
 type SecretGenesisPraos struct {
-	SigKey string // `"sig_key"`
-	VrfKey string // `"vrf_key"`
-	NodeID string // `"node_id"`
+	SigKey string `json:"sig_key,omitempty"`
+	VrfKey string `json:"vrf_key,omitempty"`
+	NodeID string `json:"node_id,omitempty"`
 }
 
 // SecretBft ...
 type SecretBft struct {
-	SigningKey string // `"signing_key"`
+	SigningKey string `json:"signing_key,omitempty"`
 }
 
 // NewSecretConfig ...
