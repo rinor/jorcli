@@ -25,8 +25,12 @@ type Jnode struct {
 	Storage          string   // --storage <storage>
 	SecretFiles      []string // --secret <secret>...
 	TrustedPeers     []string // --trusted-peer <trusted_peer>...
-	RestListen       string   // --rest-listen
-	EnableExplorer   bool     // --enable-explorer
+	// Explorer
+	EnableExplorer bool // --enable-explorer
+	// Addresses
+	RestListen    string // --rest-listen
+	PublicAddress string // --public-address <public-address>
+	ListenAddress string // --listen-address <listen-address>
 	// Log
 	LogFormat string // --log-format <log_format>
 	LogLevel  string // --log-level <log_level>
@@ -50,7 +54,8 @@ func NewJnode() *Jnode {
 	}
 }
 
-func (jnode *Jnode) buildCmdArg() []string {
+// BuildCmdArg and return a slice
+func (jnode *Jnode) BuildCmdArg() []string {
 	var arg []string
 
 	if jnode.ConfigFile != "" {
@@ -95,6 +100,14 @@ func (jnode *Jnode) buildCmdArg() []string {
 		arg = append(arg, "--rest-listen", jnode.RestListen)
 	}
 
+	if jnode.PublicAddress != "" {
+		arg = append(arg, "--public-address", jnode.PublicAddress)
+	}
+
+	if jnode.ListenAddress != "" {
+		arg = append(arg, "--listen-address", jnode.ListenAddress)
+	}
+
 	if jnode.EnableExplorer {
 		arg = append(arg, "--enable-explorer")
 	}
@@ -104,7 +117,7 @@ func (jnode *Jnode) buildCmdArg() []string {
 
 // Run starts the node.
 func (jnode *Jnode) Run() error {
-	jnode.cmd = exec.Command(jnodeName, jnode.buildCmdArg()...)
+	jnode.cmd = exec.Command(jnodeName, jnode.BuildCmdArg()...)
 
 	jnode.cmd.Dir = jnode.WorkingDir
 	jnode.cmd.Stdout = jnode.Stdout
