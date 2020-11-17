@@ -368,6 +368,9 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificateVotePlan = uint64(2)
 
 		prefix = "ta"
+
+		outputFormat = ""
+		outputFile   = ""
 	)
 
 	txInfo, err := jcli.TransactionInfo(
@@ -382,8 +385,8 @@ func TestTransactioninfo_staging(t *testing.T) {
 		feeCertificateVoteCast,
 		feeCertificateVotePlan,
 		prefix,
-		"",
-		"",
+		outputFormat,
+		outputFile,
 	)
 	ok(t, err)
 	equals(t, expectedInfo, txInfo)
