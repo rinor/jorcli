@@ -172,10 +172,10 @@ func VotesCommitteeMemberKeyToPublic(
 	return ioutil.ReadFile(outputFilePk)
 }
 
-// VotesEncryptingVoteKey - generate a committee member private key.
+// VotesEncryptingKey - Build an encryption vote key.
 //
-//  jcli votes encrypting-vote-key --keys=<member-keys>... [OUTPUT_FILE] | [STDOUT]
-func VotesEncryptingVoteKey(
+//  jcli votes encrypting-key --keys=<member-keys>... [OUTPUT_FILE] | [STDOUT]
+func VotesEncryptingKey(
 	keys []string,
 	outputFileSk string,
 ) ([]byte, error) {
@@ -184,7 +184,7 @@ func VotesEncryptingVoteKey(
 	}
 
 	arg := []string{
-		"votes", "encrypting-vote-key",
+		"votes", "encrypting-key",
 	}
 	for _, key := range keys {
 		arg = append(arg, "--keys", key) // FIXME: should check data validity!
