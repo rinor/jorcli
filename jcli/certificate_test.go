@@ -91,17 +91,17 @@ func ExampleCertificateSign_registration_stdin() {
 	// signedcert1qvqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqpqprrm7e7sj4ljteluexy39nvrpylyxngaflylzku6uevcq0ygej047hmc82yd89pjrf925tqjm039dkdrksasyfvdl4yjzt4n2n2mqctxtncl7
 }
 
-func ExampleCertificateGetStakePoolID_stdin() {
+func ExampleCertificateShowStakePoolID_stdin() {
 	var (
 		stdinCertSigned = []byte("cert1qvqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr8rx5vuusdz0jghuxgrvkhdws999jnqpwlwnydwz2nvugzdxtwqgj4re3s6yqj7js55w03pyrtguvwvfm2cezv8qy7xcfvrf5yg3fc4sz7rtrq43g3r0wmd7ytd46uuffxcea38vue4qy36vem3t9cl9k467qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqpmj470")
 		inputFile       = "" // "" - input from STDIN (stdinCertSigned []byte), "stakePool.signed_cert" - will load the certificate from that file
 		outputFile      = "" // "" - output to STDOUT ([]byte) only, "stakePool.id" - will also save output to that file
 	)
 
-	stakePoolID, err := jcli.CertificateGetStakePoolID(stdinCertSigned, inputFile, outputFile)
+	stakePoolID, err := jcli.CertificateShowStakePoolID(stdinCertSigned, inputFile, outputFile)
 
 	if err != nil {
-		fmt.Printf("CertificateGetStakePoolID: %s", err)
+		fmt.Printf("CertificateShowStakePoolID: %s", err)
 	} else {
 		fmt.Printf("%s", stakePoolID)
 	}
@@ -230,53 +230,53 @@ func ExampleCertificateNewVotePlan_stdin() {
 	}
 	// Output:
 	//
-	// cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqx4dhc9
+	// cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqqqpkdp5w
 }
 
-func ExampleCertificateGetVotePlanID_stdin() {
+func ExampleCertificateShowVotePlanID_stdin() {
 	var (
-		stdinCert  = []byte("cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqx4dhc9")
+		stdinCert  = []byte("cert1qcqqqqqqqqqqqeqqqqqqqqqqqryqqqqqqqqqqqfvqyp2mwf82u246z08lykf7yqgv65jmhwnt27j57y6gjhpn2u6rk7r9qqrqpnh35m3v8pevtlx9j063gc62k7v7mkz684z2jjx0kxdn9rsnlzqgqcqqqpkdp5w")
 		inputFile  = "" // "" - input from STDIN (stdinCert []byte), "votePlan.cert" - will load the certificate from that file
 		outputFile = "" // "" - output to STDOUT ([]byte) only, "votePlan.id" - will also save output to that file
 	)
 
-	votePlanID, err := jcli.CertificateGetVotePlanID(stdinCert, inputFile, outputFile)
+	votePlanID, err := jcli.CertificateShowVotePlanID(stdinCert, inputFile, outputFile)
 
 	if err != nil {
-		fmt.Printf("CertificateGetVotePlanID: %s", err)
+		fmt.Printf("CertificateShowVotePlanID: %s", err)
 	} else {
 		fmt.Printf("%s", votePlanID)
 	}
 	// Output:
 	//
-	// 7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2
+	// d4b0c71e3aabf3da61c7b642d81d24f4225084ed3ef38688aab825e0cb2b8473
 
 }
 
-func ExampleCertificateNewVoteCast() {
+func ExampleCertificateNewVoteCastPublic() {
 	var (
-		votePlanID    = "7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2"
+		votePlanID    = "d4b0c71e3aabf3da61c7b642d81d24f4225084ed3ef38688aab825e0cb2b8473"
 		proposalIndex = uint8(0)
 		choice        = uint8(1)
-		privacy       = "public"
-		outputFile    = ""
+		// optionsSize   = uint8(3)
+		outputFile = ""
 	)
 
-	voteCastCert, err := jcli.CertificateNewVoteCast(votePlanID, proposalIndex, choice, privacy, outputFile)
+	voteCastCert, err := jcli.CertificateNewVoteCastPublic(votePlanID, proposalIndex, choice /*, optionsSize */, outputFile)
 
 	if err != nil {
-		fmt.Printf("CertificateNewVoteCast: %s", err)
+		fmt.Printf("CertificateNewVoteCastPublic: %s", err)
 	} else {
 		fmt.Printf("%s", voteCastCert)
 	}
 	// Output:
 	//
-	// cert1qaalc5fjel2253v5jyve7p5648wpncc06dewrpemvt9skecq4s8vyqqpqy7ct20d
+	// cert1ql2tp3c7824l8knpc7my9kqayn6zy5yya5l08p5g42uztcxt9wz8xqqpqyjvdyfq
 }
 
 func ExampleCertificateNewVoteTally() {
 	var (
-		votePlanID = "7bfc5132cfd4aa459491199f069aa9dc19e30fd372e1873b62cb0b6700ac0ec2"
+		votePlanID = "d4b0c71e3aabf3da61c7b642d81d24f4225084ed3ef38688aab825e0cb2b8473"
 		outputFile = ""
 	)
 
@@ -289,7 +289,25 @@ func ExampleCertificateNewVoteTally() {
 	}
 	// Output:
 	//
-	// cert1ppalc5fjel2253v5jyve7p5648wpncc06dewrpemvt9skecq4s8vyqgzcncz3
+	// cert1pr2tp3c7824l8knpc7my9kqayn6zy5yya5l08p5g42uztcxt9wz8xqgna2nvp
+}
+
+func ExampleCertificateNewEncryptedVoteTally() {
+	var (
+		votePlanID = "d4b0c71e3aabf3da61c7b642d81d24f4225084ed3ef38688aab825e0cb2b8473"
+		outputFile = ""
+	)
+
+	voteTallyCert, err := jcli.CertificateNewEncryptedVoteTally(votePlanID, outputFile)
+
+	if err != nil {
+		fmt.Printf("CertificateNewEncryptedVoteTally: %s", err)
+	} else {
+		fmt.Printf("%s", voteTallyCert)
+	}
+	// Output:
+	//
+	// cert1p82tp3c7824l8knpc7my9kqayn6zy5yya5l08p5g42uztcxt9wz8xfv5l87
 }
 
 func ExampleCertificateSign_retirement_stdin() {
