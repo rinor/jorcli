@@ -1,19 +1,20 @@
 ---
-status: sealed
-sign_data_hash: 260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c
+balance: 0
+fee: 7
+input: 100
+inputs:
+  - account: 786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e
+    kind: account
+    value: 100
 num_inputs: 1
 num_outputs: 2
 num_witnesses: 1
-input: 100
 output: 93
-fee: 7
-balance: 0
-inputs:
-  - kind: account
-    value: 100
-    account: 786b182b14446f76dbe22db5d738949b19ec4ece66a02474ccee2b2e3e5b575e
 outputs:
   - address: ta1skn8q3f6rxg92gqren9gf3heja8kj4shp89jl27n69v5azwvns95vlgw0pz
     value: 50
   - address: ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap
     value: 43
+sign_data_hash: 260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c
+status: sealed
+
