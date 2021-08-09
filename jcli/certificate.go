@@ -358,10 +358,10 @@ func CertificateNewVoteCastPrivate(
 	return ioutil.ReadFile(outputFile)
 }
 
-// CertificateNewVoteTally - create a vote tally certificate.
+// CertificateNewVoteTallyPublic - create a public vote tally certificate.
 //
-// jcli certificate new vote-tally --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
-func CertificateNewVoteTally(
+// jcli certificate new vote-tally public --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
+func CertificateNewVoteTallyPublic(
 	votePlanID string,
 	outputFile string,
 ) ([]byte, error) {
@@ -370,8 +370,44 @@ func CertificateNewVoteTally(
 	}
 
 	arg := []string{
-		"certificate", "new", "vote-tally",
+		"certificate", "new", "vote-tally", "public",
 		"--vote-plan-id", votePlanID,
+	}
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
+// CertificateNewVoteTallyPrivate - create a private vote tally certificate.
+//
+// jcli certificate new vote-tally private --shares <shares> --vote-plan <vote-plan> [--vote-plan-id <id>] [--output <FILE_OUTPUT>] | STDOUT
+func CertificateNewVoteTallyPrivate(
+	sharesFile string,
+	votePlanFile string,
+	votePlanID string,
+	outputFile string,
+) ([]byte, error) {
+	if sharesFile == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "sharesFile")
+	}
+	if votePlanFile == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "votePlanFile")
+	}
+
+	arg := []string{
+		"certificate", "new", "vote-tally", "private",
+		"--shares", sharesFile,
+		"--vote-plan", votePlanFile,
+	}
+	if votePlanID != "" {
+		arg = append(arg, "--vote-plan-id", votePlanID)
 	}
 	if outputFile != "" {
 		arg = append(arg, "--output", outputFile)

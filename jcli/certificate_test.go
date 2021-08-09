@@ -42,7 +42,7 @@ func ExampleCertificateNewStakePoolRegistration() {
 	}
 
 	// vrf_sk1fffu87autxtsae0cttup8p6allqn4yz29ef6uln9lgx75mnzeyqshc9lsp
-	vrfPrivateKey, err := jcli.KeyGenerate(seed, "Curve25519_2HashDH", "")
+	vrfPrivateKey, err := jcli.KeyGenerate(seed, "RistrettoGroup2HashDh", "")
 	if err != nil {
 		fmt.Printf("vrfPrivateKey FAILED: %s\n", err)
 		return
@@ -274,13 +274,13 @@ func ExampleCertificateNewVoteCastPublic() {
 	// cert1ql2tp3c7824l8knpc7my9kqayn6zy5yya5l08p5g42uztcxt9wz8xqqpqyjvdyfq
 }
 
-func ExampleCertificateNewVoteTally() {
+func ExampleCertificateNewVoteTallyPublic() {
 	var (
 		votePlanID = "d4b0c71e3aabf3da61c7b642d81d24f4225084ed3ef38688aab825e0cb2b8473"
 		outputFile = ""
 	)
 
-	voteTallyCert, err := jcli.CertificateNewVoteTally(votePlanID, outputFile)
+	voteTallyCert, err := jcli.CertificateNewVoteTallyPublic(votePlanID, outputFile)
 
 	if err != nil {
 		fmt.Printf("CertificateNewVoteTally: %s", err)
