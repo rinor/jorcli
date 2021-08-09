@@ -6,31 +6,6 @@ import (
 	"strconv"
 )
 
-// VotesCrsGenerate - generate the Common Reference String.
-//
-//  jcli votes crs generate [--seed=<SEED>] [OUTPUT_FILE] | [STDOUT]
-func VotesCRSGenerate(
-	seed string,
-	outputFileSk string,
-) ([]byte, error) {
-	arg := []string{
-		"votes", "crs", "generate",
-	}
-	if seed != "" {
-		arg = append(arg, "--seed", seed)
-	}
-	if outputFileSk != "" {
-		arg = append(arg, outputFileSk)
-	}
-
-	out, err := jcli(nil, arg...)
-	if err != nil || outputFileSk == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(outputFileSk)
-}
-
 // VotesCommitteeCommunicationKeyGenerate - generate a committee communication private key.
 //
 //  jcli votes committee communication-key generate [--seed=<SEED>] [OUTPUT_FILE] | [STDOUT]
@@ -172,10 +147,10 @@ func VotesCommitteeMemberKeyToPublic(
 	return ioutil.ReadFile(outputFilePk)
 }
 
-// VotesEncryptingKey - Build an encryption vote key.
+// VotesElectionKey - Build an encryption vote key.
 //
-//  jcli votes encrypting-key --keys=<member-keys>... [OUTPUT_FILE] | [STDOUT]
-func VotesEncryptingKey(
+//  jcli votes election-key --keys=<member-keys>... [OUTPUT_FILE] | [STDOUT]
+func VotesElectionKey(
 	keys []string,
 	outputFileSk string,
 ) ([]byte, error) {
@@ -184,7 +159,7 @@ func VotesEncryptingKey(
 	}
 
 	arg := []string{
-		"votes", "encrypting-key",
+		"votes", "election-key",
 	}
 	for _, key := range keys {
 		arg = append(arg, "--keys", key) // FIXME: should check data validity!
