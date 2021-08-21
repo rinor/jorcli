@@ -15,6 +15,6 @@ outputs:
     value: 50
   - address: ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap
     value: 43
-sign_data_hash: 260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c
-status: sealed
+sign_data_hash: aa27a2258f0df9b25b5ad3969e826bf0877f3d7d912e9ff7b8dcdb3ee6cb3819
+status: finalizing
 
