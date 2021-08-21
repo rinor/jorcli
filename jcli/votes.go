@@ -175,3 +175,103 @@ func VotesElectionKey(
 
 	return ioutil.ReadFile(outputFileSk)
 }
+
+// VotesTallyDecryptionShares - .
+//
+// [STDIN] | jcli votes tally decryption-shares
+//                                               --key=<key_file>
+//                                               [--vote-plan=<vote_plan_file>]
+//                                               [--vote-plan-id=<vote-plan-id>] | [STDOUT]
+func VotesTallyDecryptionShares(
+	stdinVP []byte,
+	inputFileSk string,
+	inputFileVP string,
+	vpID string,
+) ([]byte, error) {
+	if inputFileSk == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "inputFileSk")
+	}
+	if len(stdinVP) == 0 && inputFileVP == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinVP", "inputFileVP")
+	}
+
+	arg := []string{
+		"votes", "tally", "decryption-shares",
+		"--key", inputFileSk,
+	}
+	if inputFileVP != "" {
+		arg = append(arg, "--vote-plan", inputFileVP)
+		stdinVP = nil
+	}
+	if vpID != "" {
+		arg = append(arg, "--vote-plan-id", vpID)
+	}
+
+	return jcli(stdinVP, arg...)
+}
+
+// VotesTallyMergeShares - .
+//
+// jcli votes tally merge-shares <shares_file> | [STDOUT]
+func VotesTallyMergeShares(
+	inputFileShares string,
+) ([]byte, error) {
+	if inputFileShares == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "inputFileShares")
+	}
+	arg := []string{
+		"votes", "tally", "merge-shares",
+		inputFileShares,
+	}
+
+	return jcli(nil, arg...)
+}
+
+// VotesTallyDecryptResults - .
+//
+// jcli votes tally decrypt-results
+//                                  [--shares=<shares_file>]
+//                                  [--threshold=<threshold>]
+//                                  [--vote-plan=<vote_plan_file>]
+//                                  [--vote-plan-id=<vote-plan-id>]
+//                                  [--output-format=<format>] | [STDOUT]
+func VotesTallyDecryptResults(
+	stdin []byte,
+	inputFileShares string,
+	threshold uint8,
+	inputFileVP string,
+	vpID string,
+	outputFormat string,
+) ([]byte, error) {
+	if len(stdin) == 0 && (inputFileShares == "" || inputFileVP == "") {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdin", "inputFileShares || inputFileVP")
+	}
+	if len(stdin) != 0 && (inputFileShares == "" && inputFileVP == "") {
+		return nil, fmt.Errorf("%s : NOT EMPTY but both parameters missing : %s", "stdin", "inputFileShares && inputFileVP")
+	}
+
+	arg := []string{
+		"votes", "tally", "decrypt-result",
+	}
+	if inputFileShares != "" {
+		arg = append(arg, "--shares", inputFileShares)
+	}
+	if threshold > 0 {
+		arg = append(arg, "--threshold", strconv.FormatUint(uint64(threshold), 10))
+	}
+	if inputFileVP != "" {
+		arg = append(arg, "--vote-plan", inputFileVP)
+	}
+	if vpID != "" {
+		arg = append(arg, "--vote-plan-id", vpID)
+	}
+	if outputFormat != "" {
+		arg = append(arg, "--output-format", outputFormat)
+	}
+
+	if inputFileShares != "" && inputFileVP != "" {
+		stdin = nil
+	}
+
+	return jcli(stdin, arg...)
+}

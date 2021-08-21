@@ -16,7 +16,7 @@ func TestGenesisHash_file(t *testing.T) {
 	var (
 		block0Bin          []byte
 		inputFile          = filePath(t, "genesis_block0_bin.golden")
-		expectedBlock0Hash = []byte("a2c8655ee4a0644d40c55f4be07037cb6a0acb335bec8ec4e14958cba42dc0f5\n")
+		expectedBlock0Hash = []byte("8571f91f59857a5bf033bbe9024d8c360790b3f19f70a72969e9a1f2902b5a71\n")
 	)
 
 	genesisBlock0Hash, err := jcli.GenesisHash(block0Bin, inputFile)
@@ -28,7 +28,7 @@ func TestGenesisHash_stdin(t *testing.T) {
 	var (
 		block0Bin          = loadBytes(t, "genesis_block0_bin.golden")
 		inputFile          = ""
-		expectedBlock0Hash = []byte("a2c8655ee4a0644d40c55f4be07037cb6a0acb335bec8ec4e14958cba42dc0f5\n")
+		expectedBlock0Hash = []byte("8571f91f59857a5bf033bbe9024d8c360790b3f19f70a72969e9a1f2902b5a71\n")
 	)
 
 	genesisBlock0Hash, err := jcli.GenesisHash(block0Bin, inputFile)

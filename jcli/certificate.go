@@ -6,35 +6,6 @@ import (
 	"strconv"
 )
 
-// CertificateShowStakePoolID - get the stake pool id from the given stake pool registration certificate.
-//
-//  [STDIN] | jcli certificate show stake-pool-id [--input <FILE_INPUT>] [--output <FILE_OUTPUT>] | [STDOUT]
-func CertificateShowStakePoolID(
-	stdinCertSigned []byte,
-	inputFile string,
-	outputFile string,
-) ([]byte, error) {
-	if len(stdinCertSigned) == 0 && inputFile == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCertSigned", "inputFile")
-	}
-
-	arg := []string{"certificate", "show", "stake-pool-id"}
-	if inputFile != "" {
-		arg = append(arg, "--input", inputFile)
-		stdinCertSigned = nil
-	}
-	if outputFile != "" {
-		arg = append(arg, "--output", outputFile)
-	}
-
-	out, err := jcli(stdinCertSigned, arg...)
-	if err != nil || outputFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(outputFile)
-}
-
 // CertificateNewOwnerStakeDelegation - build an owner stake delegation certificate.
 //
 //  jcli certificate new owner-stake-delegation <STAKE_POOL_ID:weight>... [--output <output>] | [STDOUT]
@@ -254,35 +225,6 @@ func CertificateNewVotePlan(
 	return ioutil.ReadFile(outputFile)
 }
 
-// CertificateShowVotePlanID - get the vote plan id from the given vote plan certificate.
-//
-//  [STDIN] | jcli certificate show vote-plan-id [--input <FILE_INPUT>] [--output <FILE_OUTPUT>] | [STDOUT]
-func CertificateShowVotePlanID(
-	stdinCert []byte,
-	inputFile string,
-	outputFile string,
-) ([]byte, error) {
-	if len(stdinCert) == 0 && inputFile == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
-	}
-
-	arg := []string{"certificate", "show", "vote-plan-id"}
-	if inputFile != "" {
-		arg = append(arg, "--input", inputFile)
-		stdinCert = nil
-	}
-	if outputFile != "" {
-		arg = append(arg, "--output", outputFile)
-	}
-
-	out, err := jcli(stdinCert, arg...)
-	if err != nil || outputFile == "" {
-		return out, err
-	}
-
-	return ioutil.ReadFile(outputFile)
-}
-
 // CertificateNewVoteCastPublic - create a vote cast certificate for public voteplan.
 //
 // jcli certificate new vote-cast public --vote-plan-id <vote-plan-id> --proposal-index <proposal-index> --choice <choice> [--output <FILE_OUTPUT>] | STDOUT
@@ -318,7 +260,7 @@ func CertificateNewVoteCastPublic(
 
 // CertificateNewVoteCastPrivate - create a vote cast certificate for private voteplan.
 //
-//  [STDIN] | jcli certificate new vote-cast private  --vote-plan-id <vote-plan-id> --proposal-index <proposal-index> --choice <choice> [--key-path <encrypting-key-path>] [--output <FILE_OUTPUT>] | STDOUT
+//  [STDIN] | jcli certificate new vote-cast private --vote-plan-id <vote-plan-id> --proposal-index <proposal-index> --choice <choice> [--key-path <encrypting-key-path>] [--output <FILE_OUTPUT>] | STDOUT
 func CertificateNewVoteCastPrivate(
 	stdinEncKey []byte,
 	votePlanID string,
@@ -421,26 +363,77 @@ func CertificateNewVoteTallyPrivate(
 	return ioutil.ReadFile(outputFile)
 }
 
-// CertificateNewEncryptedVoteTally - create an encrypted vote tally certificate.
+// CertificatePrint - Print certificate.
 //
-// jcli certificate new encrypted-vote-tally --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
-func CertificateNewEncryptedVoteTally(
-	votePlanID string,
-	outputFile string,
+//  [STDIN] | jcli certificate print [<input file>] | STDOUT
+func CertificatePrint(
+	stdinCert []byte,
+	inputFile string,
 ) ([]byte, error) {
-	if votePlanID == "" {
-		return nil, fmt.Errorf("parameter missing : %s", "votePlanID")
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
 	}
 
-	arg := []string{
-		"certificate", "new", "encrypted-vote-tally",
-		"--vote-plan-id", votePlanID,
+	arg := []string{"certificate", "print"}
+	if inputFile != "" {
+		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
+		stdinCert = nil
+	}
+
+	return jcli(stdinCert, arg...)
+}
+
+// CertificateShowStakePoolID - get the stake pool id from the given stake pool registration certificate.
+//
+//  [STDIN] | jcli certificate show stake-pool-id [--input <FILE_INPUT>] [--output <FILE_OUTPUT>] | [STDOUT]
+func CertificateShowStakePoolID(
+	stdinCertSigned []byte,
+	inputFile string,
+	outputFile string,
+) ([]byte, error) {
+	if len(stdinCertSigned) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCertSigned", "inputFile")
+	}
+
+	arg := []string{"certificate", "show", "stake-pool-id"}
+	if inputFile != "" {
+		arg = append(arg, "--input", inputFile)
+		stdinCertSigned = nil
 	}
 	if outputFile != "" {
 		arg = append(arg, "--output", outputFile)
 	}
 
-	out, err := jcli(nil, arg...)
+	out, err := jcli(stdinCertSigned, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
+}
+
+// CertificateShowVotePlanID - get the vote plan id from the given vote plan certificate.
+//
+//  [STDIN] | jcli certificate show vote-plan-id [--input <FILE_INPUT>] [--output <FILE_OUTPUT>] | [STDOUT]
+func CertificateShowVotePlanID(
+	stdinCert []byte,
+	inputFile string,
+	outputFile string,
+) ([]byte, error) {
+	if len(stdinCert) == 0 && inputFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
+	}
+
+	arg := []string{"certificate", "show", "vote-plan-id"}
+	if inputFile != "" {
+		arg = append(arg, "--input", inputFile)
+		stdinCert = nil
+	}
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
+	}
+
+	out, err := jcli(stdinCert, arg...)
 	if err != nil || outputFile == "" {
 		return out, err
 	}
@@ -485,22 +478,29 @@ func CertificateSign(
 	return ioutil.ReadFile(outputFile)
 }
 
-// CertificatePrint - Print certificate.
+// CertificateNewEncryptedVoteTally - create an encrypted vote tally certificate.
 //
-//  [STDIN] | jcli certificate print [<input file>] | STDOUT
-func CertificatePrint(
-	stdinCert []byte,
-	inputFile string,
+// jcli certificate new encrypted-vote-tally --vote-plan-id <id> [--output <FILE_OUTPUT>] | STDOUT
+func CertificateNewEncryptedVoteTally(
+	votePlanID string,
+	outputFile string,
 ) ([]byte, error) {
-	if len(stdinCert) == 0 && inputFile == "" {
-		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinCert", "inputFile")
+	if votePlanID == "" {
+		return nil, fmt.Errorf("parameter missing : %s", "votePlanID")
 	}
 
-	arg := []string{"certificate", "print"}
-	if inputFile != "" {
-		arg = append(arg, inputFile) // TODO: UPSTREAM unify with "--input" as other file input commands
-		stdinCert = nil
+	arg := []string{
+		"certificate", "new", "encrypted-vote-tally",
+		"--vote-plan-id", votePlanID,
+	}
+	if outputFile != "" {
+		arg = append(arg, "--output", outputFile)
 	}
 
-	return jcli(stdinCert, arg...)
+	out, err := jcli(nil, arg...)
+	if err != nil || outputFile == "" {
+		return out, err
+	}
+
+	return ioutil.ReadFile(outputFile)
 }

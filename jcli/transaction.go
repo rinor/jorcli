@@ -563,3 +563,24 @@ func TransactionFragmentID(
 
 	return jcli(stdinStaging, arg...)
 }
+
+// TransactionSetExpiryDate - set a transaction expiration date in EPOCH.SLOT format (ex: 3.14)
+//
+//  [STDIN] | jcli transaction set-expiry-date <BLOCKDATE> [--staging <staging-file>] | [STDOUT]
+func TransactionSetExpiryDate(
+	stdinStaging []byte,
+	stagingFile string,
+	blockDate string,
+) ([]byte, error) {
+	if len(stdinStaging) == 0 && stagingFile == "" {
+		return nil, fmt.Errorf("%s : EMPTY and parameter missing : %s", "stdinStaging", "stagingFile")
+	}
+
+	arg := []string{"transaction", "set-expiry-date", blockDate}
+	if stagingFile != "" {
+		arg = append(arg, "--staging", stagingFile)
+		stdinStaging = nil
+	}
+
+	return jcli(stdinStaging, arg...)
+}

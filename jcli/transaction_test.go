@@ -37,7 +37,7 @@ func ExampleTransactionNew_stdout() {
 	}
 	// Output:
 	//
-	// [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+	// [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
 }
 
 func TestTransactionNew(t *testing.T) {
@@ -114,6 +114,35 @@ func TestTransactionAddOutput(t *testing.T) {
 	equals(t, expectedTx, tx)
 }
 
+func ExampleTransactionSetExpiryDate_staging() {
+	var (
+		stdinStaging []byte
+		stagingFile  = "tx.staging"
+		blockDate    = "3.14"
+	)
+
+	tx, err := jcli.TransactionSetExpiryDate(stdinStaging, stagingFile, blockDate)
+
+	if err != nil {
+		fmt.Printf("TransactionSetExpiryDate: %s", err)
+	} else {
+		fmt.Printf("%v", tx)
+	}
+}
+
+func TestTransactionSetExpiryDate(t *testing.T) {
+	var (
+		stdinStaging = loadBytes(t, "tx-03_add_output_staging.golden")
+		stagingFile  = ""
+		blockDate    = "3.14"
+		expectedTx   = loadBytes(t, "tx-04_set_expiry_date_staging.golden")
+	)
+
+	tx, err := jcli.TransactionSetExpiryDate(stdinStaging, stagingFile, blockDate)
+	ok(t, err)
+	equals(t, expectedTx, tx)
+}
+
 func ExampleTransactionFinalize_staging() {
 	var (
 		stdinStaging []byte
@@ -155,7 +184,7 @@ func ExampleTransactionFinalize_staging() {
 
 func TestTransactionFinalize(t *testing.T) {
 	var (
-		stdinStaging = loadBytes(t, "tx-03_add_output_staging.golden")
+		stdinStaging = loadBytes(t, "tx-04_set_expiry_date_staging.golden")
 		stagingFile  = ""
 
 		feeCertificate = uint64(3)
@@ -170,7 +199,7 @@ func TestTransactionFinalize(t *testing.T) {
 		feeCertificateVotePlan = uint64(2)
 
 		changeAddress = "ta1s4uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4ulu8sap"
-		expectedTx    = loadBytes(t, "tx-04_finalize_staging.golden")
+		expectedTx    = loadBytes(t, "tx-05_finalize_staging.golden")
 	)
 
 	tx, err := jcli.TransactionFinalize(
@@ -206,9 +235,9 @@ func ExampleTransactionDataForWitness_staging() {
 
 func TestTransactionDataForWitness(t *testing.T) {
 	var (
-		stdinStaging             = loadBytes(t, "tx-04_finalize_staging.golden")
+		stdinStaging             = loadBytes(t, "tx-05_finalize_staging.golden")
 		stagingFile              = ""
-		expectedTxDataForWitness = loadBytes(t, "tx-05_data-for-witness.golden")
+		expectedTxDataForWitness = loadBytes(t, "tx-06_data-for-witness.golden")
 	)
 	txDataForWitness, err := jcli.TransactionDataForWitness(stdinStaging, stagingFile)
 	ok(t, err)
@@ -218,8 +247,8 @@ func TestTransactionDataForWitness(t *testing.T) {
 func ExampleTransactionMakeWitness_stdin() {
 	var (
 		stdinKey               = []byte("ed25519e_sk1wzuwptdq7y7eqszadtj48p4a9z7ayxdc5zx76x4gxmhuezmhp4ra5s2e03g4wjydwujwq0acmp9rw6jrhr6p2x9prnpc0dnfkthxtps9029w4")
-		dataForWitness         = "260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c"
-		block0Hash             = "480b129ef7e681641adf5b0d849c725ad307f04ab7fe2381905db6f88ca9400f"
+		dataForWitness         = "aa27a2258f0df9b25b5ad3969e826bf0877f3d7d912e9ff7b8dcdb3ee6cb3819"
+		block0Hash             = "8571f91f59857a5bf033bbe9024d8c360790b3f19f70a72969e9a1f2902b5a71"
 		typeWitness            = "account"
 		accountSpendingCounter = uint32(0)
 		outputFile             = "witness.out"
@@ -237,13 +266,13 @@ func ExampleTransactionMakeWitness_stdin() {
 func TestTransactionMakeWitness(t *testing.T) {
 	var (
 		stdinKey               []byte                                                               //= loadBytes(t, "private_key_txt.golden")
-		dataForWitness         = "260d1f43854062f558036da376196a35ecf482515dbe88ba4d8109bbdf34c52c" // strings.TrimSpace(string(loadBytes(t, "tx-05_data-for-witness.golden")))
-		block0Hash             = "480b129ef7e681641adf5b0d849c725ad307f04ab7fe2381905db6f88ca9400f"
+		dataForWitness         = "aa27a2258f0df9b25b5ad3969e826bf0877f3d7d912e9ff7b8dcdb3ee6cb3819" // strings.TrimSpace(string(loadBytes(t, "tx-06_data-for-witness.golden")))
+		block0Hash             = "8571f91f59857a5bf033bbe9024d8c360790b3f19f70a72969e9a1f2902b5a71"
 		typeWitness            = "account"
 		accountSpendingCounter = uint32(0)
 		outputFile             = ""
 		inputFileKey           = filePath(t, "private_key_txt.golden")
-		expectedWitness        = loadBytes(t, "tx-06_witness_out.golden")
+		expectedWitness        = loadBytes(t, "tx-07_witness_out.golden")
 	)
 
 	witness, err := jcli.TransactionMakeWitness(stdinKey, dataForWitness, block0Hash, typeWitness, accountSpendingCounter, outputFile, inputFileKey)
@@ -269,10 +298,10 @@ func ExampleTransactionAddWitness_staging() {
 
 func TestTransactionAddWitness(t *testing.T) {
 	var (
-		stdinStaging = loadBytes(t, "tx-04_finalize_staging.golden")
+		stdinStaging = loadBytes(t, "tx-05_finalize_staging.golden")
 		stagingFile  = ""
-		witnessFile  = filePath(t, "tx-06_witness_out.golden")
-		expectedTx   = loadBytes(t, "tx-07_add_witness_staging.golden")
+		witnessFile  = filePath(t, "tx-07_witness_out.golden")
+		expectedTx   = loadBytes(t, "tx-08_add_witness_staging.golden")
 	)
 
 	tx, err := jcli.TransactionAddWitness(stdinStaging, stagingFile, witnessFile)
@@ -297,9 +326,9 @@ func ExampleTransactionSeal_staging() {
 
 func TestTransactionSeal(t *testing.T) {
 	var (
-		stdinStaging = loadBytes(t, "tx-07_add_witness_staging.golden")
+		stdinStaging = loadBytes(t, "tx-08_add_witness_staging.golden")
 		stagingFile  = ""
-		expectedTx   = loadBytes(t, "tx-08_seal_staging.golden")
+		expectedTx   = loadBytes(t, "tx-09_seal_staging.golden")
 	)
 
 	tx, err := jcli.TransactionSeal(stdinStaging, stagingFile)
@@ -324,9 +353,9 @@ func ExampleTransactionToMessage_staging() {
 
 func TestTransactionToMessage(t *testing.T) {
 	var (
-		stdinStaging = loadBytes(t, "tx-08_seal_staging.golden")
+		stdinStaging = loadBytes(t, "tx-09_seal_staging.golden")
 		stagingFile  = ""
-		expectedMsg  = loadBytes(t, "tx-09_to_message.golden")
+		expectedMsg  = loadBytes(t, "tx-10_to_message.golden")
 	)
 
 	msg, err := jcli.TransactionToMessage(stdinStaging, stagingFile)
@@ -352,7 +381,7 @@ func ExampleTransactionAddCertificate_staging() {
 
 func TestTransactioninfo_staging(t *testing.T) {
 	var (
-		stdinStaging = loadBytes(t, "tx-08_seal_staging.golden")
+		stdinStaging = loadBytes(t, "tx-08_add_witness_staging.golden")
 		stagingFile  = ""
 		expectedInfo = loadBytes(t, "tx-08_info.golden")
 
@@ -394,9 +423,9 @@ func TestTransactioninfo_staging(t *testing.T) {
 
 func TestTransactionFragmentID(t *testing.T) {
 	var (
-		stdinStaging         = loadBytes(t, "tx-08_seal_staging.golden")
+		stdinStaging         = loadBytes(t, "tx-09_seal_staging.golden")
 		stagingFile          = ""
-		expectedTxFragmentID = []byte("533ca1a4798f1e6d01becf7678ba804b353d60af811383356b1387015043f464\n")
+		expectedTxFragmentID = []byte("4b1ad6d369d9ebe2d0bd1813b6d0d9df3b43dbbc41d3b24eec65e6ae4da8addc\n")
 	)
 	txFragmentID, err := jcli.TransactionFragmentID(stdinStaging, stagingFile)
 	ok(t, err)

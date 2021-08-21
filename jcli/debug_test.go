@@ -10,13 +10,13 @@ import (
 func ExampleDebugMessage() {
 	var (
 		stdinHex  []byte
-		inputFile = "testdata/tx-09_to_message.golden"
+		inputFile = "testdata/tx-10_to_message.golden"
 	)
 
 	dbgMesg, err := jcli.DebugMessage(stdinHex, inputFile)
 
 	if err != nil {
-		fmt.Printf("DebugMessage: %s", err)
+		fmt.Printf("DebugMessage: %s\n%s", err, dbgMesg)
 	} else {
 		fmt.Printf("%s", dbgMesg)
 	}
@@ -25,11 +25,23 @@ func ExampleDebugMessage() {
 	// Transaction(
 	//     Transaction {
 	//         payload: [
+	//             0,
+	//             0,
+	//             0,
+	//             3,
+	//             0,
+	//             0,
+	//             0,
+	//             14,
 	//             1,
 	//             2,
 	//         ],
 	//         nb_inputs: 1,
 	//         nb_outputs: 2,
+	//         valid_until: BlockDate {
+	//             epoch: 3,
+	//             slot_id: 14,
+	//         },
 	//         nb_witnesses: 1,
 	//         total_input_value: Ok(
 	//             Value(
@@ -54,12 +66,13 @@ func ExampleDebugBlock() {
 	dbgMesg, err := jcli.DebugBlock(stdinHex, inputFile)
 
 	if err != nil {
-		fmt.Printf("DebugMessage: %s", err)
+		fmt.Printf("DebugMessage: %s\n%s", err, dbgMesg)
 	} else {
 		fmt.Printf("%s", dbgMesg)
 	}
 }
 
+// TODO: fix failing
 func TestDebugBlock_PoolRegistration(t *testing.T) {
 	var (
 		stdinHex       []byte
